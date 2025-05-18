@@ -536,5 +536,6 @@ export const getQuickAssessmentQuestions = (): Question[] => {
 
 // Get all questions for comprehensive assessment
 export const getComprehensiveQuestions = (): Question[] => {
+  // Return all 240 questions for the comprehensive assessment
   return sampleQuestions;
 };
