@@ -9,7 +9,48 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      test_results: {
+        Row: {
+          category_scores: Json
+          created_at: string
+          id: string
+          max_possible_score: number
+          overall_score: number
+          percentage_score: number
+          public: boolean
+          share_id: string
+          tier_name: string
+          user_id: string | null
+          username: string | null
+        }
+        Insert: {
+          category_scores: Json
+          created_at?: string
+          id?: string
+          max_possible_score: number
+          overall_score: number
+          percentage_score: number
+          public?: boolean
+          share_id?: string
+          tier_name: string
+          user_id?: string | null
+          username?: string | null
+        }
+        Update: {
+          category_scores?: Json
+          created_at?: string
+          id?: string
+          max_possible_score?: number
+          overall_score?: number
+          percentage_score?: number
+          public?: boolean
+          share_id?: string
+          tier_name?: string
+          user_id?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

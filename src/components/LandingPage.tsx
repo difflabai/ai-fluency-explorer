@@ -9,8 +9,10 @@ import {
   Trophy, 
   Compass, 
   CheckCircle,
-  ArrowRight
+  ArrowRight,
+  Users
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface LandingPageProps {
   onStartQuickTest: () => void;
@@ -28,7 +30,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
   return (
     <div className="container max-w-5xl mx-auto px-4 py-12">
       {/* Hero section */}
-      <div className="text-center mb-16">
+      <div className="text-center mb-12">
         <div className="inline-flex items-center justify-center h-20 w-20 rounded-full bg-purple-100 mb-6">
           <Brain className="h-10 w-10 text-blue-500" />
         </div>
@@ -38,6 +40,16 @@ const LandingPage: React.FC<LandingPageProps> = ({
         <p className="text-xl text-gray-600 max-w-2xl mx-auto">
           Measure your AI literacy, discover your strengths, and build a personalized learning path to enhance your skills.
         </p>
+
+        {/* Leaderboard button */}
+        <div className="mt-6">
+          <Link to="/leaderboard">
+            <Button variant="outline" className="flex items-center gap-2 bg-white">
+              <Users className="h-4 w-4 text-purple-500" />
+              <span>View Leaderboard</span>
+            </Button>
+          </Link>
+        </div>
       </div>
       
       {/* Test options */}
