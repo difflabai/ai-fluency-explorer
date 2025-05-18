@@ -8,14 +8,17 @@ const Index = () => {
   
   const startQuickTest = () => {
     setTestMode('quick');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
   
   const startComprehensiveTest = () => {
     setTestMode('comprehensive');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
   
   const returnToHome = () => {
     setTestMode('landing');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
   
   return (

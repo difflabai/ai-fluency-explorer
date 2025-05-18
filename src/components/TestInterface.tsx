@@ -6,7 +6,8 @@ import QuestionCard from './QuestionCard';
 import { Question, UserAnswer, getQuickAssessmentQuestions, getComprehensiveQuestions } from '@/utils/testData';
 import { calculateResults, TestResult } from '@/utils/scoring';
 import ResultsDashboard from './ResultsDashboard';
-import { Save, Timer, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Save, Timer, ChevronLeft, ChevronRight, Home, CheckSquare, AlertTriangle } from 'lucide-react';
+import { toast } from "@/hooks/use-toast";
 
 interface TestInterfaceProps {
   testType: 'quick' | 'comprehensive';
@@ -91,13 +92,19 @@ const TestInterface: React.FC<TestInterfaceProps> = ({ testType, onReturnHome })
     const testResult = calculateResults(questions, userAnswers);
     setResult(testResult);
     setTestComplete(true);
+    toast({
+      title: "Test Completed!",
+      description: "Your results are ready to view.",
+    });
   };
   
   // Save progress (in a real app, this would store to localStorage or backend)
   const handleSaveProgress = () => {
     console.log('Saving progress:', { userAnswers, currentQuestionIndex });
-    // Would implement actual saving logic here
-    alert('Progress saved! You can continue later.');
+    toast({
+      title: "Progress Saved",
+      description: "You can continue later from where you left off.",
+    });
   };
   
   // Format time as mm:ss
@@ -112,37 +119,58 @@ const TestInterface: React.FC<TestInterfaceProps> = ({ testType, onReturnHome })
   }
   
   if (questions.length === 0) {
-    return <div className="text-center p-8">Loading questions...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-pulse flex flex-col items-center">
+          <div className="h-12 w-12 rounded-full bg-ai-purple-light mb-4"></div>
+          <div className="h-4 w-48 bg-gray-200 rounded mb-2.5"></div>
+          <div className="h-3 w-32 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    );
   }
   
   const currentQuestion = questions[currentQuestionIndex];
   const progress = (userAnswers.length / questions.length) * 100;
   const currentAnswer = userAnswers.find(a => a.questionId === currentQuestion.id)?.answer;
   const isAnswered = currentAnswer !== undefined;
+  const isLastQuestion = currentQuestionIndex === questions.length - 1;
+  const unansweredCount = questions.length - userAnswers.length;
   
   return (
-    <div className="container max-w-3xl mx-auto px-4 py-8">
+    <div className="container max-w-4xl mx-auto px-4 py-8">
       <div className="flex flex-col gap-6">
         {/* Test header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
           <div>
-            <h1 className="text-2xl font-bold">
+            <h1 className="text-2xl font-bold text-gray-800">
               {testType === 'quick' ? 'Quick Self-Assessment' : 'Comprehensive Self-Assessment'}
             </h1>
-            <p className="text-muted-foreground">
-              Question {currentQuestionIndex + 1} of {questions.length}
-            </p>
+            <div className="flex items-center gap-3 text-gray-600">
+              <span>Question {currentQuestionIndex + 1} of {questions.length}</span>
+              {unansweredCount > 0 && (
+                <div className="flex items-center text-sm text-amber-600 bg-amber-50 px-2 py-1 rounded">
+                  <AlertTriangle className="h-3 w-3 mr-1" />
+                  {unansweredCount} unanswered
+                </div>
+              )}
+            </div>
           </div>
           
-          <div className="flex items-center gap-2">
-            <div className="bg-gray-100 p-2 rounded-md flex items-center">
-              <Timer className="h-4 w-4 mr-2" />
+          <div className="flex items-center gap-3">
+            <div className="bg-gray-100 p-2 px-3 rounded-md flex items-center">
+              <Timer className="h-4 w-4 mr-2 text-gray-600" />
               <span className="text-sm font-medium">{formatTime(timeElapsed)}</span>
             </div>
             
-            <Button variant="outline" size="sm" onClick={handleSaveProgress}>
-              <Save className="h-4 w-4 mr-2" />
+            <Button variant="outline" size="sm" onClick={handleSaveProgress} className="flex items-center gap-1">
+              <Save className="h-4 w-4" />
               Save
+            </Button>
+            
+            <Button variant="ghost" size="sm" onClick={onReturnHome} className="flex items-center gap-1">
+              <Home className="h-4 w-4" />
+              Home
             </Button>
           </div>
         </div>
@@ -151,6 +179,7 @@ const TestInterface: React.FC<TestInterfaceProps> = ({ testType, onReturnHome })
         <ProgressBar
           progress={Math.round(progress)}
           label={`${Math.round(progress)}% Complete`}
+          color={progress === 100 ? "bg-green-500" : "bg-ai-purple"}
         />
         
         {/* Question */}
@@ -163,27 +192,33 @@ const TestInterface: React.FC<TestInterfaceProps> = ({ testType, onReturnHome })
         />
         
         {/* Navigation */}
-        <div className="flex justify-between mt-6">
+        <div className="flex justify-between mt-8">
           <Button
             variant="outline"
             onClick={handlePreviousQuestion}
             disabled={currentQuestionIndex === 0}
+            className="flex items-center gap-1"
           >
-            <ChevronLeft className="h-4 w-4 mr-1" /> Previous
+            <ChevronLeft className="h-4 w-4" /> Previous
           </Button>
           
-          <div className="flex gap-2">
-            {currentQuestionIndex === questions.length - 1 && userAnswers.length > 0 && (
-              <Button onClick={handleCompleteTest}>
+          <div className="flex gap-3">
+            {isLastQuestion && userAnswers.length > 0 && (
+              <Button 
+                onClick={handleCompleteTest}
+                className="bg-green-600 hover:bg-green-700 flex items-center gap-2"
+              >
+                <CheckSquare className="h-4 w-4" />
                 Finish Test
               </Button>
             )}
             
             <Button
               onClick={handleNextQuestion}
-              disabled={currentQuestionIndex === questions.length - 1}
+              disabled={isLastQuestion}
+              className="flex items-center gap-1"
             >
-              Next <ChevronRight className="h-4 w-4 ml-1" />
+              Next <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
         </div>

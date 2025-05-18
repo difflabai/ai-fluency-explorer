@@ -15,14 +15,14 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
   return (
     <div className="w-full">
       {label && (
-        <div className="flex justify-between text-sm mb-1">
-          <span>{label}</span>
-          <span>{progress}%</span>
+        <div className="flex justify-between text-sm mb-1.5">
+          <span className="text-gray-600 font-medium">{label}</span>
+          <span className="font-semibold">{progress}%</span>
         </div>
       )}
-      <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+      <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden shadow-inner">
         <div 
-          className={`h-full ${color} transition-all duration-500 ease-out`}
+          className={`h-full ${color} transition-all duration-700 ease-out`}
           style={{ width: `${progress}%` }}
           role="progressbar"
           aria-valuenow={progress}
