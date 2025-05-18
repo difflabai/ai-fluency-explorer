@@ -57,34 +57,39 @@ export async function migrateQuestions(
     
     // Process each question in the category
     for (const question of categoryQuestions) {
-      // Check if question already exists
-      const exists = await questionExists(question.text);
-      
-      if (exists) {
-        console.log(`Question already exists: "${question.text.substring(0, 30)}..."`);
-        categorySkipped++;
-        continue;
-      }
-      
-      // Insert the question
-      const { error } = await supabase
-        .from('questions')
-        .insert({
-          text: question.text,
-          category_id: categoryId,
-          difficulty: question.difficulty || 'novice', // Default to novice if not specified
-          correct_answer: question.correctAnswer,
-          is_active: true,
-          version: 1
-        });
+      try {
+        // Check if question already exists
+        const exists = await questionExists(question.text);
         
-      if (error) {
-        console.error(`Error inserting question:`, error);
+        if (exists) {
+          console.log(`Question already exists: "${question.text.substring(0, 30)}..."`);
+          categorySkipped++;
+          continue;
+        }
+        
+        // Insert the question using service role if available
+        const { error } = await supabase
+          .from('questions')
+          .insert({
+            text: question.text,
+            category_id: categoryId,
+            difficulty: question.difficulty || 'novice', // Default to novice if not specified
+            correct_answer: question.correctAnswer,
+            is_active: true,
+            version: 1
+          });
+          
+        if (error) {
+          console.error(`Error inserting question:`, error);
+          categorySkipped++;
+          continue;
+        }
+        
+        categoryAdded++;
+      } catch (err) {
+        console.error(`Unexpected error processing question:`, err);
         categorySkipped++;
-        continue;
       }
-      
-      categoryAdded++;
     }
     
     console.log(`Category '${categoryName}' - Added: ${categoryAdded}, Skipped: ${categorySkipped}`);

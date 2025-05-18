@@ -6,6 +6,7 @@ import { Loader2, Database, CheckCircle, AlertCircle } from 'lucide-react';
 import { verifyDatabasePopulated, initializeApplication } from '@/utils/appInitialization';
 import { migrateJsonDataWithNotifications } from '@/utils/jsonDataMigration';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "@/hooks/use-toast";
 
 /**
  * Administrative control panel for initializing the application
@@ -15,6 +16,7 @@ const AdminControls: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialized, setIsInitialized] = useState<boolean | null>(null);
   const [isChecking, setIsChecking] = useState(false);
+  const [migrationLogs, setMigrationLogs] = useState<string[]>([]);
   
   // Check database status on mount
   useEffect(() => {
@@ -26,41 +28,104 @@ const AdminControls: React.FC = () => {
     try {
       const populated = await verifyDatabasePopulated();
       setIsInitialized(populated);
+      if (populated) {
+        toast({
+          title: "Database Check",
+          description: "Database is already populated with questions and mappings."
+        });
+      } else {
+        toast({
+          title: "Database Check",
+          description: "Database is not yet populated. Please run migration."
+        });
+      }
     } catch (error) {
       console.error('Error checking database status:', error);
       setIsInitialized(false);
+      toast({
+        title: "Database Check Failed",
+        description: "Could not verify database status. See console for details.",
+        variant: "destructive"
+      });
     } finally {
       setIsChecking(false);
     }
   };
   
+  // Capture console logs during migration
+  const setupLogCapture = () => {
+    const originalConsoleLog = console.log;
+    const originalConsoleError = console.error;
+    
+    console.log = (...args) => {
+      originalConsoleLog(...args);
+      setMigrationLogs(prev => [...prev, args.map(arg => 
+        typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+      ).join(' ')]);
+    };
+    
+    console.error = (...args) => {
+      originalConsoleError(...args);
+      setMigrationLogs(prev => [...prev, `ERROR: ${args.map(arg => 
+        typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+      ).join(' ')}`]);
+    };
+    
+    return () => {
+      console.log = originalConsoleLog;
+      console.error = originalConsoleError;
+    };
+  };
+  
   const handleInitialize = async () => {
     setIsLoading(true);
+    setMigrationLogs([]);
+    
+    const restoreConsole = setupLogCapture();
+    
     try {
       await initializeApplication();
       // Give time for initialization to complete
       setTimeout(async () => {
         await checkDatabaseStatus();
         setIsLoading(false);
+        restoreConsole();
       }, 5000);
     } catch (error) {
       console.error('Error during initialization:', error);
       setIsLoading(false);
+      restoreConsole();
+      toast({
+        title: "Initialization Failed",
+        description: "An error occurred during initialization. See console for details.",
+        variant: "destructive"
+      });
     }
   };
   
   const handleJsonMigration = async () => {
     setIsLoading(true);
+    setMigrationLogs([]);
+    
+    const restoreConsole = setupLogCapture();
+    
     try {
       await migrateJsonDataWithNotifications();
       // Give time for migration to complete
       setTimeout(async () => {
         await checkDatabaseStatus();
         setIsLoading(false);
+        restoreConsole();
       }, 5000);
     } catch (error) {
       console.error('Error during JSON migration:', error);
       setIsLoading(false);
+      restoreConsole();
+      toast({
+        title: "Migration Failed",
+        description: "An error occurred during JSON migration. See console for details.",
+        variant: "destructive"
+      });
     }
   };
   
@@ -110,7 +175,7 @@ const AdminControls: React.FC = () => {
             
             <Button
               onClick={handleJsonMigration}
-              disabled={isLoading || isInitialized === true}
+              disabled={isLoading}
               className="w-full gap-2"
             >
               {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
@@ -126,7 +191,7 @@ const AdminControls: React.FC = () => {
             
             <Button
               onClick={handleInitialize}
-              disabled={isLoading || isInitialized === true}
+              disabled={isLoading}
               className="w-full gap-2"
             >
               {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
@@ -134,6 +199,19 @@ const AdminControls: React.FC = () => {
             </Button>
           </TabsContent>
         </Tabs>
+        
+        {migrationLogs.length > 0 && (
+          <div className="mt-4">
+            <h3 className="text-sm font-medium mb-2">Migration Logs:</h3>
+            <div className="bg-gray-100 p-3 rounded-md text-xs max-h-48 overflow-y-auto font-mono">
+              {migrationLogs.map((log, index) => (
+                <div key={index} className={`mb-1 ${log.startsWith('ERROR:') ? 'text-red-600' : ''}`}>
+                  {log}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </CardContent>
       
       <CardFooter className="flex justify-between">

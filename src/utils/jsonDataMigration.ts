@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import questionsData from '@/data/questions.json';
 import { toast } from "@/hooks/use-toast";
@@ -13,42 +14,46 @@ export async function migrateCategories(): Promise<Map<string, string>> {
   
   try {
     for (const category of questionsData.categories) {
-      // Check if category already exists
-      const { data: existingCategories, error: checkError } = await supabase
-        .from('categories')
-        .select('id')
-        .eq('name', category.name);
+      try {
+        // Check if category already exists
+        const { data: existingCategories, error: checkError } = await supabase
+          .from('categories')
+          .select('id')
+          .eq('name', category.name);
+          
+        if (checkError) {
+          console.error('Error checking if category exists:', checkError);
+          continue;
+        }
         
-      if (checkError) {
-        console.error('Error checking if category exists:', checkError);
-        continue;
-      }
-      
-      // If category exists, map it and continue
-      if (existingCategories && existingCategories.length > 0) {
-        categoryMap.set(category.id, existingCategories[0].id);
-        console.log(`Category '${category.name}' already exists with ID ${existingCategories[0].id}`);
-        continue;
-      }
-      
-      // Create new category
-      const { data: newCategory, error: insertError } = await supabase
-        .from('categories')
-        .insert({
-          name: category.name,
-          description: category.description
-        })
-        .select('id')
-        .single();
-      
-      if (insertError) {
-        console.error(`Error creating category '${category.name}':`, insertError);
-        continue;
-      }
-      
-      if (newCategory) {
-        categoryMap.set(category.id, newCategory.id);
-        console.log(`Created category '${category.name}' with ID ${newCategory.id}`);
+        // If category exists, map it and continue
+        if (existingCategories && existingCategories.length > 0) {
+          categoryMap.set(category.id, existingCategories[0].id);
+          console.log(`Category '${category.name}' already exists with ID ${existingCategories[0].id}`);
+          continue;
+        }
+        
+        // Create new category
+        const { data: newCategory, error: insertError } = await supabase
+          .from('categories')
+          .insert({
+            name: category.name,
+            description: category.description || `Category for ${category.name} questions`
+          })
+          .select('id')
+          .single();
+        
+        if (insertError) {
+          console.error(`Error creating category '${category.name}':`, insertError);
+          continue;
+        }
+        
+        if (newCategory) {
+          categoryMap.set(category.id, newCategory.id);
+          console.log(`Created category '${category.name}' with ID ${newCategory.id}`);
+        }
+      } catch (err) {
+        console.error(`Unexpected error processing category '${category.name}':`, err);
       }
     }
     
@@ -99,43 +104,48 @@ export async function migrateQuestions(categoryMap: Map<string, string>): Promis
       
       // Process each question in the category
       for (const question of categoryQuestions) {
-        // Check if question already exists
-        const { data: existingQuestions, error: checkError } = await supabase
-          .from('questions')
-          .select('id')
-          .eq('text', question.text);
+        try {
+          // Check if question already exists
+          const { data: existingQuestions, error: checkError } = await supabase
+            .from('questions')
+            .select('id')
+            .eq('text', question.text);
+            
+          if (checkError) {
+            console.error('Error checking if question exists:', checkError);
+            categorySkipped++;
+            continue;
+          }
           
-        if (checkError) {
-          console.error('Error checking if question exists:', checkError);
-          categorySkipped++;
-          continue;
-        }
-        
-        if (existingQuestions && existingQuestions.length > 0) {
-          console.log(`Question already exists: "${question.text.substring(0, 30)}..."`);
-          categorySkipped++;
-          continue;
-        }
-        
-        // Insert the question
-        const { error: insertError } = await supabase
-          .from('questions')
-          .insert({
-            text: question.text,
-            category_id: categoryId,
-            difficulty: question.difficulty || 'novice', // Default to novice if not specified
-            correct_answer: question.correctAnswer,
-            is_active: true,
-            version: 1
-          });
+          if (existingQuestions && existingQuestions.length > 0) {
+            console.log(`Question already exists: "${question.text.substring(0, 30)}..."`);
+            categorySkipped++;
+            continue;
+          }
           
-        if (insertError) {
-          console.error(`Error inserting question:`, insertError);
+          // Insert the question
+          const { error: insertError } = await supabase
+            .from('questions')
+            .insert({
+              text: question.text,
+              category_id: categoryId,
+              difficulty: question.difficulty || 'novice', // Default to novice if not specified
+              correct_answer: question.correctAnswer,
+              is_active: true,
+              version: 1
+            });
+            
+          if (insertError) {
+            console.error(`Error inserting question:`, insertError);
+            categorySkipped++;
+            continue;
+          }
+          
+          categoryAdded++;
+        } catch (err) {
+          console.error(`Unexpected error processing question:`, err);
           categorySkipped++;
-          continue;
         }
-        
-        categoryAdded++;
       }
       
       console.log(`Category '${categoryName}' - Added: ${categoryAdded}, Skipped: ${categorySkipped}`);
@@ -164,71 +174,75 @@ export async function migrateTestTypes(): Promise<number[]> {
     
     // Insert test types if they don't exist
     for (const testType of questionsData.testTypes) {
-      // Check if test type exists
-      const { data: existingTestTypes, error: checkError } = await supabase
-        .from('test_types')
-        .select('id')
-        .eq('name', testType.name);
-      
-      if (checkError) {
-        console.error(`Error checking if test type '${testType.name}' exists:`, checkError);
-        continue;
-      }
-      
-      let testTypeId: string;
-      
-      // Create test type if it doesn't exist
-      if (!existingTestTypes || existingTestTypes.length === 0) {
-        const { data: newTestType, error: insertError } = await supabase
+      try {
+        // Check if test type exists
+        const { data: existingTestTypes, error: checkError } = await supabase
           .from('test_types')
-          .insert({
-            name: testType.name,
-            description: testType.description,
-            question_limit: testType.questionLimit
-          })
           .select('id')
-          .single();
+          .eq('name', testType.name);
         
-        if (insertError) {
-          console.error(`Error creating test type '${testType.name}':`, insertError);
+        if (checkError) {
+          console.error(`Error checking if test type '${testType.name}' exists:`, checkError);
           continue;
         }
         
-        if (!newTestType) {
-          console.error(`Failed to create test type '${testType.name}'`);
+        let testTypeId: string;
+        
+        // Create test type if it doesn't exist
+        if (!existingTestTypes || existingTestTypes.length === 0) {
+          const { data: newTestType, error: insertError } = await supabase
+            .from('test_types')
+            .insert({
+              name: testType.name,
+              description: testType.description || `Test type for ${testType.name}`,
+              question_limit: testType.questionLimit
+            })
+            .select('id')
+            .single();
+          
+          if (insertError) {
+            console.error(`Error creating test type '${testType.name}':`, insertError);
+            continue;
+          }
+          
+          if (!newTestType) {
+            console.error(`Failed to create test type '${testType.name}'`);
+            continue;
+          }
+          
+          testTypeId = newTestType.id;
+          console.log(`Created test type '${testType.name}' with ID ${testTypeId}`);
+        } else {
+          testTypeId = existingTestTypes[0].id;
+          console.log(`Test type '${testType.name}' already exists with ID ${testTypeId}`);
+        }
+        
+        // Call the database function to populate the test with questions
+        const { data, error } = await supabase.rpc(
+          'populate_test_questions',
+          { 
+            test_type_name: testType.name,
+            question_limit: testType.questionLimit
+          }
+        );
+        
+        if (error) {
+          console.error(`Error populating test type '${testType.name}':`, error);
           continue;
         }
         
-        testTypeId = newTestType.id;
-        console.log(`Created test type '${testType.name}' with ID ${testTypeId}`);
-      } else {
-        testTypeId = existingTestTypes[0].id;
-        console.log(`Test type '${testType.name}' already exists with ID ${testTypeId}`);
-      }
-      
-      // Call the database function to populate the test with questions
-      const { data, error } = await supabase.rpc(
-        'populate_test_questions',
-        { 
-          test_type_name: testType.name,
-          question_limit: testType.questionLimit
+        const questionCount = data || 0;
+        
+        console.log(`Populated test type '${testType.name}' with ${questionCount} questions`);
+        
+        // Update counts based on test type
+        if (testType.name === 'Quick Assessment') {
+          quickCount = questionCount;
+        } else if (testType.name === 'Comprehensive Assessment') {
+          compCount = questionCount;
         }
-      );
-      
-      if (error) {
-        console.error(`Error populating test type '${testType.name}':`, error);
-        continue;
-      }
-      
-      const questionCount = data || 0;
-      
-      console.log(`Populated test type '${testType.name}' with ${questionCount} questions`);
-      
-      // Update counts based on test type
-      if (testType.name === 'Quick Assessment') {
-        quickCount = questionCount;
-      } else if (testType.name === 'Comprehensive Assessment') {
-        compCount = questionCount;
+      } catch (err) {
+        console.error(`Unexpected error processing test type:`, err);
       }
     }
     
