@@ -34,7 +34,7 @@ export async function runSystemCheck(): Promise<CheckResult[]> {
   }
   
   // Check 2: Verify required tables exist
-  const requiredTables = ['categories', 'questions', 'test_results', 'user_answers'] as const;
+  const requiredTables = ['categories', 'questions', 'test_results', 'user_answers', 'test_types', 'test_questions_map'] as const;
   for (const table of requiredTables) {
     try {
       const { data, error } = await supabase
@@ -107,7 +107,49 @@ export async function runSystemCheck(): Promise<CheckResult[]> {
     });
   }
   
-  // Check 4: Test results and user answers relationship
+  // Check 4: Test types and question mappings
+  try {
+    const { data: testTypes, error: testTypesError } = await supabase
+      .from('test_types')
+      .select('*');
+      
+    if (testTypesError) throw testTypesError;
+    
+    if (testTypes && testTypes.length > 0) {
+      const testTypesDistribution: Record<string, number> = {};
+      
+      // Check question mappings for each test type
+      for (const testType of testTypes) {
+        const { count, error: countError } = await supabase
+          .from('test_questions_map')
+          .select('*', { count: 'exact', head: true })
+          .eq('test_type_id', testType.id);
+          
+        if (countError) throw countError;
+        
+        testTypesDistribution[testType.name] = count || 0;
+      }
+      
+      results.push({
+        success: true,
+        message: `✅ Found ${testTypes.length} test types with question mappings`,
+        details: testTypesDistribution
+      });
+    } else {
+      results.push({
+        success: false,
+        message: "❌ No test types found in database",
+      });
+    }
+  } catch (error) {
+    results.push({
+      success: false,
+      message: "❌ Test types check failed",
+      details: error
+    });
+  }
+  
+  // Check 5: Test results and user answers relationship
   try {
     const { data: testResults, error: testError } = await supabase
       .from('test_results')

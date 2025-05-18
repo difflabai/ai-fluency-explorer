@@ -84,6 +84,42 @@ export type Database = {
           },
         ]
       }
+      test_questions_map: {
+        Row: {
+          created_at: string
+          id: string
+          question_id: string
+          test_type_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          question_id: string
+          test_type_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          question_id?: string
+          test_type_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_questions_map_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "test_questions_map_test_type_id_fkey"
+            columns: ["test_type_id"]
+            isOneToOne: false
+            referencedRelation: "test_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       test_results: {
         Row: {
           category_scores: Json
@@ -126,6 +162,33 @@ export type Database = {
           tier_name?: string
           user_id?: string | null
           username?: string | null
+        }
+        Relationships: []
+      }
+      test_types: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          question_limit: number | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          question_limit?: number | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          question_limit?: number | null
         }
         Relationships: []
       }
@@ -185,6 +248,10 @@ export type Database = {
           new_correct_answer: boolean
         }
         Returns: string
+      }
+      populate_test_questions: {
+        Args: { test_type_name: string; question_limit?: number }
+        Returns: number
       }
     }
     Enums: {

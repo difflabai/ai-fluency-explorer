@@ -23,31 +23,64 @@ export interface DBCategory {
   created_at: string;
 }
 
-// Fetch active questions for the specified test type
+export interface DBTestType {
+  id: string;
+  name: string;
+  description: string | null;
+  question_limit: number | null;
+  created_at: string;
+  is_active: boolean;
+}
+
+// Fetch questions for the specified test type
 export const fetchQuestions = async (testType: 'quick' | 'comprehensive'): Promise<DBQuestion[]> => {
   try {
-    // For quick assessment, limit to 50 questions (10 from each category)
-    // For comprehensive, get all active questions
-    const limit = testType === 'quick' ? 50 : undefined;
+    // Map the frontend test type to database test type name
+    const testTypeName = testType === 'quick' ? 'Quick Assessment' : 'Comprehensive Assessment';
     
-    let query = supabase
-      .from('questions')
-      .select('*')
+    // Get test type ID
+    const { data: testTypeData, error: testTypeError } = await supabase
+      .from('test_types')
+      .select('id')
+      .eq('name', testTypeName)
       .eq('is_active', true)
-      .order('difficulty', { ascending: true });
+      .single();
       
-    if (limit) {
-      query = query.limit(limit);
-    }
-    
-    const { data, error } = await query;
-    
-    if (error) {
-      console.error('Error fetching questions:', error);
+    if (testTypeError || !testTypeData) {
+      console.error('Error fetching test type:', testTypeError);
       return [];
     }
     
-    return data || [];
+    // Get questions linked to this test type
+    const { data, error } = await supabase
+      .from('test_questions_map')
+      .select('question_id')
+      .eq('test_type_id', testTypeData.id);
+      
+    if (error || !data) {
+      console.error('Error fetching question mappings:', error);
+      return [];
+    }
+    
+    // Get the actual question data
+    if (data.length === 0) {
+      console.warn('No questions found for test type:', testTypeName);
+      return [];
+    }
+    
+    const questionIds = data.map(mapping => mapping.question_id);
+    
+    const { data: questions, error: questionError } = await supabase
+      .from('questions')
+      .select('*')
+      .in('id', questionIds);
+      
+    if (questionError || !questions) {
+      console.error('Error fetching questions:', questionError);
+      return [];
+    }
+    
+    return questions;
     
   } catch (error) {
     console.error('Error in fetchQuestions:', error);
@@ -141,14 +174,37 @@ export const saveUserAnswers = async (
   }
 };
 
-// Function to migrate existing questions from testData.ts to the database
+// Update the migrate function to handle test types
 export const migrateQuestionsToDatabase = async () => {
   try {
-    // This function can be called to populate the database with questions from testData.ts
+    // This function should be updated to also populate the test_questions_map table
     // It should only be run once, and can be removed after initial data migration
     
     // Implementation would go here
     console.log("Migration function called - would need to be implemented for actual migration");
+    
+    // After migrating questions, we should also call the database function to populate test types
+    const { data, error } = await supabase.rpc(
+      'populate_test_questions',
+      { test_type_name: 'Quick Assessment', question_limit: 50 }
+    );
+    
+    if (error) {
+      console.error('Error populating Quick Assessment test:', error);
+    } else {
+      console.log(`Populated Quick Assessment with ${data} questions`);
+    }
+    
+    const { data: compData, error: compError } = await supabase.rpc(
+      'populate_test_questions',
+      { test_type_name: 'Comprehensive Assessment' }
+    );
+    
+    if (compError) {
+      console.error('Error populating Comprehensive Assessment test:', compError);
+    } else {
+      console.log(`Populated Comprehensive Assessment with ${compData} questions`);
+    }
     
     return true;
   } catch (error) {
