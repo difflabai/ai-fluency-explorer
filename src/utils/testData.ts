@@ -46,6 +46,359 @@ export const categories: Category[] = [
   }
 ];
 
+export const customQuickAssessmentQuestions: Question[] = [
+  {
+    id: 1,
+    text: "I've used AI to create a personalized bedtime story featuring friends or family members",
+    correctAnswer: true,
+    category: 'novice',
+    difficulty: 'novice'
+  },
+  {
+    id: 2,
+    text: "I've had AI explain a complex topic using only references from my favorite movie or TV show",
+    correctAnswer: true,
+    category: 'novice',
+    difficulty: 'novice'
+  },
+  {
+    id: 3,
+    text: "I've used AI to translate not just words but cultural context between languages",
+    correctAnswer: true,
+    category: 'novice',
+    difficulty: 'novice'
+  },
+  {
+    id: 4,
+    text: "I've caught an AI confidently stating something false and successfully challenged it",
+    correctAnswer: true,
+    category: 'novice',
+    difficulty: 'novice'
+  },
+  {
+    id: 5,
+    text: "I've used AI as a brainstorming partner to generate ideas I wouldn't have thought of alone",
+    correctAnswer: true,
+    category: 'novice',
+    difficulty: 'novice'
+  },
+  {
+    id: 6,
+    text: "I've had AI generate a custom workout routine that adapts to my specific needs and limitations",
+    correctAnswer: true,
+    category: 'novice',
+    difficulty: 'novice'
+  },
+  {
+    id: 7,
+    text: "I've used AI to create a virtual time capsule with predictions about the future",
+    correctAnswer: true,
+    category: 'novice',
+    difficulty: 'novice'
+  },
+  {
+    id: 8,
+    text: "I've asked AI to help me understand opposing viewpoints on a controversial topic",
+    correctAnswer: true,
+    category: 'novice',
+    difficulty: 'novice'
+  },
+  {
+    id: 9,
+    text: "I've used AI as a Dungeon Master to run a tabletop RPG session for friends",
+    correctAnswer: true,
+    category: 'novice',
+    difficulty: 'novice'
+  },
+  {
+    id: 10,
+    text: "I've generated a creative project with AI that I was proud enough to share publicly",
+    correctAnswer: true,
+    category: 'advanced-beginner',
+    difficulty: 'advanced-beginner'
+  },
+  {
+    id: 11,
+    text: "I transform vague requests into specific, actionable prompts with examples of desired outputs",
+    correctAnswer: true,
+    category: 'advanced-beginner',
+    difficulty: 'advanced-beginner'
+  },
+  {
+    id: 12,
+    text: "I've used AI to prepare for a difficult conversation by role-playing multiple perspectives",
+    correctAnswer: true,
+    category: 'advanced-beginner',
+    difficulty: 'advanced-beginner'
+  },
+  {
+    id: 13,
+    text: "I've had AI design a scavenger hunt with personalized clues based on inside jokes",
+    correctAnswer: true,
+    category: 'advanced-beginner',
+    difficulty: 'advanced-beginner'
+  },
+  {
+    id: 14,
+    text: "I've created a fantasy world or fictional universe with AI assistance",
+    correctAnswer: true,
+    category: 'advanced-beginner',
+    difficulty: 'advanced-beginner'
+  },
+  {
+    id: 15,
+    text: "I've hosted a friendly rap battle between two different AI systems and judged the results",
+    correctAnswer: true,
+    category: 'advanced-beginner',
+    difficulty: 'advanced-beginner'
+  },
+  {
+    id: 16,
+    text: "I've used AI to analyze my writing style and mimic it to maintain consistency in a project",
+    correctAnswer: true,
+    category: 'advanced-beginner',
+    difficulty: 'advanced-beginner'
+  },
+  {
+    id: 17,
+    text: "I've generated travel itineraries with AI that included hidden gems not on typical tourist routes",
+    correctAnswer: true,
+    category: 'advanced-beginner',
+    difficulty: 'advanced-beginner'
+  },
+  {
+    id: 18,
+    text: "I've used different temperature settings to control the creativity versus predictability of AI outputs",
+    correctAnswer: true,
+    category: 'advanced-beginner',
+    difficulty: 'advanced-beginner'
+  },
+  {
+    id: 19,
+    text: "I've used AI to create a custom trivia game with questions tailored to my friends' interests",
+    correctAnswer: true,
+    category: 'advanced-beginner',
+    difficulty: 'advanced-beginner'
+  },
+  {
+    id: 20,
+    text: "I've systematically compared multiple AI tools on the same complex task and documented their strengths",
+    correctAnswer: true,
+    category: 'competent',
+    difficulty: 'competent'
+  },
+  {
+    id: 21,
+    text: "I've developed a consistent \"persona\" for my AI assistant by using specific role instructions",
+    correctAnswer: true,
+    category: 'competent',
+    difficulty: 'competent'
+  },
+  {
+    id: 22,
+    text: "I've created a personal knowledge base of my best AI interactions that I reference for future needs",
+    correctAnswer: true,
+    category: 'competent',
+    difficulty: 'competent'
+  },
+  {
+    id: 23,
+    text: "I structure complex prompts with clear sections (Context, Task, Format, Examples, Constraints)",
+    correctAnswer: true,
+    category: 'competent',
+    difficulty: 'competent'
+  },
+  {
+    id: 24,
+    text: "I've taught AI to generate content in a specific creator's style by providing clear examples",
+    correctAnswer: true,
+    category: 'competent',
+    difficulty: 'competent'
+  },
+  {
+    id: 25,
+    text: "I've used \"few-shot\" prompting by providing multiple examples to guide AI into producing the output I want",
+    correctAnswer: true,
+    category: 'competent',
+    difficulty: 'competent'
+  },
+  {
+    id: 26,
+    text: "I've fixed hallucinations by adding specific domain context and knowledge constraints",
+    correctAnswer: true,
+    category: 'competent',
+    difficulty: 'competent'
+  },
+  {
+    id: 27,
+    text: "I've used AI to design a custom escape room or mystery game with interconnected puzzles",
+    correctAnswer: true,
+    category: 'competent',
+    difficulty: 'competent'
+  },
+  {
+    id: 28,
+    text: "I've created a fantasy sports strategy by having AI analyze player statistics and trends",
+    correctAnswer: true,
+    category: 'competent',
+    difficulty: 'competent'
+  },
+  {
+    id: 29,
+    text: "I deliberately use \"chain-of-thought\" prompting to make AI show its reasoning before conclusions",
+    correctAnswer: true,
+    category: 'competent',
+    difficulty: 'competent'
+  },
+  {
+    id: 30,
+    text: "I've asked AI to generate personalized learning materials that adapt to my learning style",
+    correctAnswer: true,
+    category: 'proficient',
+    difficulty: 'proficient'
+  },
+  {
+    id: 31,
+    text: "I recognize when to use \"Tree-of-Thought\" prompting to explore multiple solution paths simultaneously",
+    correctAnswer: true,
+    category: 'proficient',
+    difficulty: 'proficient'
+  },
+  {
+    id: 32,
+    text: "I've built a ReAct-style approach where AI alternates between reasoning and gathering information",
+    correctAnswer: true,
+    category: 'proficient',
+    difficulty: 'proficient'
+  },
+  {
+    id: 33,
+    text: "I combine multiple AI outputs in \"ensemble prompting\" to get more reliable or creative results",
+    correctAnswer: true,
+    category: 'proficient',
+    difficulty: 'proficient'
+  },
+  {
+    id: 34,
+    text: "I've implemented custom retrieval strategies to bring my personal knowledge into AI conversations",
+    correctAnswer: true,
+    category: 'proficient',
+    difficulty: 'proficient'
+  },
+  {
+    id: 35,
+    text: "I use \"context refreshing\" techniques in long conversations to maintain focus on key information",
+    correctAnswer: true,
+    category: 'proficient',
+    difficulty: 'proficient'
+  },
+  {
+    id: 36,
+    text: "I've created multi-agent workflows where different specialized AIs collaborate on complex projects",
+    correctAnswer: true,
+    category: 'proficient',
+    difficulty: 'proficient'
+  },
+  {
+    id: 37,
+    text: "I've automated meeting notes with AI summaries that integrate directly into my project tools",
+    correctAnswer: true,
+    category: 'proficient',
+    difficulty: 'proficient'
+  },
+  {
+    id: 38,
+    text: "I've created workflows that combine text and image AI to generate illustrated content",
+    correctAnswer: true,
+    category: 'proficient',
+    difficulty: 'proficient'
+  },
+  {
+    id: 39,
+    text: "I design prompts that return structured data (JSON, tables) for integration with other systems",
+    correctAnswer: true,
+    category: 'proficient',
+    difficulty: 'proficient'
+  },
+  {
+    id: 40,
+    text: "I've conducted systematic experiments to determine optimal chunk sizes for processing large documents",
+    correctAnswer: true,
+    category: 'expert',
+    difficulty: 'expert'
+  },
+  {
+    id: 41,
+    text: "I've designed custom AI agents that perform multi-step tasks across different platforms autonomously",
+    correctAnswer: true,
+    category: 'expert',
+    difficulty: 'expert'
+  },
+  {
+    id: 42,
+    text: "I've fine-tuned a model to specialize in my domain with carefully curated training examples",
+    correctAnswer: true,
+    category: 'expert',
+    difficulty: 'expert'
+  },
+  {
+    id: 43,
+    text: "I've created a dashboard that measures the tangible impact of AI tools on my productivity",
+    correctAnswer: true,
+    category: 'expert',
+    difficulty: 'expert'
+  },
+  {
+    id: 44,
+    text: "I've developed novel prompting techniques that achieve results beyond standard approaches",
+    correctAnswer: true,
+    category: 'expert',
+    difficulty: 'expert'
+  },
+  {
+    id: 45,
+    text: "I've designed AI systems that explicitly show their reasoning process and cite their sources",
+    correctAnswer: true,
+    category: 'expert',
+    difficulty: 'expert'
+  },
+  {
+    id: 46,
+    text: "I've built AI workflows that learn from and incorporate diverse perspectives",
+    correctAnswer: true,
+    category: 'expert',
+    difficulty: 'expert'
+  },
+  {
+    id: 47,
+    text: "I've created AI-powered coaching systems that help people develop specific skills",
+    correctAnswer: true,
+    category: 'expert',
+    difficulty: 'expert'
+  },
+  {
+    id: 48,
+    text: "I've employed AI as a Socratic questioning partner to identify blindspots in my thinking",
+    correctAnswer: true,
+    category: 'expert',
+    difficulty: 'expert'
+  },
+  {
+    id: 49,
+    text: "I've designed AI interfaces that optimize for human-AI collaboration rather than just automation",
+    correctAnswer: true,
+    category: 'expert',
+    difficulty: 'expert'
+  },
+  {
+    id: 50,
+    text: "I've created a personal roadmap for developing my AI fluency with measurable milestones",
+    correctAnswer: true,
+    category: 'expert',
+    difficulty: 'expert'
+  }
+];
+
 export const sampleQuestions: Question[] = [
   // NOVICE LEVEL: First Steps (1-25)
   {
@@ -521,17 +874,8 @@ export const sampleQuestions: Question[] = [
 
 // Get a subset of questions for quick assessment (50 questions)
 export const getQuickAssessmentQuestions = (): Question[] => {
-  const quickAssessmentQuestions = [];
-  
-  // Get 10 questions from each category to ensure even distribution
-  categories.forEach(category => {
-    const categoryQuestions = sampleQuestions.filter(q => q.category === category.id);
-    const selectedQuestions = categoryQuestions.slice(0, 10); // Take up to 10 questions per category
-    quickAssessmentQuestions.push(...selectedQuestions);
-  });
-  
-  // Return up to 50 questions
-  return quickAssessmentQuestions.slice(0, 50);
+  // Use the custom questions directly for the quick assessment
+  return customQuickAssessmentQuestions;
 };
 
 // Get all questions for comprehensive assessment
