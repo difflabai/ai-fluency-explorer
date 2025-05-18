@@ -1,6 +1,8 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { Category } from '@/utils/testData';
+import { migrateAndNotify } from '@/utils/databaseMigration';
+import { toast } from "@/hooks/use-toast";
 
 // Define types to match our database schema
 export interface DBQuestion {
@@ -177,38 +179,15 @@ export const saveUserAnswers = async (
 // Update the migrate function to handle test types
 export const migrateQuestionsToDatabase = async () => {
   try {
-    // This function should be updated to also populate the test_questions_map table
-    // It should only be run once, and can be removed after initial data migration
-    
-    // Implementation would go here
-    console.log("Migration function called - would need to be implemented for actual migration");
-    
-    // After migrating questions, we should also call the database function to populate test types
-    const { data, error } = await supabase.rpc(
-      'populate_test_questions',
-      { test_type_name: 'Quick Assessment', question_limit: 50 }
-    );
-    
-    if (error) {
-      console.error('Error populating Quick Assessment test:', error);
-    } else {
-      console.log(`Populated Quick Assessment with ${data} questions`);
-    }
-    
-    const { data: compData, error: compError } = await supabase.rpc(
-      'populate_test_questions',
-      { test_type_name: 'Comprehensive Assessment' }
-    );
-    
-    if (compError) {
-      console.error('Error populating Comprehensive Assessment test:', compError);
-    } else {
-      console.log(`Populated Comprehensive Assessment with ${compData} questions`);
-    }
-    
-    return true;
+    // Call our updated migration function that handles everything
+    return await migrateAndNotify();
   } catch (error) {
     console.error('Error in migrateQuestionsToDatabase:', error);
+    toast({
+      title: "Migration Failed",
+      description: "Failed to migrate questions. See console for details.",
+      variant: "destructive"
+    });
     return false;
   }
 };
