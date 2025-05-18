@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Database, CheckCircle, AlertCircle } from 'lucide-react';
+import { Loader2, Database, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
 import { verifyDatabasePopulated, initializeApplication } from '@/utils/appInitialization';
 import { migrateJsonDataWithNotifications } from '@/utils/jsonDataMigration';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -202,8 +202,18 @@ const AdminControls: React.FC = () => {
         
         {migrationLogs.length > 0 && (
           <div className="mt-4">
-            <h3 className="text-sm font-medium mb-2">Migration Logs:</h3>
-            <div className="bg-gray-100 p-3 rounded-md text-xs max-h-48 overflow-y-auto font-mono">
+            <h3 className="text-sm font-medium mb-2 flex items-center justify-between">
+              Migration Logs:
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setMigrationLogs([])}
+                className="h-6 px-2"
+              >
+                <RefreshCw className="h-3 w-3 mr-1" /> Clear
+              </Button>
+            </h3>
+            <div className="bg-gray-100 p-3 rounded-md text-xs max-h-60 overflow-y-auto font-mono">
               {migrationLogs.map((log, index) => (
                 <div key={index} className={`mb-1 ${log.startsWith('ERROR:') ? 'text-red-600' : ''}`}>
                   {log}

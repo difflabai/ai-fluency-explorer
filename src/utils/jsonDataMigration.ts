@@ -3,72 +3,35 @@ import { supabase } from "@/integrations/supabase/client";
 import questionsData from '@/data/questions.json';
 import { toast } from "@/hooks/use-toast";
 import { MigrationStats } from "./database/migrationTypes";
+import { migrateCategories } from "./database/categoryMigration";
+import { migrateQuestions } from "./database/questionMigration";
 
 /**
  * Migrate categories from the JSON data source
- * @returns A map of category names to their database IDs
+ * @returns A map of category IDs to their database IDs
  */
-export async function migrateCategories(): Promise<Map<string, string>> {
+export async function migrateJsonCategories(): Promise<Map<string, string>> {
   console.log('Starting migration of categories from JSON data...');
   const categoryMap = new Map<string, string>();
   
   try {
-    for (const category of questionsData.categories) {
-      try {
-        // Check if category already exists
-        const { data: existingCategories, error: checkError } = await supabase
-          .from('categories')
-          .select('id')
-          .eq('name', category.name);
-          
-        if (checkError) {
-          console.error('Error checking if category exists:', checkError);
-          continue;
-        }
-        
-        // If category exists, map it and continue
-        if (existingCategories && existingCategories.length > 0) {
-          categoryMap.set(category.id, existingCategories[0].id);
-          console.log(`Category '${category.name}' already exists with ID ${existingCategories[0].id}`);
-          continue;
-        }
-        
-        // Create new category
-        const { data: newCategory, error: insertError } = await supabase
-          .from('categories')
-          .insert({
-            name: category.name,
-            description: category.description || `Category for ${category.name} questions`
-          })
-          .select('id')
-          .single();
-        
-        if (insertError) {
-          console.error(`Error creating category '${category.name}':`, insertError);
-          continue;
-        }
-        
-        if (newCategory) {
-          categoryMap.set(category.id, newCategory.id);
-          console.log(`Created category '${category.name}' with ID ${newCategory.id}`);
-        }
-      } catch (err) {
-        console.error(`Unexpected error processing category '${category.name}':`, err);
-      }
-    }
+    // Convert JSON categories to the format expected by migrateCategories
+    const categories = questionsData.categories.map(category => ({
+      name: category.name,
+      description: category.description || `Category for ${category.name} questions`
+    }));
     
-    console.log(`Migrated ${categoryMap.size} categories`);
-    return categoryMap;
-    
+    // Use the existing category migration function
+    return await migrateCategories(categories);
   } catch (error) {
-    console.error('Error in migrateCategories:', error);
+    console.error('Error in migrateJsonCategories:', error);
     return categoryMap;
   }
 }
 
 /**
  * Migrate questions from the JSON data source
- * @param categoryMap Map of category names to their database IDs
+ * @param categoryMap Map of category IDs to their database IDs
  * @returns Array containing [questionsAdded, questionsSkipped]
  */
 export async function migrateQuestions(categoryMap: Map<string, string>): Promise<number[]> {
@@ -88,13 +51,22 @@ export async function migrateQuestions(categoryMap: Map<string, string>): Promis
     }
     
     // Process each category
-    for (const [categoryName, categoryQuestions] of questionsByCategory.entries()) {
-      const categoryId = categoryMap.get(categoryName);
+    for (const [categoryId, categoryQuestions] of questionsByCategory.entries()) {
+      const categoryDbId = categoryMap.get(categoryId);
       
-      if (!categoryId) {
-        console.error(`Category ID not found for '${categoryName}', skipping questions`);
+      if (!categoryDbId) {
+        console.error(`Category ID not found for '${categoryId}', skipping questions`);
         totalSkipped += categoryQuestions.length;
         continue;
+      }
+      
+      // Get category name for logging
+      let categoryName = categoryId;
+      for (const category of questionsData.categories) {
+        if (category.id === categoryId) {
+          categoryName = category.name;
+          break;
+        }
       }
       
       console.log(`Processing ${categoryQuestions.length} questions for category '${categoryName}'`);
@@ -128,7 +100,7 @@ export async function migrateQuestions(categoryMap: Map<string, string>): Promis
             .from('questions')
             .insert({
               text: question.text,
-              category_id: categoryId,
+              category_id: categoryDbId,
               difficulty: question.difficulty || 'novice', // Default to novice if not specified
               correct_answer: question.correctAnswer,
               is_active: true,
@@ -169,8 +141,7 @@ export async function migrateTestTypes(): Promise<number[]> {
   console.log('Starting migration of test types from JSON data...');
   
   try {
-    let quickCount = 0;
-    let compCount = 0;
+    let testCounts: {[key: string]: number} = {};
     
     // Insert test types if they don't exist
     for (const testType of questionsData.testTypes) {
@@ -232,21 +203,19 @@ export async function migrateTestTypes(): Promise<number[]> {
         }
         
         const questionCount = data || 0;
+        testCounts[testType.name] = questionCount;
         
         console.log(`Populated test type '${testType.name}' with ${questionCount} questions`);
-        
-        // Update counts based on test type
-        if (testType.name === 'Quick Assessment') {
-          quickCount = questionCount;
-        } else if (testType.name === 'Comprehensive Assessment') {
-          compCount = questionCount;
-        }
       } catch (err) {
         console.error(`Unexpected error processing test type:`, err);
       }
     }
     
-    return [quickCount, compCount];
+    // Return counts for specific test types
+    return [
+      testCounts['Quick Assessment'] || 0,
+      testCounts['Comprehensive Assessment'] || 0
+    ];
     
   } catch (error) {
     console.error('Error in migrateTestTypes:', error);
@@ -263,7 +232,7 @@ export async function migrateJsonData(): Promise<MigrationStats> {
   
   try {
     // Step 1: Migrate categories
-    const categoryMap = await migrateCategories();
+    const categoryMap = await migrateJsonCategories();
     
     // Step 2: Migrate questions
     const [questionsAdded, questionsSkipped] = await migrateQuestions(categoryMap);

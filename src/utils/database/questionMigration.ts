@@ -6,17 +6,22 @@ import { Question } from '@/utils/testData';
  * Checks if a question exists in the database
  */
 export async function questionExists(text: string): Promise<boolean> {
-  const { count, error } = await supabase
-    .from('questions')
-    .select('*', { count: 'exact', head: true })
-    .eq('text', text);
+  try {
+    const { count, error } = await supabase
+      .from('questions')
+      .select('*', { count: 'exact', head: true })
+      .eq('text', text);
+      
+    if (error) {
+      console.error('Error checking if question exists:', error);
+      return false;
+    }
     
-  if (error) {
-    console.error('Error checking if question exists:', error);
+    return (count || 0) > 0;
+  } catch (err) {
+    console.error('Unexpected error in questionExists:', err);
     return false;
   }
-  
-  return (count || 0) > 0;
 }
 
 /**
@@ -67,7 +72,7 @@ export async function migrateQuestions(
           continue;
         }
         
-        // Insert the question using service role if available
+        // Insert the question
         const { error } = await supabase
           .from('questions')
           .insert({

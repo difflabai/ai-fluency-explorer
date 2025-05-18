@@ -239,6 +239,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_insert_category: {
+        Args: { category_name: string; category_description: string }
+        Returns: string
+      }
+      check_category_exists: {
+        Args: { category_name: string }
+        Returns: string
+      }
       create_question_version: {
         Args: {
           question_id: string
