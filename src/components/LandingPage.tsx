@@ -10,7 +10,9 @@ import {
   Compass, 
   CheckCircle,
   ArrowRight,
-  Users
+  FileCheck,
+  Award,
+  ListCheck
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import LeaderboardPreview from './LeaderboardPreview';
@@ -46,89 +48,84 @@ const LandingPage: React.FC<LandingPageProps> = ({
         <div className="mt-6">
           <Link to="/leaderboard">
             <Button variant="outline" className="flex items-center gap-2 bg-white">
-              <Users className="h-4 w-4 text-purple-500" />
-              <span>View Leaderboard</span>
+              <Award className="h-4 w-4 text-purple-500" />
+              <span>View Full Leaderboard</span>
             </Button>
           </Link>
         </div>
       </div>
       
-      {/* Main content grid with test options and leaderboard */}
-      <div className="grid md:grid-cols-3 gap-8 mb-16">
-        <div className="md:col-span-2">
-          {/* Test options in a grid */}
-          <div className="grid md:grid-cols-2 gap-6 h-full">
-            {/* Quick Assessment */}
-            <Card className="card-hover-effect rounded-xl overflow-hidden shadow-sm border border-gray-100">
-              <CardContent className="p-6">
-                <div className="mb-4 flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-purple-100">
-                    <Timer className="h-6 w-6 text-purple-500" />
-                  </div>
-                  <h2 className="text-xl font-bold">Quick Assessment</h2>
-                </div>
-                <p className="text-gray-600 mb-4 text-sm">
-                  A 50-question assessment to get a quick snapshot of your AI literacy in under 20 minutes.
-                </p>
-                <ul className="space-y-2 mb-6 text-sm">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-purple-500 flex-shrink-0" />
-                    <span className="text-gray-700">50 true/false questions</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-purple-500 flex-shrink-0" />
-                    <span className="text-gray-700">Takes ~15-20 minutes</span>
-                  </li>
-                </ul>
-                <Button 
-                  onClick={onStartQuickTest} 
-                  className="w-full bg-purple-500 hover:bg-purple-600 text-white"
-                  size="sm"
-                >
-                  Start Quick Test <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </CardContent>
-            </Card>
-            
-            {/* Comprehensive Test */}
-            <Card className="card-hover-effect rounded-xl overflow-hidden shadow-sm border border-gray-100">
-              <CardContent className="p-6">
-                <div className="mb-4 flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-blue-100">
-                    <Brain className="h-6 w-6 text-blue-500" />
-                  </div>
-                  <h2 className="text-xl font-bold">Comprehensive</h2>
-                </div>
-                <p className="text-gray-600 mb-4 text-sm">
-                  The full 240-question assessment for detailed insights into all aspects of your AI fluency.
-                </p>
-                <ul className="space-y-2 mb-6 text-sm">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-blue-500 flex-shrink-0" />
-                    <span className="text-gray-700">240 questions assessment</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-blue-500 flex-shrink-0" />
-                    <span className="text-gray-700">Takes ~2 hours to complete</span>
-                  </li>
-                </ul>
-                <Button 
-                  onClick={onStartComprehensiveTest} 
-                  variant="outline"
-                  className="w-full border-2 text-blue-500 border-blue-500 hover:bg-blue-50"
-                  size="sm"
-                >
-                  Start Full Test <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+      {/* Main content grid with test options */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+        {/* Quick Assessment */}
+        <Card className="card-hover-effect rounded-xl overflow-hidden shadow-sm border border-gray-100">
+          <CardContent className="p-6">
+            <div className="mb-4 flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-purple-100">
+                <Timer className="h-6 w-6 text-purple-500" />
+              </div>
+              <h2 className="text-xl font-bold">Quick Assessment</h2>
+            </div>
+            <p className="text-gray-600 mb-4 text-sm">
+              A 50-question assessment to get a quick snapshot of your AI literacy in under 20 minutes.
+            </p>
+            <ul className="space-y-2 mb-6 text-sm">
+              <li className="flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 text-purple-500 flex-shrink-0" />
+                <span className="text-gray-700">50 true/false questions</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 text-purple-500 flex-shrink-0" />
+                <span className="text-gray-700">Takes ~15-20 minutes</span>
+              </li>
+            </ul>
+            <Button 
+              onClick={onStartQuickTest} 
+              className="w-full bg-purple-500 hover:bg-purple-600 text-white"
+              size="sm"
+            >
+              Start Quick Test <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </CardContent>
+        </Card>
         
-        {/* Leaderboard column */}
-        <div>
-          <LeaderboardPreview />
-        </div>
+        {/* Comprehensive Test */}
+        <Card className="card-hover-effect rounded-xl overflow-hidden shadow-sm border border-gray-100">
+          <CardContent className="p-6">
+            <div className="mb-4 flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-blue-100">
+                <Brain className="h-6 w-6 text-blue-500" />
+              </div>
+              <h2 className="text-xl font-bold">Comprehensive</h2>
+            </div>
+            <p className="text-gray-600 mb-4 text-sm">
+              The full 240-question assessment for detailed insights into all aspects of your AI fluency.
+            </p>
+            <ul className="space-y-2 mb-6 text-sm">
+              <li className="flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 text-blue-500 flex-shrink-0" />
+                <span className="text-gray-700">240 questions assessment</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 text-blue-500 flex-shrink-0" />
+                <span className="text-gray-700">Takes ~2 hours to complete</span>
+              </li>
+            </ul>
+            <Button 
+              onClick={onStartComprehensiveTest} 
+              variant="outline"
+              className="w-full border-2 text-blue-500 border-blue-500 hover:bg-blue-50"
+              size="sm"
+            >
+              Start Full Test <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+      
+      {/* Leaderboard section - moved below assessment boxes */}
+      <div className="mb-16">
+        <LeaderboardPreview />
       </div>
       
       {/* How It Works section */}
@@ -167,26 +164,99 @@ const LandingPage: React.FC<LandingPageProps> = ({
         </div>
       </div>
       
-      {/* CTA section */}
-      <div className="bg-purple-50 rounded-2xl p-8 text-center shadow-sm">
-        <h2 className="text-2xl font-bold mb-3">Ready to Measure Your AI Fluency?</h2>
-        <p className="text-gray-700 mb-6 max-w-2xl mx-auto">
-          Join thousands of professionals who have used our assessment to identify their AI strengths and growth areas.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button 
-            onClick={onStartQuickTest} 
-            className="bg-purple-500 hover:bg-purple-600 text-white px-6"
-          >
-            Take the Quick Test
-          </Button>
-          <Button 
-            onClick={onStartComprehensiveTest} 
-            variant="outline" 
-            className="bg-white hover:bg-gray-50 text-blue-500 border-blue-500 px-6"
-          >
-            Start Full Assessment
-          </Button>
+      {/* New test introduction and results example section */}
+      <div className="bg-purple-50 rounded-2xl p-8 shadow-sm">
+        <h2 className="text-2xl font-bold mb-6 text-center">Understanding Your Test Results</h2>
+        
+        <div className="grid md:grid-cols-2 gap-8">
+          {/* Left column - Test introduction */}
+          <div>
+            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              <FileCheck className="h-5 w-5 text-purple-600" />
+              About the Assessment
+            </h3>
+            <p className="text-gray-700 mb-4">
+              Our AI Fluency Test evaluates your understanding across multiple dimensions of AI literacy, 
+              including conceptual knowledge, practical application skills, and awareness of emerging trends.
+            </p>
+            <ul className="space-y-3 mb-4">
+              <li className="flex items-start gap-2">
+                <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                <span className="text-gray-700">
+                  <span className="font-medium">Personalized Assessment:</span> Questions adapt based on your knowledge level
+                </span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                <span className="text-gray-700">
+                  <span className="font-medium">Comprehensive Analysis:</span> Detailed breakdown of strengths and areas for improvement
+                </span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                <span className="text-gray-700">
+                  <span className="font-medium">Tier Classification:</span> Discover where you fall on the AI fluency spectrum
+                </span>
+              </li>
+            </ul>
+          </div>
+          
+          {/* Right column - Results example */}
+          <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
+            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              <Trophy className="h-5 w-5 text-yellow-500" />
+              Sample Results Overview
+            </h3>
+            
+            <div className="mb-4">
+              <div className="flex items-baseline justify-between mb-1">
+                <span className="text-sm font-medium">Overall Score</span>
+                <span className="text-sm text-gray-500">145/240</span>
+              </div>
+              <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-full bg-purple-500 rounded-full" style={{ width: '60%' }}></div>
+              </div>
+            </div>
+            
+            <div className="mb-4">
+              <h4 className="text-sm font-medium mb-2">Your AI Fluency Tier</h4>
+              <div className="inline-block px-3 py-1 rounded-full bg-blue-100 text-blue-700 font-medium text-sm">
+                Proficient
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Advanced understanding with specialized knowledge in multiple areas
+              </p>
+            </div>
+            
+            <div className="mb-4">
+              <h4 className="text-sm font-medium mb-2">Category Breakdown</h4>
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs">
+                  <span>Prompt Engineering</span>
+                  <span className="text-gray-500">85%</span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span>AI Ethics</span>
+                  <span className="text-gray-500">70%</span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span>Technical Concepts</span>
+                  <span className="text-gray-500">55%</span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span>Practical Applications</span>
+                  <span className="text-gray-500">65%</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="text-center">
+              <div className="text-sm flex items-center justify-center gap-1 text-purple-600">
+                <ListCheck className="h-4 w-4" />
+                <span>Complete your assessment to view detailed results</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

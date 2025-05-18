@@ -33,7 +33,7 @@ const LeaderboardPreview: React.FC = () => {
       <CardHeader className="bg-purple-50 pb-4">
         <CardTitle className="flex items-center gap-2 text-purple-700">
           <Trophy className="h-5 w-5" />
-          Leaderboard
+          Top Performers
         </CardTitle>
       </CardHeader>
       <CardContent className="p-4">
