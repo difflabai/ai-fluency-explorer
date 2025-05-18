@@ -72,16 +72,13 @@ export async function migrateQuestions(
           continue;
         }
         
-        // Insert the question
-        const { error } = await supabase
-          .from('questions')
-          .insert({
-            text: question.text,
+        // Use the admin_insert_question function to bypass RLS
+        const { data: newQuestionId, error } = await supabase
+          .rpc('admin_insert_question', {
+            question_text: question.text,
             category_id: categoryId,
             difficulty: question.difficulty || 'novice', // Default to novice if not specified
-            correct_answer: question.correctAnswer,
-            is_active: true,
-            version: 1
+            correct_answer: question.correctAnswer
           });
           
         if (error) {
@@ -90,6 +87,7 @@ export async function migrateQuestions(
           continue;
         }
         
+        console.log(`Added question with ID ${newQuestionId}`);
         categoryAdded++;
       } catch (err) {
         console.error(`Unexpected error processing question:`, err);

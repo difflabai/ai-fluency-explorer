@@ -96,16 +96,13 @@ export async function migrateJsonQuestions(categoryMap: Map<string, string>): Pr
             continue;
           }
           
-          // Insert the question
-          const { error: insertError } = await supabase
-            .from('questions')
-            .insert({
-              text: question.text,
+          // Use the admin_insert_question function to bypass RLS
+          const { data: newQuestionId, error: insertError } = await supabase
+            .rpc('admin_insert_question', {
+              question_text: question.text,
               category_id: categoryDbId,
               difficulty: question.difficulty || 'novice', // Default to novice if not specified
-              correct_answer: question.correctAnswer,
-              is_active: true,
-              version: 1
+              correct_answer: question.correctAnswer
             });
             
           if (insertError) {
@@ -114,6 +111,7 @@ export async function migrateJsonQuestions(categoryMap: Map<string, string>): Pr
             continue;
           }
           
+          console.log(`Added question with ID ${newQuestionId}`);
           categoryAdded++;
         } catch (err) {
           console.error(`Unexpected error processing question:`, err);
@@ -129,7 +127,7 @@ export async function migrateJsonQuestions(categoryMap: Map<string, string>): Pr
     return [totalAdded, totalSkipped];
     
   } catch (error) {
-    console.error('Error in migrateQuestions:', error);
+    console.error('Error in migrateJsonQuestions:', error);
     return [totalAdded, totalSkipped];
   }
 }

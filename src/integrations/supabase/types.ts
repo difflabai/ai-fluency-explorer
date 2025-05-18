@@ -243,6 +243,15 @@ export type Database = {
         Args: { category_name: string; category_description: string }
         Returns: string
       }
+      admin_insert_question: {
+        Args: {
+          question_text: string
+          category_id: string
+          difficulty: string
+          correct_answer: boolean
+        }
+        Returns: string
+      }
       check_category_exists: {
         Args: { category_name: string }
         Returns: string
