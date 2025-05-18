@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, Database, CheckCircle, AlertCircle } from 'lucide-react';
 import { verifyDatabasePopulated, initializeApplication } from '@/utils/appInitialization';
+import { migrateJsonDataWithNotifications } from '@/utils/jsonDataMigration';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 /**
  * Administrative control panel for initializing the application
@@ -47,6 +49,21 @@ const AdminControls: React.FC = () => {
     }
   };
   
+  const handleJsonMigration = async () => {
+    setIsLoading(true);
+    try {
+      await migrateJsonDataWithNotifications();
+      // Give time for migration to complete
+      setTimeout(async () => {
+        await checkDatabaseStatus();
+        setIsLoading(false);
+      }, 5000);
+    } catch (error) {
+      console.error('Error during JSON migration:', error);
+      setIsLoading(false);
+    }
+  };
+  
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
@@ -78,6 +95,45 @@ const AdminControls: React.FC = () => {
             </div>
           )}
         </div>
+        
+        <Tabs defaultValue="json" className="mt-6">
+          <TabsList className="grid grid-cols-2 mb-4">
+            <TabsTrigger value="json">JSON Migration</TabsTrigger>
+            <TabsTrigger value="legacy">Legacy Migration</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="json" className="space-y-4">
+            <div className="text-sm">
+              <p>Run the JSON-based migration to populate questions and categories from the JSON data file.</p>
+              <p className="mt-1 text-muted-foreground">This is the recommended approach for stable data migrations.</p>
+            </div>
+            
+            <Button
+              onClick={handleJsonMigration}
+              disabled={isLoading || isInitialized === true}
+              className="w-full gap-2"
+            >
+              {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+              {isLoading ? 'Running JSON Migration...' : 'Run JSON Migration'}
+            </Button>
+          </TabsContent>
+          
+          <TabsContent value="legacy" className="space-y-4">
+            <div className="text-sm">
+              <p>Run the legacy initialization process that uses in-code data.</p>
+              <p className="mt-1 text-muted-foreground">This method is maintained for backward compatibility.</p>
+            </div>
+            
+            <Button
+              onClick={handleInitialize}
+              disabled={isLoading || isInitialized === true}
+              className="w-full gap-2"
+            >
+              {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+              {isLoading ? 'Initializing...' : 'Initialize Application (Legacy)'}
+            </Button>
+          </TabsContent>
+        </Tabs>
       </CardContent>
       
       <CardFooter className="flex justify-between">
@@ -89,15 +145,6 @@ const AdminControls: React.FC = () => {
         >
           {isChecking && <Loader2 className="h-4 w-4 animate-spin" />}
           {isChecking ? 'Checking...' : 'Check Status'}
-        </Button>
-        
-        <Button
-          onClick={handleInitialize}
-          disabled={isLoading || isInitialized === true}
-          className="gap-2"
-        >
-          {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-          {isLoading ? 'Initializing...' : 'Initialize Application'}
         </Button>
       </CardFooter>
     </Card>

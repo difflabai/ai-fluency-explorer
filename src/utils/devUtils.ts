@@ -5,6 +5,7 @@ import { migrateQuestionsToDatabase, migrateAndNotify } from './databaseMigratio
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { initializeApplication, autoInitializeIfNeeded, verifyDatabasePopulated } from './appInitialization';
+import { migrateJsonData, migrateJsonDataWithNotifications } from './jsonDataMigration';
 
 // Expose utility functions to the global window object for development use
 export const setupDevUtils = () => {
@@ -64,7 +65,11 @@ export const setupDevUtils = () => {
       runMigrationWithNotifications: migrateAndNotify,
       initializeApplication,
       verifyDatabasePopulated,
-      autoInitializeIfNeeded
+      autoInitializeIfNeeded,
+      
+      // Add JSON migration functions
+      migrateJsonData,
+      migrateJsonDataWithNotifications
     };
     
     console.log(
@@ -76,7 +81,9 @@ export const setupDevUtils = () => {
       '- window.devUtils.runMigrationWithNotifications() - Run migration with toast notifications\n' +
       '- window.devUtils.initializeApplication() - Complete initialization of the app (migration + system check)\n' +
       '- window.devUtils.verifyDatabasePopulated() - Check if database has been populated\n' +
-      '- window.devUtils.autoInitializeIfNeeded() - Auto-initialize if database is empty'
+      '- window.devUtils.autoInitializeIfNeeded() - Auto-initialize if database is empty\n' +
+      '- window.devUtils.migrateJsonData() - Run JSON-based migration\n' +
+      '- window.devUtils.migrateJsonDataWithNotifications() - Run JSON migration with toast notifications'
     );
   }
 };

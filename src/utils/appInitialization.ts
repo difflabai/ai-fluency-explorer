@@ -3,6 +3,7 @@ import { migrateAndNotify } from './databaseMigration';
 import { displaySystemCheck } from './systemCheck';
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { migrateJsonDataWithNotifications } from './jsonDataMigration';
 
 /**
  * Initializes the application with test data and verifies system integrity
@@ -11,7 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
  * 2. Populates test types with questions
  * 3. Runs system checks to verify data integrity
  */
-export async function initializeApplication(): Promise<void> {
+export async function initializeApplication(useJsonData = false): Promise<void> {
   try {
     toast({
       title: "Starting Application Initialization",
@@ -19,7 +20,11 @@ export async function initializeApplication(): Promise<void> {
     });
     
     // Step 1: Run full migration (categories, questions, test mapping)
-    await migrateAndNotify();
+    if (useJsonData) {
+      await migrateJsonDataWithNotifications();
+    } else {
+      await migrateAndNotify();
+    }
     
     // Step 2: Run system check after migration completes
     setTimeout(async () => {
@@ -73,13 +78,13 @@ export async function verifyDatabasePopulated(): Promise<boolean> {
  * Auto-initialize application if database tables are empty
  * This can be used during application startup to ensure data exists
  */
-export async function autoInitializeIfNeeded(): Promise<void> {
+export async function autoInitializeIfNeeded(useJsonData = true): Promise<void> {
   try {
     const isPopulated = await verifyDatabasePopulated();
     
     if (!isPopulated) {
       console.log('Database not populated, running auto-initialization...');
-      await initializeApplication();
+      await initializeApplication(useJsonData);
     } else {
       console.log('Database already populated, skipping initialization');
     }
