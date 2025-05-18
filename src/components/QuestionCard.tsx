@@ -46,9 +46,12 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
       case 'competent': return 'Competent';
       case 'proficient': return 'Proficient';
       case 'expert': return 'Expert';
-      default: return question.difficulty && typeof question.difficulty === 'string' 
-        ? question.difficulty.charAt(0).toUpperCase() + question.difficulty.slice(1)
-        : 'Unknown';
+      default: {
+        // Handle the case when difficulty is an unexpected string
+        // This ensures TypeScript knows we're working with a string
+        const difficultyStr = String(question.difficulty);
+        return difficultyStr.charAt(0).toUpperCase() + difficultyStr.slice(1);
+      }
     }
   };
 
