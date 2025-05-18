@@ -38,6 +38,8 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
 
   // Get the category display name 
   const getCategoryDisplayName = () => {
+    if (!question.difficulty) return 'Unknown';
+    
     switch(question.difficulty) {
       case 'novice': return 'Novice';
       case 'advanced-beginner': return 'Advanced Beginner';
