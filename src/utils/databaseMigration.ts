@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Category, Question, questionsByCategory } from '@/utils/testData';
+import { Category, Question, categories, sampleQuestions, customQuickAssessmentQuestions } from '@/utils/testData';
 import { toast } from "@/hooks/use-toast";
 
 // Type definitions for migration statistics
@@ -46,15 +46,15 @@ async function questionExists(text: string): Promise<boolean> {
 /**
  * Migrates categories to the database
  */
-async function migrateCategories(categories: Category[]): Promise<Map<string, string>> {
-  console.log(`Starting migration of ${categories.length} categories...`);
+async function migrateCategories(categoriesToMigrate: Category[]): Promise<Map<string, string>> {
+  console.log(`Starting migration of ${categoriesToMigrate.length} categories...`);
   
   // Create a map to store category name -> id mapping
   const categoryMap = new Map<string, string>();
   let added = 0;
   let skipped = 0;
   
-  for (const category of categories) {
+  for (const category of categoriesToMigrate) {
     // Check if category already exists
     const existingId = await categoryExists(category.name);
     
@@ -93,7 +93,7 @@ async function migrateCategories(categories: Category[]): Promise<Map<string, st
  * Migrates questions to the database
  */
 async function migrateQuestions(
-  questionsByCategory: Record<string, Question[]>, 
+  questions: Question[], 
   categoryMap: Map<string, string>
 ): Promise<number[]> {
   console.log('Starting migration of questions...');
@@ -101,8 +101,17 @@ async function migrateQuestions(
   let totalAdded = 0;
   let totalSkipped = 0;
   
+  // Group questions by category
+  const questionsByCategory = new Map<string, Question[]>();
+  for (const question of questions) {
+    if (!questionsByCategory.has(question.category)) {
+      questionsByCategory.set(question.category, []);
+    }
+    questionsByCategory.get(question.category)!.push(question);
+  }
+  
   // Process each category
-  for (const [categoryName, questions] of Object.entries(questionsByCategory)) {
+  for (const [categoryName, categoryQuestions] of questionsByCategory.entries()) {
     const categoryId = categoryMap.get(categoryName);
     
     if (!categoryId) {
@@ -110,13 +119,13 @@ async function migrateQuestions(
       continue;
     }
     
-    console.log(`Processing ${questions.length} questions for category '${categoryName}'`);
+    console.log(`Processing ${categoryQuestions.length} questions for category '${categoryName}'`);
     
     let categoryAdded = 0;
     let categorySkipped = 0;
     
     // Process each question in the category
-    for (const question of questions) {
+    for (const question of categoryQuestions) {
       // Check if question already exists
       const exists = await questionExists(question.text);
       
@@ -198,19 +207,16 @@ export async function migrateQuestionsToDatabase(): Promise<MigrationStats> {
   console.log('Starting database migration process...');
   
   try {
-    // Extract unique categories from the test data
-    const categories = Object.keys(questionsByCategory).map(name => ({
-      name,
-      description: `Category for ${name} related questions`
-    }));
-    
-    // Step 1: Migrate categories
+    // Step 1: Migrate categories from our predefined list
     const categoryMap = await migrateCategories(categories);
     
-    // Step 2: Migrate questions
-    const [questionsAdded, questionsSkipped] = await migrateQuestions(questionsByCategory, categoryMap);
+    // Step 2: Combine all questions for migration
+    const allQuestions = [...sampleQuestions, ...customQuickAssessmentQuestions];
     
-    // Step 3: Populate test types
+    // Step 3: Migrate questions
+    const [questionsAdded, questionsSkipped] = await migrateQuestions(allQuestions, categoryMap);
+    
+    // Step 4: Populate test types
     const [quickCount, compCount] = await populateTestTypes();
     
     // Prepare stats to return
