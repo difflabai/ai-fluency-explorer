@@ -3,7 +3,7 @@ import { migrateAndNotify } from './databaseMigration';
 import { displaySystemCheck } from './systemCheck';
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { migrateJsonDataWithNotifications } from './jsonDataMigration';
+import { migrateJsonDataWithNotifications } from './database/jsonDataOrchestrator';
 
 /**
  * Initializes the application with test data and verifies system integrity

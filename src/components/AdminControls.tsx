@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, Database, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
 import { verifyDatabasePopulated, initializeApplication } from '@/utils/appInitialization';
-import { migrateJsonDataWithNotifications } from '@/utils/jsonDataMigration';
+import { migrateJsonDataWithNotifications } from '@/utils/database/jsonDataOrchestrator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
 
