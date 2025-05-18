@@ -1,26 +1,30 @@
-# Welcome to your Lovable project
 
-## Project info
+# AI Fluency Assessment Platform
+
+## Project Overview
+
+This AI Fluency Assessment Platform allows users to test and evaluate their understanding of AI concepts through interactive assessments. The platform offers two types of tests:
+
+1. **Quick Assessment** - A shorter test with selected questions
+2. **Comprehensive Assessment** - A complete evaluation covering all categories
+
+Users can view their results with detailed breakdowns by category, save their scores to a leaderboard, and share their results with others.
+
+## Features
+
+- Multiple test types with different question sets
+- Detailed score analysis with category breakdowns
+- Public leaderboard to compare results
+- Result sharing via unique links
+- Admin panel for data management and system diagnostics
+
+## Project Information
 
 **URL**: https://lovable.dev/projects/a739b7bc-156f-46b7-8e77-b9ab6c9a7a1f
 
-## How can I edit this code?
+## Getting Started
 
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/a739b7bc-156f-46b7-8e77-b9ab6c9a7a1f) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+To run this project locally:
 
 ```sh
 # Step 1: Clone the repository using the project's Git URL.
@@ -36,37 +40,36 @@ npm i
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## Technology Stack
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+- **Frontend**: React, TypeScript, TailwindCSS
+- **UI Components**: shadcn-ui
+- **State Management**: React Query
+- **Backend**: Supabase
+- **Build Tool**: Vite
 
-**Use GitHub Codespaces**
+## Project Structure
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+- `src/components/` - React components
+- `src/pages/` - Page components and routes
+- `src/utils/` - Utility functions and helpers
+- `src/services/` - API service calls
+- `src/data/` - JSON data for questions
+- `src/integrations/` - External service integrations
 
-## What technologies are used for this project?
+## Database Initialization
 
-This project is built with:
+The application automatically initializes the database with test questions on first start in development mode. You can also manually trigger data migration and system checks using the Admin panel at `/admin`.
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## More Information
 
-## How can I deploy this project?
+For more detailed system design and architecture information, see [SPEC.md](SPEC.md).
+
+## Deployment
 
 Simply open [Lovable](https://lovable.dev/projects/a739b7bc-156f-46b7-8e77-b9ab6c9a7a1f) and click on Share -> Publish.
 
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
+## Custom Domains
 
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
