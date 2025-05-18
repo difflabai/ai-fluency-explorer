@@ -1,24 +1,13 @@
 
-import React, { useState, useEffect } from 'react';
-import { Button } from "@/components/ui/button";
+import React from 'react';
 import ProgressBar from './ProgressBar';
 import QuestionCard from './QuestionCard';
-import { UserAnswer } from '@/utils/testData';
-import { calculateResults, TestResult } from '@/utils/scoring';
 import ResultsDashboard from './ResultsDashboard';
-import { Save, Timer, ChevronLeft, ChevronRight, Home, CheckSquare, AlertTriangle } from 'lucide-react';
-import { toast } from "@/hooks/use-toast";
-import { getQuestionsForTest } from '@/services/questionService';
-import { saveTestResult } from '@/services/testResultService';
-
-interface Question {
-  id: number;
-  text: string;
-  correctAnswer: boolean;
-  category: string;
-  difficulty: 'novice' | 'advanced-beginner' | 'competent' | 'proficient' | 'expert';
-  dbId?: string; // Database ID for when saving answers
-}
+import { Home } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import TestHeader from './test/TestHeader';
+import TestNavigation from './test/TestNavigation';
+import { useTestState } from '@/hooks/useTestState';
 
 interface TestInterfaceProps {
   testType: 'quick' | 'comprehensive';
@@ -26,160 +15,26 @@ interface TestInterfaceProps {
 }
 
 const TestInterface: React.FC<TestInterfaceProps> = ({ testType, onReturnHome }) => {
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [userAnswers, setUserAnswers] = useState<UserAnswer[]>([]);
-  const [testComplete, setTestComplete] = useState(false);
-  const [result, setResult] = useState<TestResult | null>(null);
-  const [timeElapsed, setTimeElapsed] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  
-  // Initialize test with questions from the database
-  useEffect(() => {
-    const loadQuestions = async () => {
-      setIsLoading(true);
-      try {
-        const loadedQuestions = await getQuestionsForTest(testType);
-        setQuestions(loadedQuestions);
-      } catch (error) {
-        console.error('Error loading questions:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load questions. Please try again.",
-          variant: "destructive"
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    loadQuestions();
-  }, [testType]);
-  
-  // Timer for the test
-  useEffect(() => {
-    if (testComplete || isLoading) return;
-    
-    const timer = setInterval(() => {
-      setTimeElapsed(prev => prev + 1);
-    }, 1000);
-    
-    return () => clearInterval(timer);
-  }, [testComplete, isLoading]);
-  
-  // Handle user's answer to current question
-  const handleAnswer = (answer: boolean) => {
-    const updatedAnswers = [...userAnswers];
-    const currentQuestion = questions[currentQuestionIndex];
-    
-    // Find if user already answered this question
-    const existingAnswerIndex = updatedAnswers.findIndex(
-      a => a.questionId === currentQuestion.id
-    );
-    
-    if (existingAnswerIndex >= 0) {
-      // Update existing answer
-      updatedAnswers[existingAnswerIndex].answer = answer;
-    } else {
-      // Add new answer
-      updatedAnswers.push({
-        questionId: currentQuestion.id,
-        answer
-      });
-    }
-    
-    setUserAnswers(updatedAnswers);
-    
-    // Auto-advance to next question after slight delay
-    setTimeout(() => {
-      if (currentQuestionIndex < questions.length - 1) {
-        setCurrentQuestionIndex(currentQuestionIndex + 1);
-      }
-    }, 800);
-  };
-  
-  // Navigate to next question
-  const handleNextQuestion = () => {
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-    }
-  };
-  
-  // Navigate to previous question
-  const handlePreviousQuestion = () => {
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(currentQuestionIndex - 1);
-    }
-  };
-  
-  // Complete the test and show results
-  const handleCompleteTest = async () => {
-    const testResult = calculateResults(questions, userAnswers);
-    setResult(testResult);
-    setTestComplete(true);
-    
-    // Create an object mapping question IDs to their database IDs
-    const questionIdToDbId = new Map<number, string>();
-    questions.forEach(q => {
-      if (q.dbId) {
-        questionIdToDbId.set(q.id, q.dbId);
-      }
-    });
-    
-    // Map user answers to include database question IDs
-    const answersForDb = userAnswers.map(answer => ({
-      questionId: questionIdToDbId.get(answer.questionId) || '',
-      answer: answer.answer
-    })).filter(a => a.questionId !== '');
-    
-    try {
-      // Save test result to database
-      const savedResult = await saveTestResult(
-        testResult,
-        undefined, // username (optional)
-        false, // make public
-        {
-          questionsSnapshot: questions,
-          userAnswers: userAnswers
-        }
-      );
-      
-      // If test result was saved successfully and we have answers to save
-      if (savedResult && answersForDb.length > 0) {
-        // This code would save individual answers to the user_answers table
-        // Commented out for now as it requires more integration with the backend
-        // await saveUserAnswers(savedResult.id, answersForDb);
-      }
-      
-      toast({
-        title: "Test Completed!",
-        description: "Your results are ready to view.",
-      });
-    } catch (error) {
-      console.error('Error saving test results:', error);
-      toast({
-        title: "Test Completed",
-        description: "Your results are ready, but there was an error saving them to your profile.",
-        variant: "destructive"
-      });
-    }
-  };
-  
-  // Save progress (in a real app, this would store to localStorage or backend)
-  const handleSaveProgress = () => {
-    console.log('Saving progress:', { userAnswers, currentQuestionIndex });
-    toast({
-      title: "Progress Saved",
-      description: "You can continue later from where you left off.",
-    });
-  };
-  
-  // Format time as mm:ss
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
+  const {
+    questions,
+    currentQuestionIndex,
+    userAnswers,
+    testComplete,
+    result,
+    timeElapsed,
+    isLoading,
+    handleAnswer,
+    handleCompleteTest,
+    handleSaveProgress,
+    handleNextQuestion,
+    handlePreviousQuestion,
+    currentQuestion,
+    progress,
+    currentAnswer,
+    isAnswered,
+    isLastQuestion,
+    unansweredCount
+  } = useTestState({ testType });
   
   if (testComplete && result) {
     return <ResultsDashboard result={result} onReturnHome={onReturnHome} />;
@@ -211,51 +66,23 @@ const TestInterface: React.FC<TestInterfaceProps> = ({ testType, onReturnHome })
     );
   }
   
-  // The rest of the component remains largely the same
-  const currentQuestion = questions[currentQuestionIndex];
-  const progress = (userAnswers.length / questions.length) * 100;
-  const currentAnswer = userAnswers.find(a => a.questionId === currentQuestion.id)?.answer;
-  const isAnswered = currentAnswer !== undefined;
-  const isLastQuestion = currentQuestionIndex === questions.length - 1;
-  const unansweredCount = questions.length - userAnswers.length;
-  
+  const testTitle = testType === 'quick' 
+    ? 'Quick Self-Assessment' 
+    : 'Comprehensive Self-Assessment';
+    
   return (
     <div className="container max-w-4xl mx-auto px-4 py-8">
       <div className="flex flex-col gap-6">
         {/* Test header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-800">
-              {testType === 'quick' ? 'Quick Self-Assessment' : 'Comprehensive Self-Assessment'}
-            </h1>
-            <div className="flex items-center gap-3 text-gray-600">
-              <span>Question {currentQuestionIndex + 1} of {questions.length}</span>
-              {unansweredCount > 0 && (
-                <div className="flex items-center text-sm text-amber-600 bg-amber-50 px-2 py-1 rounded">
-                  <AlertTriangle className="h-3 w-3 mr-1" />
-                  {unansweredCount} unanswered
-                </div>
-              )}
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-3">
-            <div className="bg-gray-100 p-2 px-3 rounded-md flex items-center">
-              <Timer className="h-4 w-4 mr-2 text-gray-600" />
-              <span className="text-sm font-medium">{formatTime(timeElapsed)}</span>
-            </div>
-            
-            <Button variant="outline" size="sm" onClick={handleSaveProgress} className="flex items-center gap-1">
-              <Save className="h-4 w-4" />
-              Save
-            </Button>
-            
-            <Button variant="ghost" size="sm" onClick={onReturnHome} className="flex items-center gap-1">
-              <Home className="h-4 w-4" />
-              Home
-            </Button>
-          </div>
-        </div>
+        <TestHeader
+          title={testTitle}
+          currentQuestionIndex={currentQuestionIndex}
+          totalQuestions={questions.length}
+          unansweredCount={unansweredCount}
+          timeElapsed={timeElapsed}
+          onSaveProgress={handleSaveProgress}
+          onReturnHome={onReturnHome}
+        />
         
         {/* Progress bar */}
         <ProgressBar
@@ -265,45 +92,25 @@ const TestInterface: React.FC<TestInterfaceProps> = ({ testType, onReturnHome })
         />
         
         {/* Question */}
-        <QuestionCard
-          question={currentQuestion}
-          onAnswer={handleAnswer}
-          isAnswered={isAnswered}
-          selectedAnswer={currentAnswer}
-          showFeedback={isAnswered}
-        />
+        {currentQuestion && (
+          <QuestionCard
+            question={currentQuestion}
+            onAnswer={handleAnswer}
+            isAnswered={isAnswered}
+            selectedAnswer={currentAnswer}
+            showFeedback={isAnswered}
+          />
+        )}
         
         {/* Navigation */}
-        <div className="flex justify-between mt-8">
-          <Button
-            variant="outline"
-            onClick={handlePreviousQuestion}
-            disabled={currentQuestionIndex === 0}
-            className="flex items-center gap-1"
-          >
-            <ChevronLeft className="h-4 w-4" /> Previous
-          </Button>
-          
-          <div className="flex gap-3">
-            {isLastQuestion && userAnswers.length > 0 && (
-              <Button 
-                onClick={handleCompleteTest}
-                className="bg-green-600 hover:bg-green-700 flex items-center gap-2"
-              >
-                <CheckSquare className="h-4 w-4" />
-                Finish Test
-              </Button>
-            )}
-            
-            <Button
-              onClick={handleNextQuestion}
-              disabled={isLastQuestion}
-              className="flex items-center gap-1"
-            >
-              Next <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
+        <TestNavigation
+          isLastQuestion={isLastQuestion}
+          hasAnswers={userAnswers.length > 0}
+          onPreviousQuestion={handlePreviousQuestion}
+          onNextQuestion={handleNextQuestion}
+          onCompleteTest={handleCompleteTest}
+          currentQuestionIndex={currentQuestionIndex}
+        />
       </div>
     </div>
   );

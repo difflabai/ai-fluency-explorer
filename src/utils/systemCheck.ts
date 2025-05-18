@@ -16,7 +16,7 @@ export async function runSystemCheck(): Promise<CheckResult[]> {
   
   // Check 1: Verify DB Connection
   try {
-    const { data, error } = await supabase.from('categories').select('count(*)');
+    const { data, error } = await supabase.from('categories').select('*').limit(1);
     if (error) throw error;
     
     results.push({
@@ -34,19 +34,26 @@ export async function runSystemCheck(): Promise<CheckResult[]> {
   }
   
   // Check 2: Verify required tables exist
-  const requiredTables = ['categories', 'questions', 'test_results', 'user_answers'];
+  const requiredTables = ['categories', 'questions', 'test_results', 'user_answers'] as const;
   for (const table of requiredTables) {
     try {
       const { data, error } = await supabase
         .from(table)
-        .select('count(*)', { count: 'exact' });
+        .select('*')
+        .limit(1);
       
       if (error) throw error;
       
-      const count = data?.[0]?.count || 0;
+      // Get the count of records separately
+      const { count, error: countError } = await supabase
+        .from(table)
+        .select('*', { count: 'exact', head: true });
+      
+      if (countError) throw countError;
+      
       results.push({
         success: true,
-        message: `✅ Table '${table}' exists with ${count} records`,
+        message: `✅ Table '${table}' exists with ${count || 0} records`,
         details: { count }
       });
     } catch (error) {
@@ -62,15 +69,29 @@ export async function runSystemCheck(): Promise<CheckResult[]> {
   try {
     const { data: categories, error: catError } = await supabase
       .from('categories')
-      .select('id, name, count:questions(*)');
+      .select('*');
     
     if (catError) throw catError;
     
     if (categories && categories.length > 0) {
+      // Check for questions in each category
+      const categoryDistribution: Record<string, number> = {};
+      
+      for (const category of categories) {
+        const { count, error: countError } = await supabase
+          .from('questions')
+          .select('*', { count: 'exact', head: true })
+          .eq('category_id', category.id);
+          
+        if (countError) throw countError;
+        
+        categoryDistribution[category.name] = count || 0;
+      }
+      
       results.push({
         success: true,
         message: `✅ Found ${categories.length} categories with questions distribution`,
-        details: categories
+        details: categoryDistribution
       });
     } else {
       results.push({
@@ -99,9 +120,9 @@ export async function runSystemCheck(): Promise<CheckResult[]> {
       const testResultId = testResults[0].id;
       
       // Check for related user answers
-      const { data: userAnswers, error: answerError } = await supabase
+      const { count, error: answerError } = await supabase
         .from('user_answers')
-        .select('count(*)', { count: 'exact' })
+        .select('*', { count: 'exact', head: true })
         .eq('test_result_id', testResultId);
       
       if (answerError) throw answerError;
@@ -111,7 +132,7 @@ export async function runSystemCheck(): Promise<CheckResult[]> {
         message: `✅ Test results and user answers relationship verified`,
         details: { 
           testResultId,
-          userAnswersCount: userAnswers?.[0]?.count || 0
+          userAnswersCount: count || 0
         }
       });
     } else {
