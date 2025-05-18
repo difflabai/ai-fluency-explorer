@@ -27,23 +27,32 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   const renderFeedback = () => {
     if (!showFeedback || selectedAnswer === null) return null;
     
-    const isCorrect = selectedAnswer === question.correctAnswer;
-    
     return (
-      <div className={`mt-4 p-3 rounded-md ${isCorrect ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+      <div className="mt-4 p-3 rounded-md bg-blue-100 text-blue-800">
         <p className="font-medium">
-          {isCorrect ? 'Correct!' : 'Incorrect.'}
-          {' '}The answer is {question.correctAnswer ? 'True' : 'False'}.
+          You selected: {selectedAnswer ? 'Yes, I have done this' : 'No, I haven\'t done this yet'}
         </p>
       </div>
     );
+  };
+
+  // Get the category display name 
+  const getCategoryDisplayName = () => {
+    switch(question.difficulty) {
+      case 'novice': return 'Novice';
+      case 'advanced-beginner': return 'Advanced Beginner';
+      case 'competent': return 'Competent';
+      case 'proficient': return 'Proficient';
+      case 'expert': return 'Expert';
+      default: return question.difficulty.charAt(0).toUpperCase() + question.difficulty.slice(1);
+    }
   };
 
   return (
     <div className="bg-white p-6 rounded-xl shadow-md animate-scale-in">
       <div className="mb-6">
         <span className="text-xs font-semibold text-ai-purple">
-          Question {question.id} • {question.category.charAt(0).toUpperCase() + question.category.slice(1)}
+          Question {question.id} • {getCategoryDisplayName()}
         </span>
         <h3 className="text-xl font-medium mt-2">{question.text}</h3>
       </div>
@@ -57,7 +66,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
           }`}
           disabled={isAnswered}
         >
-          True
+          Yes
         </Button>
         
         <Button
@@ -68,7 +77,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
           }`}
           disabled={isAnswered}
         >
-          False
+          No
         </Button>
       </div>
       

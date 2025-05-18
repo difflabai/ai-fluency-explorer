@@ -121,13 +121,13 @@ const TestInterface: React.FC<TestInterfaceProps> = ({ testType, onReturnHome })
   const isAnswered = currentAnswer !== undefined;
   
   return (
-    <div className="container max-w-3xl mx-auto px-4">
+    <div className="container max-w-3xl mx-auto px-4 py-8">
       <div className="flex flex-col gap-6">
         {/* Test header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
           <div>
             <h1 className="text-2xl font-bold">
-              {testType === 'quick' ? 'Quick Assessment' : 'Comprehensive Test'}
+              {testType === 'quick' ? 'Quick Self-Assessment' : 'Comprehensive Self-Assessment'}
             </h1>
             <p className="text-muted-foreground">
               Question {currentQuestionIndex + 1} of {questions.length}

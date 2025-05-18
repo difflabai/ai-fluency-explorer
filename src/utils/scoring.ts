@@ -64,10 +64,9 @@ export const calculateResults = (
 ): TestResult => {
   let correctAnswers = 0;
   
-  // Calculate overall score
+  // For self-assessment, a "true" answer counts as 1 point
   userAnswers.forEach(userAnswer => {
-    const question = questions.find(q => q.id === userAnswer.questionId);
-    if (question && question.correctAnswer === userAnswer.answer) {
+    if (userAnswer.answer === true) {
       correctAnswers++;
     }
   });
@@ -113,20 +112,21 @@ const calculateCategoryScores = (
     
     if (totalQuestions === 0) return;
     
-    let categoryCorrect = 0;
+    let categoryScore = 0;
     categoryQuestions.forEach(question => {
       const userAnswer = userAnswers.find(a => a.questionId === question.id);
-      if (userAnswer && userAnswer.answer === question.correctAnswer) {
-        categoryCorrect++;
+      // For self-assessment, a "true" answer counts as 1 point
+      if (userAnswer && userAnswer.answer === true) {
+        categoryScore++;
       }
     });
     
-    const percentage = totalQuestions > 0 ? (categoryCorrect / totalQuestions) * 100 : 0;
+    const percentage = totalQuestions > 0 ? (categoryScore / totalQuestions) * 100 : 0;
     
     categoryScores.push({
       categoryId: category.id,
       categoryName: category.name,
-      score: categoryCorrect,
+      score: categoryScore,
       totalQuestions,
       percentage
     });
