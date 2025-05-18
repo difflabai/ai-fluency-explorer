@@ -1,10 +1,10 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import questionsData from '@/data/questions.json';
 import { toast } from "@/hooks/use-toast";
 import { MigrationStats } from "./database/migrationTypes";
 import { migrateCategories } from "./database/categoryMigration";
-import { migrateQuestions } from "./database/questionMigration";
+import { migrateQuestions as migrateQuestionsFromDb } from "./database/questionMigration";
+import { Category } from "@/utils/testData";
 
 /**
  * Migrate categories from the JSON data source
@@ -18,11 +18,12 @@ export async function migrateJsonCategories(): Promise<Map<string, string>> {
     // Convert JSON categories to the format expected by migrateCategories
     const categories = questionsData.categories.map(category => ({
       name: category.name,
-      description: category.description || `Category for ${category.name} questions`
+      description: category.description || `Category for ${category.name} questions`,
+      id: category.id // Adding id field to match Category type
     }));
     
     // Use the existing category migration function
-    return await migrateCategories(categories);
+    return await migrateCategories(categories as Category[]);
   } catch (error) {
     console.error('Error in migrateJsonCategories:', error);
     return categoryMap;
@@ -34,7 +35,7 @@ export async function migrateJsonCategories(): Promise<Map<string, string>> {
  * @param categoryMap Map of category IDs to their database IDs
  * @returns Array containing [questionsAdded, questionsSkipped]
  */
-export async function migrateQuestions(categoryMap: Map<string, string>): Promise<number[]> {
+export async function migrateJsonQuestions(categoryMap: Map<string, string>): Promise<number[]> {
   console.log('Starting migration of questions from JSON data...');
   
   let totalAdded = 0;
@@ -235,7 +236,7 @@ export async function migrateJsonData(): Promise<MigrationStats> {
     const categoryMap = await migrateJsonCategories();
     
     // Step 2: Migrate questions
-    const [questionsAdded, questionsSkipped] = await migrateQuestions(categoryMap);
+    const [questionsAdded, questionsSkipped] = await migrateJsonQuestions(categoryMap);
     
     // Step 3: Populate test types
     const [quickCount, compCount] = await migrateTestTypes();
