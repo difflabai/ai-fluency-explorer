@@ -46,6 +46,7 @@ export async function migrateQuestions(
     
     if (!categoryId) {
       console.error(`Category ID not found for '${categoryName}', skipping questions`);
+      totalSkipped += categoryQuestions.length;
       continue;
     }
     
@@ -79,6 +80,7 @@ export async function migrateQuestions(
         
       if (error) {
         console.error(`Error inserting question:`, error);
+        categorySkipped++;
         continue;
       }
       

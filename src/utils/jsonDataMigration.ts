@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import questionsData from '@/data/questions.json';
 import { toast } from "@/hooks/use-toast";
@@ -124,7 +123,7 @@ export async function migrateQuestions(categoryMap: Map<string, string>): Promis
           .insert({
             text: question.text,
             category_id: categoryId,
-            difficulty: question.difficulty,
+            difficulty: question.difficulty || 'novice', // Default to novice if not specified
             correct_answer: question.correctAnswer,
             is_active: true,
             version: 1

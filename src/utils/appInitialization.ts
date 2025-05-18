@@ -12,7 +12,7 @@ import { migrateJsonDataWithNotifications } from './jsonDataMigration';
  * 2. Populates test types with questions
  * 3. Runs system checks to verify data integrity
  */
-export async function initializeApplication(useJsonData = false): Promise<void> {
+export async function initializeApplication(useJsonData = true): Promise<void> {
   try {
     toast({
       title: "Starting Application Initialization",
