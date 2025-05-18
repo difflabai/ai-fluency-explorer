@@ -46,7 +46,9 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
       case 'competent': return 'Competent';
       case 'proficient': return 'Proficient';
       case 'expert': return 'Expert';
-      default: return question.difficulty.charAt(0).toUpperCase() + question.difficulty.slice(1);
+      default: return question.difficulty && typeof question.difficulty === 'string' 
+        ? question.difficulty.charAt(0).toUpperCase() + question.difficulty.slice(1)
+        : 'Unknown';
     }
   };
 
