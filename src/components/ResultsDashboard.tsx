@@ -1,12 +1,14 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import ProgressBar from './ProgressBar';
 import ScoreChart from './ScoreChart';
 import ShareResults from './ShareResults';
 import { TestResult } from '@/utils/scoring';
-import { Trophy, Home, BarChartIcon, Clock } from 'lucide-react';
+import { Trophy, Home, BarChartIcon, Clock, Medal, Users } from 'lucide-react';
+import { fetchLeaderboard, SavedTestResult } from '@/services/testResultService';
+import { Link } from 'react-router-dom';
 
 interface ResultsDashboardProps {
   result: TestResult;
@@ -15,6 +17,35 @@ interface ResultsDashboardProps {
 
 const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ result, onReturnHome }) => {
   const { overallScore, maxPossibleScore, percentageScore, tier, categoryScores } = result;
+  const [userRank, setUserRank] = useState<number | null>(null);
+  const [isLoadingRank, setIsLoadingRank] = useState(true);
+  
+  // Fetch leaderboard data to determine user's rank
+  useEffect(() => {
+    const fetchUserRank = async () => {
+      try {
+        const leaderboardData = await fetchLeaderboard(100); // Fetch top 100 scores
+        const position = leaderboardData.findIndex(entry => 
+          entry.overall_score < overallScore
+        );
+        
+        // If user's score is higher than any on the leaderboard
+        if (position === -1) {
+          // User's rank depends on if there are any scores at all
+          setUserRank(leaderboardData.length > 0 ? leaderboardData.length + 1 : 1);
+        } else {
+          // Position is 0-indexed, so add 1
+          setUserRank(position + 1);
+        }
+      } catch (error) {
+        console.error("Failed to fetch user ranking:", error);
+      } finally {
+        setIsLoadingRank(false);
+      }
+    };
+    
+    fetchUserRank();
+  }, [overallScore]);
   
   return (
     <div className="container max-w-4xl mx-auto px-4 py-8">
@@ -46,6 +77,25 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ result, onReturnHom
                 </div>
                 
                 <ProgressBar progress={percentageScore} color="bg-ai-purple" />
+                
+                {/* User Rank Display */}
+                {isLoadingRank ? (
+                  <div className="mt-4 flex items-center gap-2">
+                    <span className="text-gray-500">Calculating your rank...</span>
+                    <div className="h-4 w-4 rounded-full border-2 border-t-transparent border-blue-500 animate-spin"></div>
+                  </div>
+                ) : userRank && (
+                  <div className="mt-4 flex items-center gap-2">
+                    <Medal className="h-5 w-5 text-purple-500" />
+                    <span className="text-purple-700 font-medium">
+                      {userRank === 1 ? (
+                        "You're in 1st place! 🎉"
+                      ) : (
+                        `Your rank: ${userRank}${userRank === 2 ? 'nd' : userRank === 3 ? 'rd' : 'th'} place`
+                      )}
+                    </span>
+                  </div>
+                )}
                 
                 <div className="mt-6">
                   <h3 className="text-lg font-medium mb-2">You are a</h3>
@@ -110,6 +160,15 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ result, onReturnHom
           <Card className="bg-white shadow-sm">
             <CardContent className="p-6">
               <ShareResults result={result} />
+              
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <Link to="/leaderboard">
+                  <Button variant="outline" className="w-full flex items-center justify-center gap-2">
+                    <Users className="h-4 w-4" />
+                    View Full Leaderboard
+                  </Button>
+                </Link>
+              </div>
             </CardContent>
           </Card>
         </div>
