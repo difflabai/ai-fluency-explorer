@@ -45,16 +45,16 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStartQuickTest, onStartComp
               <h2 className="text-2xl font-bold">Quick Assessment</h2>
             </div>
             <p className="text-gray-600 mb-6 text-lg">
-              A 15-question assessment to get a quick snapshot of your AI literacy in under 10 minutes.
+              A 50-question assessment to get a quick snapshot of your AI literacy in under 20 minutes.
             </p>
             <ul className="space-y-3 mb-8">
               <li className="flex items-center gap-3">
                 <CheckCircle className="h-5 w-5 text-ai-purple flex-shrink-0" />
-                <span className="text-gray-700">15 true/false questions</span>
+                <span className="text-gray-700">50 true/false questions</span>
               </li>
               <li className="flex items-center gap-3">
                 <CheckCircle className="h-5 w-5 text-ai-purple flex-shrink-0" />
-                <span className="text-gray-700">Takes ~5-10 minutes</span>
+                <span className="text-gray-700">Takes ~15-20 minutes</span>
               </li>
               <li className="flex items-center gap-3">
                 <CheckCircle className="h-5 w-5 text-ai-purple flex-shrink-0" />
