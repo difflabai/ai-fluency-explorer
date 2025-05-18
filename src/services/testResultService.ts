@@ -14,13 +14,18 @@ export interface SavedTestResult {
   created_at: string;
   public: boolean;
   share_id: string;
+  questions_snapshot?: any; // New field to store the questions used in the test
 }
 
 // Save test result to Supabase
 export const saveTestResult = async (
   result: TestResult,
   username?: string,
-  makePublic: boolean = false
+  makePublic: boolean = false,
+  additionalData?: {
+    questionsSnapshot?: any;
+    userAnswers?: any;
+  }
 ): Promise<SavedTestResult | null> => {
   try {
     const { data, error } = await supabase
@@ -32,7 +37,8 @@ export const saveTestResult = async (
         percentage_score: result.percentageScore,
         tier_name: result.tier.name,
         category_scores: result.categoryScores,
-        public: makePublic
+        public: makePublic,
+        questions_snapshot: additionalData?.questionsSnapshot || null
       })
       .select()
       .single();
@@ -129,5 +135,25 @@ export const toggleResultPublic = async (id: string, isPublic: boolean): Promise
   } catch (error) {
     console.error('Error toggling result public status:', error);
     return false;
+  }
+};
+
+// Fetch user answers for a specific test result
+export const fetchUserAnswersForTest = async (testResultId: string) => {
+  try {
+    const { data, error } = await supabase
+      .from('user_answers')
+      .select('*, questions(*)')
+      .eq('test_result_id', testResultId);
+      
+    if (error) {
+      console.error('Error fetching user answers:', error);
+      return [];
+    }
+    
+    return data || [];
+  } catch (error) {
+    console.error('Error in fetchUserAnswersForTest:', error);
+    return [];
   }
 };

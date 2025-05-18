@@ -1,12 +1,24 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import ProgressBar from './ProgressBar';
 import QuestionCard from './QuestionCard';
-import { Question, UserAnswer, getQuickAssessmentQuestions, getComprehensiveQuestions } from '@/utils/testData';
+import { UserAnswer } from '@/utils/testData';
 import { calculateResults, TestResult } from '@/utils/scoring';
 import ResultsDashboard from './ResultsDashboard';
 import { Save, Timer, ChevronLeft, ChevronRight, Home, CheckSquare, AlertTriangle } from 'lucide-react';
 import { toast } from "@/hooks/use-toast";
+import { getQuestionsForTest } from '@/services/questionService';
+import { saveTestResult } from '@/services/testResultService';
+
+interface Question {
+  id: number;
+  text: string;
+  correctAnswer: boolean;
+  category: string;
+  difficulty: 'novice' | 'advanced-beginner' | 'competent' | 'proficient' | 'expert';
+  dbId?: string; // Database ID for when saving answers
+}
 
 interface TestInterfaceProps {
   testType: 'quick' | 'comprehensive';
@@ -20,26 +32,40 @@ const TestInterface: React.FC<TestInterfaceProps> = ({ testType, onReturnHome })
   const [testComplete, setTestComplete] = useState(false);
   const [result, setResult] = useState<TestResult | null>(null);
   const [timeElapsed, setTimeElapsed] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
   
-  // Initialize test with questions
+  // Initialize test with questions from the database
   useEffect(() => {
-    if (testType === 'quick') {
-      setQuestions(getQuickAssessmentQuestions());
-    } else {
-      setQuestions(getComprehensiveQuestions());
-    }
+    const loadQuestions = async () => {
+      setIsLoading(true);
+      try {
+        const loadedQuestions = await getQuestionsForTest(testType);
+        setQuestions(loadedQuestions);
+      } catch (error) {
+        console.error('Error loading questions:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load questions. Please try again.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadQuestions();
   }, [testType]);
   
   // Timer for the test
   useEffect(() => {
-    if (testComplete) return;
+    if (testComplete || isLoading) return;
     
     const timer = setInterval(() => {
       setTimeElapsed(prev => prev + 1);
     }, 1000);
     
     return () => clearInterval(timer);
-  }, [testComplete]);
+  }, [testComplete, isLoading]);
   
   // Handle user's answer to current question
   const handleAnswer = (answer: boolean) => {
@@ -87,14 +113,56 @@ const TestInterface: React.FC<TestInterfaceProps> = ({ testType, onReturnHome })
   };
   
   // Complete the test and show results
-  const handleCompleteTest = () => {
+  const handleCompleteTest = async () => {
     const testResult = calculateResults(questions, userAnswers);
     setResult(testResult);
     setTestComplete(true);
-    toast({
-      title: "Test Completed!",
-      description: "Your results are ready to view.",
+    
+    // Create an object mapping question IDs to their database IDs
+    const questionIdToDbId = new Map<number, string>();
+    questions.forEach(q => {
+      if (q.dbId) {
+        questionIdToDbId.set(q.id, q.dbId);
+      }
     });
+    
+    // Map user answers to include database question IDs
+    const answersForDb = userAnswers.map(answer => ({
+      questionId: questionIdToDbId.get(answer.questionId) || '',
+      answer: answer.answer
+    })).filter(a => a.questionId !== '');
+    
+    try {
+      // Save test result to database
+      const savedResult = await saveTestResult(
+        testResult,
+        undefined, // username (optional)
+        false, // make public
+        {
+          questionsSnapshot: questions,
+          userAnswers: userAnswers
+        }
+      );
+      
+      // If test result was saved successfully and we have answers to save
+      if (savedResult && answersForDb.length > 0) {
+        // This code would save individual answers to the user_answers table
+        // Commented out for now as it requires more integration with the backend
+        // await saveUserAnswers(savedResult.id, answersForDb);
+      }
+      
+      toast({
+        title: "Test Completed!",
+        description: "Your results are ready to view.",
+      });
+    } catch (error) {
+      console.error('Error saving test results:', error);
+      toast({
+        title: "Test Completed",
+        description: "Your results are ready, but there was an error saving them to your profile.",
+        variant: "destructive"
+      });
+    }
   };
   
   // Save progress (in a real app, this would store to localStorage or backend)
@@ -117,7 +185,7 @@ const TestInterface: React.FC<TestInterfaceProps> = ({ testType, onReturnHome })
     return <ResultsDashboard result={result} onReturnHome={onReturnHome} />;
   }
   
-  if (questions.length === 0) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-pulse flex flex-col items-center">
@@ -129,6 +197,21 @@ const TestInterface: React.FC<TestInterfaceProps> = ({ testType, onReturnHome })
     );
   }
   
+  if (questions.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <div className="text-center mb-6">
+          <h2 className="text-xl font-semibold text-red-600">Error Loading Questions</h2>
+          <p className="text-gray-600 mt-2">Unable to load questions for the test.</p>
+        </div>
+        <Button onClick={onReturnHome} className="flex items-center gap-2">
+          <Home className="h-4 w-4" /> Return Home
+        </Button>
+      </div>
+    );
+  }
+  
+  // The rest of the component remains largely the same
   const currentQuestion = questions[currentQuestionIndex];
   const progress = (userAnswers.length / questions.length) * 100;
   const currentAnswer = userAnswers.find(a => a.questionId === currentQuestion.id)?.answer;

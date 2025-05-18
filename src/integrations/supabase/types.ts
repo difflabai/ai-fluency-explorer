@@ -9,6 +9,81 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      categories: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      questions: {
+        Row: {
+          category_id: string
+          correct_answer: boolean
+          created_at: string
+          difficulty: Database["public"]["Enums"]["difficulty_level"]
+          id: string
+          is_active: boolean
+          parent_question_id: string | null
+          text: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          category_id: string
+          correct_answer: boolean
+          created_at?: string
+          difficulty: Database["public"]["Enums"]["difficulty_level"]
+          id?: string
+          is_active?: boolean
+          parent_question_id?: string | null
+          text: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          category_id?: string
+          correct_answer?: boolean
+          created_at?: string
+          difficulty?: Database["public"]["Enums"]["difficulty_level"]
+          id?: string
+          is_active?: boolean
+          parent_question_id?: string | null
+          text?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "questions_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "questions_parent_question_id_fkey"
+            columns: ["parent_question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       test_results: {
         Row: {
           category_scores: Json
@@ -18,6 +93,7 @@ export type Database = {
           overall_score: number
           percentage_score: number
           public: boolean
+          questions_snapshot: Json | null
           share_id: string
           tier_name: string
           user_id: string | null
@@ -31,6 +107,7 @@ export type Database = {
           overall_score: number
           percentage_score: number
           public?: boolean
+          questions_snapshot?: Json | null
           share_id?: string
           tier_name: string
           user_id?: string | null
@@ -44,6 +121,7 @@ export type Database = {
           overall_score?: number
           percentage_score?: number
           public?: boolean
+          questions_snapshot?: Json | null
           share_id?: string
           tier_name?: string
           user_id?: string | null
@@ -51,15 +129,71 @@ export type Database = {
         }
         Relationships: []
       }
+      user_answers: {
+        Row: {
+          answer: boolean
+          created_at: string
+          id: string
+          question_id: string
+          test_result_id: string
+          user_id: string | null
+        }
+        Insert: {
+          answer: boolean
+          created_at?: string
+          id?: string
+          question_id: string
+          test_result_id: string
+          user_id?: string | null
+        }
+        Update: {
+          answer?: boolean
+          created_at?: string
+          id?: string
+          question_id?: string
+          test_result_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_answers_test_result_id_fkey"
+            columns: ["test_result_id"]
+            isOneToOne: false
+            referencedRelation: "test_results"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      create_question_version: {
+        Args: {
+          question_id: string
+          new_text: string
+          new_category_id: string
+          new_difficulty: Database["public"]["Enums"]["difficulty_level"]
+          new_correct_answer: boolean
+        }
+        Returns: string
+      }
     }
     Enums: {
-      [_ in never]: never
+      difficulty_level:
+        | "novice"
+        | "advanced-beginner"
+        | "competent"
+        | "proficient"
+        | "expert"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -174,6 +308,14 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      difficulty_level: [
+        "novice",
+        "advanced-beginner",
+        "competent",
+        "proficient",
+        "expert",
+      ],
+    },
   },
 } as const
