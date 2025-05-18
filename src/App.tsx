@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Leaderboard from "./components/Leaderboard";
 import SharedResultView from "./components/SharedResultView";
+import SystemCheck from "./components/SystemCheck";
 
 const queryClient = new QueryClient();
 
@@ -21,6 +22,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/shared/:shareId" element={<SharedResultView />} />
+          <Route path="/system-check" element={<SystemCheck />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
