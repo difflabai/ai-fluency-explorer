@@ -1,12 +1,12 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import ProgressBar from './ProgressBar';
 import ScoreChart from './ScoreChart';
 import ShareResults from './ShareResults';
 import { TestResult } from '@/utils/scoring';
-import { Trophy, Home, BarChart2, PieChart } from 'lucide-react';
+import { Trophy, Home, BarChartIcon, Clock } from 'lucide-react';
 
 interface ResultsDashboardProps {
   result: TestResult;
@@ -18,103 +18,104 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ result, onReturnHom
   
   return (
     <div className="container max-w-4xl mx-auto px-4 py-8">
-      <Button variant="ghost" onClick={onReturnHome} className="mb-6">
-        <Home className="h-4 w-4 mr-2" /> Return to Home
-      </Button>
+      <div className="flex items-center mb-6">
+        <Button variant="ghost" onClick={onReturnHome} className="flex items-center gap-2 text-gray-700">
+          <Home className="h-4 w-4" /> Return to Home
+        </Button>
+      </div>
       
       <div className="flex flex-col gap-8">
         {/* Main results card with score and tier */}
-        <Card className="relative overflow-hidden">
-          <div className={`absolute top-0 left-0 w-full h-1 ${tier.color}`}></div>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-2xl flex items-center gap-2">
+        <Card className="overflow-hidden bg-white shadow-sm">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-2 mb-2">
               <Trophy className="h-6 w-6 text-yellow-500" />
-              Your AI Fluency Results
-            </CardTitle>
-            <CardDescription>
+              <h2 className="text-xl font-bold">Your AI Fluency Results</h2>
+            </div>
+            <p className="text-sm text-gray-600 mb-6">
               Completed {new Date(result.timestamp).toLocaleDateString()}
-            </CardDescription>
-          </CardHeader>
-          
-          <CardContent>
-            <div className="flex flex-col md:flex-row gap-8">
-              <div className="flex-1">
-                <h3 className="text-lg font-medium mb-2">Overall Score</h3>
+            </p>
+            
+            <div className="grid md:grid-cols-2 gap-8">
+              {/* Left column - Overall score */}
+              <div>
+                <h3 className="text-lg font-medium mb-3">Overall Score</h3>
                 <div className="flex items-baseline gap-2 mb-4">
-                  <span className="text-4xl font-bold">{overallScore}</span>
-                  <span className="text-muted-foreground">/ {maxPossibleScore}</span>
+                  <span className="text-5xl font-bold">{overallScore}</span>
+                  <span className="text-gray-500">/ {maxPossibleScore}</span>
                 </div>
                 
-                <ProgressBar progress={percentageScore} />
+                <ProgressBar progress={percentageScore} color="bg-ai-purple" />
                 
                 <div className="mt-6">
-                  <h3 className="text-lg font-medium mb-1">You are a</h3>
-                  <div className={`inline-block px-4 py-2 rounded-full ${tier.color} text-white font-semibold text-xl`}>
+                  <h3 className="text-lg font-medium mb-2">You are a</h3>
+                  <div className="inline-block px-6 py-2 rounded-full bg-blue-300 text-white font-semibold text-xl">
                     {tier.name}
                   </div>
-                  <p className="text-sm text-muted-foreground mt-3">
+                  <p className="text-sm text-gray-600 mt-3">
                     {tier.description}
                   </p>
                 </div>
               </div>
               
-              <div className="border-t md:border-t-0 md:border-l border-gray-200 md:pl-8 pt-6 md:pt-0 flex-1">
+              {/* Right column - Score breakdown */}
+              <div>
                 <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-                  <BarChart2 className="h-5 w-5" />
+                  <BarChartIcon className="h-5 w-5" />
                   Score Breakdown
                 </h3>
                 
                 <div className="space-y-4">
-                  {categoryScores.map((categoryScore) => (
-                    <div key={categoryScore.categoryId}>
-                      <div className="flex justify-between mb-1">
-                        <span className="text-sm font-medium">{categoryScore.categoryName}</span>
-                        <span className="text-sm text-muted-foreground">
-                          {categoryScore.score}/{categoryScore.totalQuestions}
-                        </span>
+                  {fluencyLevels.map((level) => {
+                    const categoryScore = categoryScores.find(c => c.categoryName === level.name);
+                    const score = categoryScore?.score || 0;
+                    const total = categoryScore?.totalQuestions || level.maxScore;
+                    const percentage = (score / total) * 100;
+                    
+                    return (
+                      <div key={level.name}>
+                        <div className="flex justify-between mb-1">
+                          <span className="text-sm font-medium">{level.name}</span>
+                          <span className="text-sm text-gray-600">
+                            {score}/{total}
+                          </span>
+                        </div>
+                        <ProgressBar
+                          progress={percentage}
+                          color="bg-green-500"
+                        />
                       </div>
-                      <ProgressBar
-                        progress={categoryScore.percentage}
-                        color={
-                          categoryScore.percentage > 80 ? 'bg-green-500' : 
-                          categoryScore.percentage > 60 ? 'bg-ai-purple' : 
-                          categoryScore.percentage > 40 ? 'bg-blue-500' : 
-                          categoryScore.percentage > 20 ? 'bg-orange-500' : 
-                          'bg-red-500'
-                        }
-                      />
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </div>
           </CardContent>
         </Card>
         
+        {/* Lower cards section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Radar chart */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-xl flex items-center gap-2">
-                <PieChart className="h-5 w-5" />
-                Skill Distribution
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+          {/* Skill Distribution chart */}
+          <Card className="bg-white shadow-sm">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Clock className="h-5 w-5 text-gray-600" />
+                <h3 className="text-lg font-medium">Skill Distribution</h3>
+              </div>
               <ScoreChart categoryScores={categoryScores} />
             </CardContent>
           </Card>
           
           {/* Share results */}
-          <Card className="h-fit">
-            <CardContent className="pt-6">
+          <Card className="bg-white shadow-sm">
+            <CardContent className="p-6">
               <ShareResults result={result} />
             </CardContent>
           </Card>
         </div>
         
         <div className="flex justify-center mt-4">
-          <Button size="lg" onClick={onReturnHome}>
+          <Button size="lg" onClick={onReturnHome} className="bg-purple-500 hover:bg-purple-600 text-white px-8 py-6 rounded-lg">
             Return to Home
           </Button>
         </div>
@@ -122,5 +123,14 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ result, onReturnHom
     </div>
   );
 };
+
+// Fluency levels for the score breakdown
+const fluencyLevels = [
+  { name: "Novice", maxScore: 9 },
+  { name: "Advanced Beginner", maxScore: 10 },
+  { name: "Competent", maxScore: 10 },
+  { name: "Proficient", maxScore: 10 },
+  { name: "Expert", maxScore: 11 }
+];
 
 export default ResultsDashboard;
