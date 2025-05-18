@@ -4,6 +4,7 @@ import { displaySystemCheck } from './systemCheck';
 import { migrateQuestionsToDatabase, migrateAndNotify } from './databaseMigration';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { initializeApplication, autoInitializeIfNeeded, verifyDatabasePopulated } from './appInitialization';
 
 // Expose utility functions to the global window object for development use
 export const setupDevUtils = () => {
@@ -60,7 +61,10 @@ export const setupDevUtils = () => {
         }
       },
       migrateQuestionsToDatabase,
-      runMigrationWithNotifications: migrateAndNotify
+      runMigrationWithNotifications: migrateAndNotify,
+      initializeApplication,
+      verifyDatabasePopulated,
+      autoInitializeIfNeeded
     };
     
     console.log(
@@ -69,7 +73,10 @@ export const setupDevUtils = () => {
       '- window.devUtils.systemCheck() - Verify system setup\n' +
       '- window.devUtils.populateTestTypes() - Populate test types with questions\n' +
       '- window.devUtils.migrateQuestionsToDatabase() - Migrate and populate test questions\n' +
-      '- window.devUtils.runMigrationWithNotifications() - Run migration with toast notifications'
+      '- window.devUtils.runMigrationWithNotifications() - Run migration with toast notifications\n' +
+      '- window.devUtils.initializeApplication() - Complete initialization of the app (migration + system check)\n' +
+      '- window.devUtils.verifyDatabasePopulated() - Check if database has been populated\n' +
+      '- window.devUtils.autoInitializeIfNeeded() - Auto-initialize if database is empty'
     );
   }
 };
