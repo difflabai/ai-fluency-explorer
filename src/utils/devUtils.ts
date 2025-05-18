@@ -1,7 +1,7 @@
 
 import { triggerMigration } from './migrationScript';
 import { displaySystemCheck } from './systemCheck';
-import { migrateQuestionsToDatabase } from '@/services/questionService';
+import { migrateQuestionsToDatabase, migrateAndNotify } from './databaseMigration';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
@@ -59,7 +59,8 @@ export const setupDevUtils = () => {
           });
         }
       },
-      migrateQuestionsToDatabase
+      migrateQuestionsToDatabase,
+      runMigrationWithNotifications: migrateAndNotify
     };
     
     console.log(
@@ -67,7 +68,8 @@ export const setupDevUtils = () => {
       '- window.devUtils.migrateData() - Migrate test data to the database\n' +
       '- window.devUtils.systemCheck() - Verify system setup\n' +
       '- window.devUtils.populateTestTypes() - Populate test types with questions\n' +
-      '- window.devUtils.migrateQuestionsToDatabase() - Migrate and populate test questions'
+      '- window.devUtils.migrateQuestionsToDatabase() - Migrate and populate test questions\n' +
+      '- window.devUtils.runMigrationWithNotifications() - Run migration with toast notifications'
     );
   }
 };
