@@ -2,12 +2,14 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Database, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
+import { Database, Loader2 } from 'lucide-react';
 import { verifyDatabasePopulated, initializeApplication } from '@/utils/appInitialization';
 import { migrateJsonDataWithNotifications } from '@/utils/database/jsonDataOrchestrator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from '@/contexts/AuthContext';
+import DatabaseStatusCard from './admin/DatabaseStatusCard';
+import MigrationControls from './admin/MigrationControls';
+import MigrationLogs from './admin/MigrationLogs';
 
 /**
  * Administrative control panel for initializing the application
@@ -149,6 +151,10 @@ const AdminControls: React.FC = () => {
     }
   };
   
+  const handleClearLogs = () => {
+    setMigrationLogs([]);
+  };
+  
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
@@ -161,87 +167,21 @@ const AdminControls: React.FC = () => {
       </CardHeader>
       
       <CardContent className="space-y-4">
-        <div className="flex items-center justify-between bg-muted px-4 py-3 rounded-lg">
-          <span className="font-medium">Database Status:</span>
-          
-          {isChecking ? (
-            <div className="flex items-center text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin mr-2" /> Checking...
-            </div>
-          ) : isInitialized === null ? (
-            <span className="text-muted-foreground">Unknown</span>
-          ) : isInitialized ? (
-            <div className="flex items-center text-green-600">
-              <CheckCircle className="h-4 w-4 mr-2" /> Initialized
-            </div>
-          ) : (
-            <div className="flex items-center text-amber-600">
-              <AlertCircle className="h-4 w-4 mr-2" /> Not Initialized
-            </div>
-          )}
-        </div>
+        <DatabaseStatusCard 
+          isChecking={isChecking} 
+          isInitialized={isInitialized} 
+        />
         
-        <Tabs defaultValue="json" className="mt-6">
-          <TabsList className="grid grid-cols-2 mb-4">
-            <TabsTrigger value="json">JSON Migration</TabsTrigger>
-            <TabsTrigger value="legacy">Legacy Migration</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="json" className="space-y-4">
-            <div className="text-sm">
-              <p>Run the JSON-based migration to populate questions and categories from the JSON data file.</p>
-              <p className="mt-1 text-muted-foreground">This is the recommended approach for stable data migrations.</p>
-            </div>
-            
-            <Button
-              onClick={handleJsonMigration}
-              disabled={isLoading}
-              className="w-full gap-2"
-            >
-              {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-              {isLoading ? 'Running JSON Migration...' : 'Run JSON Migration'}
-            </Button>
-          </TabsContent>
-          
-          <TabsContent value="legacy" className="space-y-4">
-            <div className="text-sm">
-              <p>Run the legacy initialization process that uses in-code data.</p>
-              <p className="mt-1 text-muted-foreground">This method is maintained for backward compatibility.</p>
-            </div>
-            
-            <Button
-              onClick={handleInitialize}
-              disabled={isLoading}
-              className="w-full gap-2"
-            >
-              {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-              {isLoading ? 'Initializing...' : 'Initialize Application (Legacy)'}
-            </Button>
-          </TabsContent>
-        </Tabs>
+        <MigrationControls
+          isLoading={isLoading}
+          onJsonMigration={handleJsonMigration}
+          onLegacyMigration={handleInitialize}
+        />
         
-        {migrationLogs.length > 0 && (
-          <div className="mt-4">
-            <h3 className="text-sm font-medium mb-2 flex items-center justify-between">
-              Migration Logs:
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => setMigrationLogs([])}
-                className="h-6 px-2"
-              >
-                <RefreshCw className="h-3 w-3 mr-1" /> Clear
-              </Button>
-            </h3>
-            <div className="bg-gray-100 p-3 rounded-md text-xs max-h-60 overflow-y-auto font-mono">
-              {migrationLogs.map((log, index) => (
-                <div key={index} className={`mb-1 ${log.startsWith('ERROR:') ? 'text-red-600' : ''}`}>
-                  {log}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        <MigrationLogs 
+          logs={migrationLogs} 
+          onClear={handleClearLogs} 
+        />
       </CardContent>
       
       <CardFooter className="flex justify-between">
