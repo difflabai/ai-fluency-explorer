@@ -1,11 +1,19 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AdminControls from '@/components/AdminControls';
 import SystemCheck from '@/components/SystemCheck';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import { useAuth } from '@/contexts/AuthContext';
 
 const AdminPage: React.FC = () => {
+  const { isAdmin, user } = useAuth();
+  
+  useEffect(() => {
+    console.log("Admin page - Current user:", user?.email);
+    console.log("Admin page - Is admin:", isAdmin);
+  }, [isAdmin, user]);
+
   return (
     <ProtectedRoute requireAdmin={true}>
       <div className="container max-w-5xl mx-auto px-4 py-8">

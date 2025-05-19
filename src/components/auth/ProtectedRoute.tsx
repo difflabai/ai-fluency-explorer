@@ -16,6 +16,14 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const { user, isLoading, isAdmin } = useAuth();
   const location = useLocation();
 
+  useEffect(() => {
+    if (user && requireAdmin) {
+      console.log("ProtectedRoute - User:", user.email);
+      console.log("ProtectedRoute - Admin required:", requireAdmin);
+      console.log("ProtectedRoute - Is admin:", isAdmin);
+    }
+  }, [user, requireAdmin, isAdmin]);
+
   // While checking authentication status, show loading
   if (isLoading) {
     return (
@@ -35,6 +43,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   
   // If admin is required but user is not admin, redirect to home
   if (requireAdmin && !isAdmin) {
+    console.log("User is not an admin, redirecting to home");
     return <Navigate to="/" replace />;
   }
 

@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -55,6 +56,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Check if user is admin - with proper search path
   const checkAdminStatus = async (userId: string) => {
     try {
+      console.log("Checking admin status for user:", userId);
       // Use the RPC endpoint that has proper search_path set
       const { data, error } = await supabase
         .rpc('is_admin', { user_id: userId });
@@ -64,6 +66,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return false;
       }
       
+      console.log("Admin status result:", data);
       return data || false;
     } catch (error) {
       console.error('Error checking admin status:', error);
@@ -75,6 +78,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
+        console.log("Auth state changed:", event);
         setSession(newSession);
         setUser(newSession?.user ?? null);
 
@@ -82,6 +86,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (newSession?.user) {
           setTimeout(async () => {
             const isUserAdmin = await checkAdminStatus(newSession.user.id);
+            console.log("User admin status after state change:", isUserAdmin);
             setIsAdmin(isUserAdmin);
           }, 0);
         } else {
@@ -108,6 +113,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Check admin status
         if (currentSession?.user) {
           const isUserAdmin = await checkAdminStatus(currentSession.user.id);
+          console.log("Initial admin status check:", isUserAdmin);
           setIsAdmin(isUserAdmin);
         }
       } catch (error) {
