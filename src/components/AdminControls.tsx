@@ -6,7 +6,6 @@ import { Database, Loader2 } from 'lucide-react';
 import { verifyDatabasePopulated, initializeApplication } from '@/utils/appInitialization';
 import { migrateJsonDataWithNotifications } from '@/utils/database/jsonDataOrchestrator';
 import { toast } from "@/hooks/use-toast";
-import { useAuth } from '@/contexts/AuthContext';
 import DatabaseStatusCard from './admin/DatabaseStatusCard';
 import MigrationControls from './admin/MigrationControls';
 import MigrationLogs from './admin/MigrationLogs';
@@ -20,7 +19,6 @@ const AdminControls: React.FC = () => {
   const [isInitialized, setIsInitialized] = useState<boolean | null>(null);
   const [isChecking, setIsChecking] = useState(false);
   const [migrationLogs, setMigrationLogs] = useState<string[]>([]);
-  const { isAdmin } = useAuth();
   
   // Check database status on mount
   useEffect(() => {
@@ -82,15 +80,6 @@ const AdminControls: React.FC = () => {
   };
   
   const handleInitialize = async () => {
-    if (!isAdmin) {
-      toast({
-        title: "Access Denied",
-        description: "You must be an admin to perform this action.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
     setIsLoading(true);
     setMigrationLogs([]);
     
@@ -117,15 +106,6 @@ const AdminControls: React.FC = () => {
   };
   
   const handleJsonMigration = async () => {
-    if (!isAdmin) {
-      toast({
-        title: "Access Denied",
-        description: "You must be an admin to perform this action.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
     setIsLoading(true);
     setMigrationLogs([]);
     

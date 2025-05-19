@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, CheckCircle2, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { runSystemCheck } from '@/utils/systemCheck';
-import { useAuth } from '@/contexts/AuthContext';
 import { TestHarness } from '@/components/admin';
 
 type CheckResult = {

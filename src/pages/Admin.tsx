@@ -1,18 +1,10 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AdminControls from '@/components/AdminControls';
 import SystemCheck from '@/components/SystemCheck';
-import { useAuth } from '@/contexts/AuthContext';
 
 const AdminPage: React.FC = () => {
-  const { isAdmin, user } = useAuth();
-  
-  useEffect(() => {
-    console.log("Admin page - Current user:", user?.email);
-    console.log("Admin page - Is admin:", isAdmin);
-  }, [isAdmin, user]);
-
   return (
     <div className="container max-w-5xl mx-auto px-4 py-8">
       <h1 className="text-2xl md:text-3xl font-bold mb-6">Admin Dashboard</h1>

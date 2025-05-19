@@ -9,6 +9,7 @@ type AuthContextType = {
   session: Session | null;
   isLoading: boolean;
   isAdmin: boolean;
+  isAdminLoading: boolean; // New state for tracking admin status loading
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
@@ -52,6 +53,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [isAdminLoading, setIsAdminLoading] = useState<boolean>(true); // Add admin loading state
 
   // Check if user is admin - with proper search path
   const checkAdminStatus = async (userId: string) => {
@@ -82,21 +84,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSession(newSession);
         setUser(newSession?.user ?? null);
 
-        // Check admin status, but defer to avoid auth deadlock
+        // Set admin loading to true when auth state changes
         if (newSession?.user) {
+          setIsAdminLoading(true);
+          
+          // Check admin status with a longer delay to ensure RPC is ready
           setTimeout(async () => {
-            const isUserAdmin = await checkAdminStatus(newSession.user.id);
-            console.log("User admin status after state change:", isUserAdmin);
-            setIsAdmin(isUserAdmin);
-          }, 0);
+            try {
+              const isUserAdmin = await checkAdminStatus(newSession.user.id);
+              console.log(`Admin status check completed: ${isUserAdmin}`);
+              setIsAdmin(isUserAdmin);
+            } catch (err) {
+              console.error("Error checking admin status:", err);
+              setIsAdmin(false);
+            } finally {
+              setIsAdminLoading(false);
+            }
+          }, 1500); // Increased delay for more reliable admin status check
         } else {
           setIsAdmin(false);
+          setIsAdminLoading(false);
         }
 
         if (event === 'SIGNED_OUT') {
           setUser(null);
           setSession(null);
           setIsAdmin(false);
+          setIsAdminLoading(false);
         }
       }
     );
@@ -105,20 +119,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const initializeAuth = async () => {
       try {
         setIsLoading(true);
+        setIsAdminLoading(true);
+        
         const { data: { session: currentSession } } = await supabase.auth.getSession();
         
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         
-        // Check admin status
+        // Check admin status with a delay to ensure RPC is ready
         if (currentSession?.user) {
-          const isUserAdmin = await checkAdminStatus(currentSession.user.id);
-          console.log("Initial admin status check:", isUserAdmin);
-          setIsAdmin(isUserAdmin);
+          setTimeout(async () => {
+            try {
+              const isUserAdmin = await checkAdminStatus(currentSession.user.id);
+              console.log("Initial admin status check:", isUserAdmin);
+              setIsAdmin(isUserAdmin);
+            } catch (err) {
+              console.error("Error in initial admin status check:", err);
+              setIsAdmin(false);
+            } finally {
+              setIsAdminLoading(false);
+              setIsLoading(false);
+            }
+          }, 1500); // Increased delay for more reliable admin status check
+        } else {
+          setIsAdmin(false);
+          setIsAdminLoading(false);
+          setIsLoading(false);
         }
       } catch (error) {
         console.error('Error initializing auth:', error);
-      } finally {
+        setIsAdmin(false);
+        setIsAdminLoading(false);
         setIsLoading(false);
       }
     };
@@ -296,6 +327,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     session,
     isLoading,
     isAdmin,
+    isAdminLoading, // Expose the new state
     signIn,
     signUp,
     signOut,
