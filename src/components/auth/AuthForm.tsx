@@ -5,8 +5,10 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2, LogIn, UserPlus, ArrowLeft, Mail } from 'lucide-react';
+import { Loader2, LogIn, UserPlus, ArrowLeft, Mail, Shield } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { validatePasswordStrength } from '@/utils/security';
+import { toast } from '@/hooks/use-toast';
 
 type AuthFormProps = {
   redirectPath?: string;
@@ -23,6 +25,22 @@ const AuthForm: React.FC<AuthFormProps> = ({ redirectPath = '/' }) => {
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
 
+  const validatePassword = (password: string): boolean => {
+    if (mode !== 'signup') return true;
+    
+    const result = validatePasswordStrength(password);
+    if (!result.isValid) {
+      toast({
+        title: 'Password too weak',
+        description: result.message,
+        variant: 'destructive'
+      });
+      return false;
+    }
+    
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -33,8 +51,12 @@ const AuthForm: React.FC<AuthFormProps> = ({ redirectPath = '/' }) => {
         await signIn(email, password);
         navigate(redirectPath);
       } else if (mode === 'signup') {
+        if (!validatePassword(password)) {
+          setIsLoading(false);
+          return;
+        }
         await signUp(email, password);
-        navigate(redirectPath);
+        setMessage('Please check your email for a confirmation link.');
       } else if (mode === 'magic-link') {
         await sendMagicLink(email);
         setMessage('Check your email for the magic link');
@@ -178,7 +200,10 @@ const AuthForm: React.FC<AuthFormProps> = ({ redirectPath = '/' }) => {
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
-        <CardTitle>{renderCardTitle()}</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          <Shield className="h-5 w-5 text-purple-500" />
+          {renderCardTitle()}
+        </CardTitle>
         <CardDescription>{renderCardDescription()}</CardDescription>
       </CardHeader>
       <CardContent>
@@ -246,6 +271,10 @@ const AuthForm: React.FC<AuthFormProps> = ({ redirectPath = '/' }) => {
             Already have an account? Sign in
           </Button>
         )}
+        
+        <div className="mt-4 text-xs text-gray-500">
+          Protected by enhanced security measures
+        </div>
       </CardFooter>
     </Card>
   );

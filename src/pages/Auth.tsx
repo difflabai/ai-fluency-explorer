@@ -41,10 +41,12 @@ const AuthPage: React.FC = () => {
       return;
     }
 
-    if (newPassword.length < 6) {
+    // Enforce stronger password requirements
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(newPassword)) {
       toast({
-        title: 'Password too short',
-        description: 'Password must be at least 6 characters',
+        title: 'Password too weak',
+        description: 'Password must be at least 8 characters and include uppercase, lowercase, number, and special character',
         variant: 'destructive'
       });
       return;
