@@ -23,35 +23,3 @@ export const cleanupAuthState = () => {
     }
   });
 };
-
-/**
- * Checks if a user has admin role with improved error handling
- * @param userId The user ID to check
- * @param supabase The Supabase client instance
- * @returns Promise that resolves to boolean indicating admin status
- */
-export const checkAdminStatus = async (userId: string, supabase: any): Promise<boolean> => {
-  if (!userId) {
-    console.warn("Cannot check admin status: User ID is missing");
-    return false;
-  }
-  
-  try {
-    console.log("Checking admin status for user:", userId);
-    
-    // Use the RPC endpoint that has proper search_path set
-    const { data, error } = await supabase
-      .rpc('is_admin', { user_id: userId });
-    
-    if (error) {
-      console.error('Error checking admin status:', error);
-      return false;
-    }
-    
-    console.log("Admin status result:", data);
-    return !!data; // Ensure boolean return value
-  } catch (error) {
-    console.error('Error checking admin status:', error);
-    return false;
-  }
-};

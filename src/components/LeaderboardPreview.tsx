@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { fetchLeaderboard, SavedTestResult } from '@/services/testResultService';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,7 +11,6 @@ import { useAuth } from '@/contexts/auth';
 const LeaderboardPreview: React.FC = () => {
   const [leaderboardData, setLeaderboardData] = useState<SavedTestResult[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { isAdmin } = useAuth();
 
   useEffect(() => {
     const loadLeaderboard = async () => {
@@ -18,17 +18,7 @@ const LeaderboardPreview: React.FC = () => {
       try {
         // Only fetch top 5 for preview
         const data = await fetchLeaderboard(5);
-        
-        console.log("LeaderboardPreview - isAdmin:", isAdmin);
-        console.log("LeaderboardPreview - fetched data:", data);
-        
-        // Filter out test data for non-admins
-        const filteredData = isAdmin 
-          ? data 
-          : data.filter(entry => !entry.is_test_data);
-          
-        console.log("LeaderboardPreview - filtered data:", filteredData);
-        setLeaderboardData(filteredData);
+        setLeaderboardData(data);
       } catch (error) {
         console.error("Failed to load leaderboard preview:", error);
       } finally {
@@ -37,7 +27,7 @@ const LeaderboardPreview: React.FC = () => {
     };
 
     loadLeaderboard();
-  }, [isAdmin]);
+  }, []);
 
   return (
     <Card className="bg-white shadow-sm overflow-hidden">

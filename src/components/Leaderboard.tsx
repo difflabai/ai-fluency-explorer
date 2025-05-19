@@ -1,39 +1,30 @@
+
 import React, { useEffect, useState } from 'react';
 import { fetchLeaderboard, SavedTestResult } from '@/services/testResultService';
 import { Button } from "@/components/ui/button";
 import { Home, Trophy, Calendar, ArrowUp, User, Medal, Database } from 'lucide-react';
 import { format } from 'date-fns';
-import { useAuth } from '@/contexts/auth';
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 
 const Leaderboard: React.FC = () => {
   const [leaderboardData, setLeaderboardData] = useState<SavedTestResult[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [showTestData, setShowTestData] = useState(false);
-  const { isAdmin } = useAuth();
+  const [showTestData, setShowTestData] = useState(true);
 
   useEffect(() => {
     loadLeaderboard();
-  }, [showTestData, isAdmin]);
+  }, [showTestData]);
 
   const loadLeaderboard = async () => {
     setIsLoading(true);
     try {
-      console.log("Leaderboard - isAdmin:", isAdmin);
       console.log("Leaderboard - showTestData:", showTestData);
       
       const data = await fetchLeaderboard();
       console.log("Leaderboard - fetched data:", data);
       
-      // If admin user and showTestData is true, include test data
-      // Otherwise filter out test data
-      const filteredData = isAdmin && showTestData 
-        ? data 
-        : data.filter(entry => !entry.is_test_data);
-        
-      console.log("Leaderboard - filtered data:", filteredData);
-      setLeaderboardData(filteredData);
+      setLeaderboardData(data);
     } catch (error) {
       console.error("Failed to load leaderboard data:", error);
     } finally {
@@ -55,23 +46,21 @@ const Leaderboard: React.FC = () => {
         </Button>
       </div>
       
-      {/* Admin-only toggle for test data visibility */}
-      {isAdmin && (
-        <div className="mb-4 p-3 bg-gray-50 rounded-lg flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Database className="h-4 w-4 text-gray-500" />
-            <span className="text-sm font-medium">Admin Controls</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Switch
-              id="test-data-toggle"
-              checked={showTestData}
-              onCheckedChange={setShowTestData}
-            />
-            <Label htmlFor="test-data-toggle" className="text-sm">Show Test Data</Label>
-          </div>
+      {/* Toggle for test data visibility (now visible to all) */}
+      <div className="mb-4 p-3 bg-gray-50 rounded-lg flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Database className="h-4 w-4 text-gray-500" />
+          <span className="text-sm font-medium">Display Controls</span>
         </div>
-      )}
+        <div className="flex items-center gap-2">
+          <Switch
+            id="test-data-toggle"
+            checked={showTestData}
+            onCheckedChange={setShowTestData}
+          />
+          <Label htmlFor="test-data-toggle" className="text-sm">Show Test Data</Label>
+        </div>
+      </div>
       
       {isLoading ? (
         <div className="flex justify-center items-center h-64">

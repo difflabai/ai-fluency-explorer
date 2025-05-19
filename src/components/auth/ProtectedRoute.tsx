@@ -6,23 +6,16 @@ import { Loader2 } from 'lucide-react';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requireAdmin?: boolean;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
-  children, 
-  requireAdmin = false 
-}) => {
-  const { user, isLoading, isAdmin, isAdminLoading } = useAuth();
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+  const { user, isLoading } = useAuth();
   const location = useLocation();
   
   // Enhanced logging for debugging
   console.log("ProtectedRoute - Path:", location.pathname);
   console.log("ProtectedRoute - User:", user?.email);
   console.log("ProtectedRoute - isLoading:", isLoading);
-  console.log("ProtectedRoute - Admin required:", requireAdmin);
-  console.log("ProtectedRoute - isAdmin:", isAdmin);
-  console.log("ProtectedRoute - isAdminLoading:", isAdminLoading);
 
   // Show loading while checking authentication
   if (isLoading) {
@@ -34,23 +27,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     console.log("User not authenticated, redirecting to /auth");
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
-  
-  // If admin is required, check admin status
-  if (requireAdmin) {
-    // Show loading while checking admin status
-    if (isAdminLoading) {
-      return renderLoadingState("Verifying admin access...");
-    }
-    
-    // If not admin, redirect to home
-    if (!isAdmin) {
-      console.log("Admin access required but user is not an admin, redirecting to /");
-      return <Navigate to="/" replace />;
-    }
-  }
 
-  // Access granted, render children
-  console.log("Access granted, rendering protected content");
+  // User is authenticated, render children
+  console.log("Authentication successful, rendering protected content");
   return <>{children}</>;
 };
 

@@ -31,12 +31,12 @@ const App = () => (
               <Route path="/leaderboard" element={<LeaderboardPage />} />
               <Route path="/shared/:shareId" element={<SharedResultView />} />
               <Route path="/system-check" element={
-                <ProtectedRoute requireAdmin={true}>
+                <ProtectedRoute>
                   <SystemCheck />
                 </ProtectedRoute>
               } />
               <Route path="/admin" element={
-                <ProtectedRoute requireAdmin={true}>
+                <ProtectedRoute>
                   <AdminPage />
                 </ProtectedRoute>
               } />
