@@ -35,7 +35,11 @@ const App = () => (
                   <SystemCheck />
                 </ProtectedRoute>
               } />
-              <Route path="/admin" element={<AdminPage />} />
+              <Route path="/admin" element={
+                <ProtectedRoute requireAdmin={true}>
+                  <AdminPage />
+                </ProtectedRoute>
+              } />
               <Route path="/auth" element={<AuthPage />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
