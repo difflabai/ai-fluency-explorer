@@ -13,6 +13,7 @@ import SystemCheck from "./components/SystemCheck";
 import AdminPage from './pages/Admin';
 import AuthPage from './pages/Auth';
 import Header from './components/layout/Header';
+import ProtectedRoute from './components/auth/ProtectedRoute';
 
 const queryClient = new QueryClient();
 
@@ -29,7 +30,11 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/leaderboard" element={<LeaderboardPage />} />
               <Route path="/shared/:shareId" element={<SharedResultView />} />
-              <Route path="/system-check" element={<SystemCheck />} />
+              <Route path="/system-check" element={
+                <ProtectedRoute requireAdmin={true}>
+                  <SystemCheck />
+                </ProtectedRoute>
+              } />
               <Route path="/admin" element={<AdminPage />} />
               <Route path="/auth" element={<AuthPage />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

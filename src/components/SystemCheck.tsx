@@ -1,9 +1,10 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, CheckCircle2, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { runSystemCheck } from '@/utils/systemCheck';
+import { useAuth } from '@/contexts/AuthContext';
+import { Navigate } from 'react-router-dom';
 
 type CheckResult = {
   success: boolean;
@@ -15,6 +16,12 @@ const SystemCheck: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<CheckResult[] | null>(null);
   const [expandedDetails, setExpandedDetails] = useState<{[key: string]: boolean}>({});
+  const { isAdmin } = useAuth();
+  
+  // Redirect non-admin users to the home page
+  if (!isAdmin) {
+    return <Navigate to="/" replace />;
+  }
   
   const handleRunCheck = async () => {
     setIsLoading(true);
