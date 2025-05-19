@@ -9,7 +9,8 @@ import { Switch } from "@/components/ui/switch";
 import { AlertCircle, Database, Play, Loader2, Trash2 } from 'lucide-react';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from '@/hooks/use-toast';
-import { generateTestData, cleanupTestData, TestDataConfig } from '@/utils/testData';
+import { generateTestData, cleanupTestData } from '@/utils/testData';
+import type { TestDataConfig } from '@/utils/testData';
 
 const TestHarness: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
