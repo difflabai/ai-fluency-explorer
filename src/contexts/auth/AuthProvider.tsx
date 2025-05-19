@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -9,6 +10,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [isCheckingAdmin, setIsCheckingAdmin] = useState<boolean>(false);
+
+  // Check if the current user has admin role
+  const checkAdminStatus = async (): Promise<boolean> => {
+    if (!user) return false;
+    
+    setIsCheckingAdmin(true);
+    try {
+      // Query the user_roles table to check if the user has admin role
+      const { data, error } = await supabase.rpc('is_admin', {
+        user_id: user.id
+      });
+      
+      if (error) {
+        console.error('Error checking admin status:', error);
+        return false;
+      }
+      
+      setIsAdmin(!!data);
+      return !!data;
+    } catch (error) {
+      console.error('Error in checkAdminStatus:', error);
+      return false;
+    } finally {
+      setIsCheckingAdmin(false);
+    }
+  };
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -18,9 +47,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSession(newSession);
         setUser(newSession?.user ?? null);
 
-        if (event === 'SIGNED_OUT') {
+        if (event === 'SIGNED_IN') {
+          // Check admin status on sign in
+          // Use setTimeout to prevent potential deadlocks with Supabase client
+          setTimeout(() => {
+            checkAdminStatus();
+          }, 0);
+        } else if (event === 'SIGNED_OUT') {
           setUser(null);
           setSession(null);
+          setIsAdmin(false);
         }
       }
     );
@@ -34,6 +70,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
+        
+        if (currentSession?.user) {
+          // Check admin status for existing session
+          await checkAdminStatus();
+        }
+        
         setIsLoading(false);
       } catch (error) {
         console.error('Error initializing auth:', error);
@@ -66,6 +108,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       
       if (error) throw error;
+      
+      // Check admin status after successful login
+      // Use setTimeout to prevent potential deadlocks
+      setTimeout(async () => {
+        await checkAdminStatus();
+      }, 0);
       
       toast({
         title: 'Welcome back!',
@@ -201,6 +249,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         title: 'Admin privileges granted',
         description: `User ${email} has been given admin privileges.`
       });
+      
+      // If the current user was made admin, refresh their admin status
+      if (user && user.email === email) {
+        await checkAdminStatus();
+      }
     } catch (error: any) {
       toast({
         title: 'Failed to grant admin privileges',
@@ -215,13 +268,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     user,
     session,
     isLoading,
+    isAdmin,
+    isCheckingAdmin,
     signIn,
     signUp,
     signOut,
     sendMagicLink,
     resetPassword,
     cleanupAuthState,
-    makeUserAdmin
+    makeUserAdmin,
+    checkAdminStatus
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

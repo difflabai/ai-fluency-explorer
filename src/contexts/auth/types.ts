@@ -5,6 +5,8 @@ export type AuthContextType = {
   user: User | null;
   session: Session | null;
   isLoading: boolean;
+  isAdmin: boolean;
+  isCheckingAdmin: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
@@ -12,4 +14,5 @@ export type AuthContextType = {
   resetPassword: (email: string) => Promise<void>;
   cleanupAuthState: () => void;
   makeUserAdmin: (email: string) => Promise<void>;
+  checkAdminStatus: () => Promise<boolean>;
 };

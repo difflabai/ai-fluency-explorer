@@ -14,6 +14,7 @@ import AdminPage from './pages/Admin';
 import AuthPage from './pages/Auth';
 import Header from './components/layout/Header';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import AdminRoute from './components/auth/AdminRoute';
 
 const queryClient = new QueryClient();
 
@@ -36,9 +37,9 @@ const App = () => (
                 </ProtectedRoute>
               } />
               <Route path="/admin" element={
-                <ProtectedRoute>
+                <AdminRoute>
                   <AdminPage />
-                </ProtectedRoute>
+                </AdminRoute>
               } />
               <Route path="/auth" element={<AuthPage />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

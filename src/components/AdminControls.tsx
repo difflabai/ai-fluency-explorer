@@ -9,24 +9,32 @@ import { DatabaseStatusCard } from './admin';
 import { MigrationLogs } from './admin';
 import { setupLogCapture } from './admin/controls/LogCaptureUtils';
 import { MigrationPanel } from './admin/controls';
+import { useAuth } from '@/contexts/auth';
+import AccessDeniedAlert from './admin/AccessDeniedAlert';
 
 /**
  * Administrative control panel for initializing the application
  * Provides functionality to check database status and run initialization
  */
 const AdminControls: React.FC = () => {
+  const { isAdmin } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialized, setIsInitialized] = useState<boolean | null>(null);
   const [isChecking, setIsChecking] = useState(false);
   const [migrationLogs, setMigrationLogs] = useState<string[]>([]);
+  const [permissionError, setPermissionError] = useState<string | null>(null);
   
   // Check database status on mount
   useEffect(() => {
-    checkDatabaseStatus();
-  }, []);
+    if (isAdmin) {
+      checkDatabaseStatus();
+    }
+  }, [isAdmin]);
   
   const checkDatabaseStatus = async () => {
     setIsChecking(true);
+    setPermissionError(null);
+    
     try {
       const populated = await verifyDatabasePopulated();
       setIsInitialized(populated);
@@ -41,12 +49,17 @@ const AdminControls: React.FC = () => {
           description: "Database is not yet populated. Please run migration."
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error checking database status:', error);
       setIsInitialized(false);
+      
+      if (error.message?.includes('permission')) {
+        setPermissionError("You don't have permission to check database status.");
+      }
+      
       toast({
         title: "Database Check Failed",
-        description: "Could not verify database status. See console for details.",
+        description: error.message || "Could not verify database status. See console for details.",
         variant: "destructive"
       });
     } finally {
@@ -62,6 +75,24 @@ const AdminControls: React.FC = () => {
     setMigrationLogs([]);
   };
   
+  // If user is not an admin, show access denied message
+  if (!isAdmin) {
+    return (
+      <Card className="w-full max-w-2xl mx-auto">
+        <CardHeader>
+          <CardTitle>Admin Controls</CardTitle>
+          <CardDescription>Manage application data and configurations</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <AccessDeniedAlert 
+            title="Admin Access Required" 
+            description="You need admin privileges to access these controls. Please contact an administrator or request admin access." 
+          />
+        </CardContent>
+      </Card>
+    );
+  }
+  
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
@@ -74,6 +105,10 @@ const AdminControls: React.FC = () => {
       </CardHeader>
       
       <CardContent className="space-y-4">
+        {permissionError && (
+          <AccessDeniedAlert description={permissionError} />
+        )}
+        
         <DatabaseStatusCard 
           isChecking={isChecking} 
           isInitialized={isInitialized} 
