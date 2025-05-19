@@ -15,6 +15,9 @@ import { Link } from 'react-router-dom';
 
 const UserMenu: React.FC = () => {
   const { user, isAdmin, signOut } = useAuth();
+  
+  console.log("UserMenu - user:", user?.email);
+  console.log("UserMenu - isAdmin:", isAdmin);
 
   if (!user) {
     return (

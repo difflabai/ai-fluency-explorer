@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { fetchLeaderboard, SavedTestResult } from '@/services/testResultService';
 import { Button } from "@/components/ui/button";
@@ -16,18 +15,24 @@ const Leaderboard: React.FC = () => {
 
   useEffect(() => {
     loadLeaderboard();
-  }, [showTestData]);
+  }, [showTestData, isAdmin]);
 
   const loadLeaderboard = async () => {
     setIsLoading(true);
     try {
+      console.log("Leaderboard - isAdmin:", isAdmin);
+      console.log("Leaderboard - showTestData:", showTestData);
+      
       const data = await fetchLeaderboard();
+      console.log("Leaderboard - fetched data:", data);
+      
       // If admin user and showTestData is true, include test data
       // Otherwise filter out test data
       const filteredData = isAdmin && showTestData 
         ? data 
         : data.filter(entry => !entry.is_test_data);
         
+      console.log("Leaderboard - filtered data:", filteredData);
       setLeaderboardData(filteredData);
     } catch (error) {
       console.error("Failed to load leaderboard data:", error);

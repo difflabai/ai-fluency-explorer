@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,6 +12,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [isAdminLoading, setIsAdminLoading] = useState<boolean>(true);
 
+  // Helper function to check admin status with better error handling
+  const checkAndSetAdminStatus = async (userId: string) => {
+    setIsAdminLoading(true);
+    try {
+      console.log("Checking admin status for user:", userId);
+      const isUserAdmin = await checkAdminStatus(userId, supabase);
+      console.log(`Admin status check completed: ${isUserAdmin}`);
+      setIsAdmin(isUserAdmin);
+    } catch (err) {
+      console.error("Error checking admin status:", err);
+      setIsAdmin(false);
+    } finally {
+      setIsAdminLoading(false);
+    }
+  };
+
   useEffect(() => {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -21,23 +36,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSession(newSession);
         setUser(newSession?.user ?? null);
 
-        // Set admin loading to true when auth state changes
         if (newSession?.user) {
-          setIsAdminLoading(true);
-          
-          // Check admin status with a longer delay to ensure RPC is ready
-          setTimeout(async () => {
-            try {
-              const isUserAdmin = await checkAdminStatus(newSession.user.id, supabase);
-              console.log(`Admin status check completed: ${isUserAdmin}`);
-              setIsAdmin(isUserAdmin);
-            } catch (err) {
-              console.error("Error checking admin status:", err);
-              setIsAdmin(false);
-            } finally {
-              setIsAdminLoading(false);
-            }
-          }, 1500); // Increased delay for more reliable admin status check
+          // Check admin status with better error handling
+          checkAndSetAdminStatus(newSession.user.id);
         } else {
           setIsAdmin(false);
           setIsAdminLoading(false);
@@ -56,28 +57,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const initializeAuth = async () => {
       try {
         setIsLoading(true);
-        setIsAdminLoading(true);
         
         const { data: { session: currentSession } } = await supabase.auth.getSession();
         
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         
-        // Check admin status with a delay to ensure RPC is ready
+        // Check admin status if user exists
         if (currentSession?.user) {
-          setTimeout(async () => {
-            try {
-              const isUserAdmin = await checkAdminStatus(currentSession.user.id, supabase);
-              console.log("Initial admin status check:", isUserAdmin);
-              setIsAdmin(isUserAdmin);
-            } catch (err) {
-              console.error("Error in initial admin status check:", err);
-              setIsAdmin(false);
-            } finally {
-              setIsAdminLoading(false);
-              setIsLoading(false);
-            }
-          }, 1500); // Increased delay for more reliable admin status check
+          checkAndSetAdminStatus(currentSession.user.id);
         } else {
           setIsAdmin(false);
           setIsAdminLoading(false);

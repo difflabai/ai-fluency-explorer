@@ -18,10 +18,16 @@ const LeaderboardPreview: React.FC = () => {
       try {
         // Only fetch top 5 for preview
         const data = await fetchLeaderboard(5);
+        
+        console.log("LeaderboardPreview - isAdmin:", isAdmin);
+        console.log("LeaderboardPreview - fetched data:", data);
+        
         // Filter out test data for non-admins
         const filteredData = isAdmin 
           ? data 
           : data.filter(entry => !entry.is_test_data);
+          
+        console.log("LeaderboardPreview - filtered data:", filteredData);
         setLeaderboardData(filteredData);
       } catch (error) {
         console.error("Failed to load leaderboard preview:", error);
