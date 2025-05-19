@@ -16,23 +16,38 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const { user, isLoading, isAdmin } = useAuth();
   const location = useLocation();
   const [isChecking, setIsChecking] = useState(true);
+  const [localIsAdmin, setLocalIsAdmin] = useState(false);
   
   useEffect(() => {
-    // Short delay to ensure auth state is fully loaded
-    const timer = setTimeout(() => {
+    // If admin check isn't needed, we can skip this delay
+    if (!requireAdmin) {
       setIsChecking(false);
-    }, 500);
+      return;
+    }
     
-    return () => clearTimeout(timer);
-  }, []);
+    // If we need admin check, ensure we wait for isAdmin to stabilize
+    if (user && isAdmin) {
+      setLocalIsAdmin(true);
+      setIsChecking(false);
+    } else if (!isLoading) {
+      // Only stop checking if we're done loading and still not admin
+      const timer = setTimeout(() => {
+        setLocalIsAdmin(isAdmin);
+        setIsChecking(false);
+      }, 1000); // Increased timeout to ensure admin status is checked
+      
+      return () => clearTimeout(timer);
+    }
+  }, [user, isAdmin, isLoading, requireAdmin]);
 
   useEffect(() => {
     if (user && requireAdmin) {
       console.log("ProtectedRoute - User:", user.email);
       console.log("ProtectedRoute - Admin required:", requireAdmin);
       console.log("ProtectedRoute - Is admin:", isAdmin);
+      console.log("ProtectedRoute - Local is admin:", localIsAdmin);
     }
-  }, [user, requireAdmin, isAdmin]);
+  }, [user, requireAdmin, isAdmin, localIsAdmin]);
 
   // While checking authentication status, show loading
   if (isLoading || isChecking) {
@@ -52,7 +67,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
   
   // If admin is required but user is not admin, redirect to home
-  if (requireAdmin && !isAdmin) {
+  if (requireAdmin && !localIsAdmin) {
     console.log("User is not an admin, redirecting to home");
     return <Navigate to="/" replace />;
   }
