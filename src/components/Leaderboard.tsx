@@ -1,9 +1,10 @@
+
 import React, { useEffect, useState } from 'react';
 import { fetchLeaderboard, SavedTestResult } from '@/services/testResultService';
 import { Button } from "@/components/ui/button";
 import { Home, Trophy, Calendar, ArrowUp, User, Medal, Database } from 'lucide-react';
 import { format } from 'date-fns';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth';
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 

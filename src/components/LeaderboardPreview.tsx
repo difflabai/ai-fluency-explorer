@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { fetchLeaderboard, SavedTestResult } from '@/services/testResultService';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Trophy, Medal, ChevronRight, Database } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth';
 
 const LeaderboardPreview: React.FC = () => {
   const [leaderboardData, setLeaderboardData] = useState<SavedTestResult[]>([]);
