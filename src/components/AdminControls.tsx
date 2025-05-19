@@ -7,6 +7,7 @@ import { verifyDatabasePopulated, initializeApplication } from '@/utils/appIniti
 import { migrateJsonDataWithNotifications } from '@/utils/database/jsonDataOrchestrator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
+import { useAuth } from '@/contexts/AuthContext';
 
 /**
  * Administrative control panel for initializing the application
@@ -17,6 +18,7 @@ const AdminControls: React.FC = () => {
   const [isInitialized, setIsInitialized] = useState<boolean | null>(null);
   const [isChecking, setIsChecking] = useState(false);
   const [migrationLogs, setMigrationLogs] = useState<string[]>([]);
+  const { isAdmin } = useAuth();
   
   // Check database status on mount
   useEffect(() => {
@@ -78,6 +80,15 @@ const AdminControls: React.FC = () => {
   };
   
   const handleInitialize = async () => {
+    if (!isAdmin) {
+      toast({
+        title: "Access Denied",
+        description: "You must be an admin to perform this action.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setIsLoading(true);
     setMigrationLogs([]);
     
@@ -104,6 +115,15 @@ const AdminControls: React.FC = () => {
   };
   
   const handleJsonMigration = async () => {
+    if (!isAdmin) {
+      toast({
+        title: "Access Denied",
+        description: "You must be an admin to perform this action.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setIsLoading(true);
     setMigrationLogs([]);
     

@@ -234,6 +234,27 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: Database["public"]["Enums"]["user_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -266,6 +287,14 @@ export type Database = {
         }
         Returns: string
       }
+      current_user_role: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      is_admin: {
+        Args: { user_id: string }
+        Returns: boolean
+      }
       populate_test_questions: {
         Args: { test_type_name: string; question_limit?: number }
         Returns: number
@@ -278,6 +307,7 @@ export type Database = {
         | "competent"
         | "proficient"
         | "expert"
+      user_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -400,6 +430,7 @@ export const Constants = {
         "proficient",
         "expert",
       ],
+      user_role: ["admin", "user"],
     },
   },
 } as const
