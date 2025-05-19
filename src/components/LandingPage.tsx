@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,6 +15,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import LeaderboardPreview from './LeaderboardPreview';
+import SampleResultsCarousel from './SampleResultsCarousel';
 
 interface LandingPageProps {
   onStartQuickTest: () => void;
@@ -201,61 +201,9 @@ const LandingPage: React.FC<LandingPageProps> = ({
             </ul>
           </div>
           
-          {/* Right column - Results example */}
-          <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
-            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-              <Trophy className="h-5 w-5 text-yellow-500" />
-              Sample Results Overview
-            </h3>
-            
-            <div className="mb-4">
-              <div className="flex items-baseline justify-between mb-1">
-                <span className="text-sm font-medium">Overall Score</span>
-                <span className="text-sm text-gray-500">145/240</span>
-              </div>
-              <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                <div className="h-full bg-purple-500 rounded-full" style={{ width: '60%' }}></div>
-              </div>
-            </div>
-            
-            <div className="mb-4">
-              <h4 className="text-sm font-medium mb-2">Your AI Fluency Tier</h4>
-              <div className="inline-block px-3 py-1 rounded-full bg-blue-100 text-blue-700 font-medium text-sm">
-                Proficient
-              </div>
-              <p className="text-xs text-gray-500 mt-1">
-                Advanced understanding with specialized knowledge in multiple areas
-              </p>
-            </div>
-            
-            <div className="mb-4">
-              <h4 className="text-sm font-medium mb-2">Category Breakdown</h4>
-              <div className="space-y-2">
-                <div className="flex justify-between text-xs">
-                  <span>Prompt Engineering</span>
-                  <span className="text-gray-500">85%</span>
-                </div>
-                <div className="flex justify-between text-xs">
-                  <span>AI Ethics</span>
-                  <span className="text-gray-500">70%</span>
-                </div>
-                <div className="flex justify-between text-xs">
-                  <span>Technical Concepts</span>
-                  <span className="text-gray-500">55%</span>
-                </div>
-                <div className="flex justify-between text-xs">
-                  <span>Practical Applications</span>
-                  <span className="text-gray-500">65%</span>
-                </div>
-              </div>
-            </div>
-            
-            <div className="text-center">
-              <div className="text-sm flex items-center justify-center gap-1 text-purple-600">
-                <ListCheck className="h-4 w-4" />
-                <span>Complete your assessment to view detailed results</span>
-              </div>
-            </div>
+          {/* Right column - Sample Results Carousel */}
+          <div>
+            <SampleResultsCarousel />
           </div>
         </div>
       </div>
