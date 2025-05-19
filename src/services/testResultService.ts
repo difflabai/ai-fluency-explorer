@@ -15,6 +15,7 @@ export interface SavedTestResult {
   public: boolean;
   share_id: string;
   questions_snapshot?: any; // New field to store the questions used in the test
+  is_test_data?: boolean; // Flag to identify test data
 }
 
 // Save test result to Supabase

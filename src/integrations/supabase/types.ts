@@ -125,6 +125,7 @@ export type Database = {
           category_scores: Json
           created_at: string
           id: string
+          is_test_data: boolean
           max_possible_score: number
           overall_score: number
           percentage_score: number
@@ -139,6 +140,7 @@ export type Database = {
           category_scores: Json
           created_at?: string
           id?: string
+          is_test_data?: boolean
           max_possible_score: number
           overall_score: number
           percentage_score: number
@@ -153,6 +155,7 @@ export type Database = {
           category_scores?: Json
           created_at?: string
           id?: string
+          is_test_data?: boolean
           max_possible_score?: number
           overall_score?: number
           percentage_score?: number

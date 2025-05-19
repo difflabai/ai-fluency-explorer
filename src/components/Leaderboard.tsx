@@ -1,29 +1,39 @@
-
 import React, { useEffect, useState } from 'react';
 import { fetchLeaderboard, SavedTestResult } from '@/services/testResultService';
 import { Button } from "@/components/ui/button";
-import { Home, Trophy, Calendar, ArrowUp, User, Medal } from 'lucide-react';
+import { Home, Trophy, Calendar, ArrowUp, User, Medal, Database } from 'lucide-react';
 import { format } from 'date-fns';
+import { useAuth } from '@/contexts/AuthContext';
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 const Leaderboard: React.FC = () => {
   const [leaderboardData, setLeaderboardData] = useState<SavedTestResult[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showTestData, setShowTestData] = useState(false);
+  const { isAdmin } = useAuth();
 
   useEffect(() => {
-    const loadLeaderboard = async () => {
-      setIsLoading(true);
-      try {
-        const data = await fetchLeaderboard();
-        setLeaderboardData(data);
-      } catch (error) {
-        console.error("Failed to load leaderboard data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     loadLeaderboard();
-  }, []);
+  }, [showTestData]);
+
+  const loadLeaderboard = async () => {
+    setIsLoading(true);
+    try {
+      const data = await fetchLeaderboard();
+      // If admin user and showTestData is true, include test data
+      // Otherwise filter out test data
+      const filteredData = isAdmin && showTestData 
+        ? data 
+        : data.filter(entry => !entry.is_test_data);
+        
+      setLeaderboardData(filteredData);
+    } catch (error) {
+      console.error("Failed to load leaderboard data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="container max-w-4xl mx-auto px-4 py-8">
@@ -38,6 +48,24 @@ const Leaderboard: React.FC = () => {
           Return Home
         </Button>
       </div>
+      
+      {/* Admin-only toggle for test data visibility */}
+      {isAdmin && (
+        <div className="mb-4 p-3 bg-gray-50 rounded-lg flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Database className="h-4 w-4 text-gray-500" />
+            <span className="text-sm font-medium">Admin Controls</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Switch
+              id="test-data-toggle"
+              checked={showTestData}
+              onCheckedChange={setShowTestData}
+            />
+            <Label htmlFor="test-data-toggle" className="text-sm">Show Test Data</Label>
+          </div>
+        </div>
+      )}
       
       {isLoading ? (
         <div className="flex justify-center items-center h-64">
@@ -57,7 +85,13 @@ const Leaderboard: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-gray-200">
               {leaderboardData.map((entry, index) => (
-                <tr key={entry.id} className={index < 3 ? "bg-purple-50" : ""}>
+                <tr key={entry.id} className={
+                  entry.is_test_data 
+                    ? "bg-blue-50" 
+                    : index < 3 
+                      ? "bg-purple-50" 
+                      : ""
+                }>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       {index < 3 ? (
@@ -77,11 +111,20 @@ const Leaderboard: React.FC = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-8 w-8 bg-purple-100 rounded-full flex items-center justify-center">
-                        <User className="h-4 w-4 text-purple-600" />
+                        {entry.is_test_data ? (
+                          <Database className="h-4 w-4 text-blue-600" />
+                        ) : (
+                          <User className="h-4 w-4 text-purple-600" />
+                        )}
                       </div>
                       <div className="ml-3">
-                        <div className="text-sm font-medium text-gray-900">
+                        <div className="text-sm font-medium text-gray-900 flex items-center gap-1">
                           {entry.username || "Anonymous User"}
+                          {entry.is_test_data && (
+                            <span className="bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 rounded">
+                              Test
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>

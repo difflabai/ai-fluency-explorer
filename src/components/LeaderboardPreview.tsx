@@ -3,13 +3,15 @@ import React, { useEffect, useState } from 'react';
 import { fetchLeaderboard, SavedTestResult } from '@/services/testResultService';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trophy, Medal, ChevronRight } from 'lucide-react';
+import { Trophy, Medal, ChevronRight, Database } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
+import { useAuth } from '@/contexts/AuthContext';
 
 const LeaderboardPreview: React.FC = () => {
   const [leaderboardData, setLeaderboardData] = useState<SavedTestResult[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { isAdmin } = useAuth();
 
   useEffect(() => {
     const loadLeaderboard = async () => {
@@ -17,7 +19,11 @@ const LeaderboardPreview: React.FC = () => {
       try {
         // Only fetch top 5 for preview
         const data = await fetchLeaderboard(5);
-        setLeaderboardData(data);
+        // Filter out test data for non-admins
+        const filteredData = isAdmin 
+          ? data 
+          : data.filter(entry => !entry.is_test_data);
+        setLeaderboardData(filteredData);
       } catch (error) {
         console.error("Failed to load leaderboard preview:", error);
       } finally {
@@ -26,7 +32,7 @@ const LeaderboardPreview: React.FC = () => {
     };
 
     loadLeaderboard();
-  }, []);
+  }, [isAdmin]);
 
   return (
     <Card className="bg-white shadow-sm overflow-hidden">
@@ -56,7 +62,12 @@ const LeaderboardPreview: React.FC = () => {
                     {index < 3 ? <Medal className="h-3 w-3" /> : <span className="text-xs">{index + 1}</span>}
                   </div>
                   <div>
-                    <div className="font-medium">{entry.username || "Anonymous User"}</div>
+                    <div className="font-medium flex items-center gap-1">
+                      {entry.username || "Anonymous User"}
+                      {entry.is_test_data && (
+                        <Database className="h-3 w-3 text-blue-500" />
+                      )}
+                    </div>
                     <div className="text-xs text-gray-500">
                       {format(new Date(entry.created_at), 'MMM d, yyyy')}
                     </div>
