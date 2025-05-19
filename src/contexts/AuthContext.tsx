@@ -260,10 +260,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // New function to make user an admin
-  const makeUserAdmin = async (email: string) => {
+  // Updated makeUserAdmin function with correct return type and RPC name
+  const makeUserAdmin = async (email: string): Promise<void> => {
     try {
-      // First call the RPC function to insert a role
+      // Call the RPC function with the correct name
       const { data, error } = await supabase.rpc('add_user_role', { 
         user_email: email,
         role_name: 'admin'
@@ -271,7 +271,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (error) throw error;
       
-      return data;
+      toast({
+        title: 'Success',
+        description: `Admin privileges granted to ${email}`,
+      });
     } catch (error: any) {
       toast({
         title: 'Error granting admin privileges',

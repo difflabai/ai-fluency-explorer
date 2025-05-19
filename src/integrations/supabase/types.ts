@@ -263,6 +263,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_user_role: {
+        Args: { user_email: string; role_name?: string }
+        Returns: boolean
+      }
       admin_insert_category: {
         Args: { category_name: string; category_description: string }
         Returns: string
