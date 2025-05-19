@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
@@ -15,6 +15,16 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 }) => {
   const { user, isLoading, isAdmin } = useAuth();
   const location = useLocation();
+  const [isChecking, setIsChecking] = useState(true);
+  
+  useEffect(() => {
+    // Short delay to ensure auth state is fully loaded
+    const timer = setTimeout(() => {
+      setIsChecking(false);
+    }, 500);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (user && requireAdmin) {
@@ -25,7 +35,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }, [user, requireAdmin, isAdmin]);
 
   // While checking authentication status, show loading
-  if (isLoading) {
+  if (isLoading || isChecking) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="flex flex-col items-center gap-4">
