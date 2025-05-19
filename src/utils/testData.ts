@@ -62,5 +62,7 @@ export const categories: Category[] = [
   }
 ];
 
-// Export the question data and functions
-export { customQuickAssessmentQuestions, sampleQuestions, getQuickAssessmentQuestions, getComprehensiveQuestions } from './testData';
+// Instead of importing from './testData', directly export from testData directory modules
+export { default as customQuickAssessmentQuestions } from './testData/quickAssessmentQuestions';
+export { default as sampleQuestions } from './testData/sampleQuestions';
+export { getQuickAssessmentQuestions, getComprehensiveQuestions } from './testData/questionSelectors';
