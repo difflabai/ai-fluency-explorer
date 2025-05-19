@@ -136,56 +136,61 @@ const calculateCategoryScores = (
     });
   });
   
-  // Also add fluency tiers as "categories" for the breakdown view
+  // Calculate fluency level scores based on actual questions
   const fluencyLevelScores = calculateFluencyLevelScores(questions, userAnswers);
   
   return [...categoryScores, ...fluencyLevelScores];
 };
 
-// Calculate scores for each fluency level
+// Calculate scores for each fluency level based on actual questions
 const calculateFluencyLevelScores = (
   questions: Question[],
   userAnswers: UserAnswer[]
 ): CategoryScore[] => {
-  // Map specific categories to fluency levels for demonstration
-  // This would need to be adjusted based on how your questions are actually structured
+  // Group questions by difficulty level
+  const questionsByDifficulty: Record<string, Question[]> = {
+    'novice': [],
+    'advanced-beginner': [],
+    'competent': [],
+    'proficient': [],
+    'expert': []
+  };
   
-  // For now, we're just returning placeholder scores that match the design
-  return [
-    {
-      categoryId: 'novice',
-      categoryName: 'Novice',
-      score: 9,
-      totalQuestions: 9,
-      percentage: 100
-    },
-    {
-      categoryId: 'advanced_beginner',
-      categoryName: 'Advanced Beginner',
-      score: 10,
-      totalQuestions: 10,
-      percentage: 100
-    },
-    {
-      categoryId: 'competent',
-      categoryName: 'Competent',
-      score: 10,
-      totalQuestions: 10,
-      percentage: 100
-    },
-    {
-      categoryId: 'proficient',
-      categoryName: 'Proficient',
-      score: 10,
-      totalQuestions: 10,
-      percentage: 100
-    },
-    {
-      categoryId: 'expert',
-      categoryName: 'Expert',
-      score: 11,
-      totalQuestions: 11,
-      percentage: 100
+  // Populate the groups
+  questions.forEach(question => {
+    const difficulty = String(question.difficulty);
+    if (questionsByDifficulty[difficulty]) {
+      questionsByDifficulty[difficulty].push(question);
     }
-  ];
+  });
+  
+  // Calculate scores for each difficulty level
+  return Object.entries(questionsByDifficulty).map(([difficulty, difficultyQuestions]) => {
+    let score = 0;
+    difficultyQuestions.forEach(question => {
+      const userAnswer = userAnswers.find(a => a.questionId === question.id);
+      if (userAnswer && userAnswer.answer === true) {
+        score++;
+      }
+    });
+    
+    // Format the difficulty name for display
+    let displayName: string;
+    switch(difficulty) {
+      case 'novice': displayName = 'Novice'; break;
+      case 'advanced-beginner': displayName = 'Advanced Beginner'; break;
+      case 'competent': displayName = 'Competent'; break;
+      case 'proficient': displayName = 'Proficient'; break;
+      case 'expert': displayName = 'Expert'; break;
+      default: displayName = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+    }
+    
+    return {
+      categoryId: difficulty,
+      categoryName: displayName,
+      score: score,
+      totalQuestions: difficultyQuestions.length,
+      percentage: difficultyQuestions.length > 0 ? (score / difficultyQuestions.length) * 100 : 0
+    };
+  });
 };

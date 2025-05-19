@@ -78,7 +78,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
             {getCategoryDisplayName()}
           </span>
           <span className="text-xs font-medium bg-gray-100 text-gray-600 px-3 py-1 rounded-full">
-            Question {question.id}
+            {question.category}
           </span>
         </div>
         <h3 className="text-2xl font-medium text-gray-800">{question.text}</h3>

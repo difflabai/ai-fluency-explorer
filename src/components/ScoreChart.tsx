@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { 
   ResponsiveContainer, 
@@ -16,9 +15,21 @@ interface ScoreChartProps {
 
 const ScoreChart: React.FC<ScoreChartProps> = ({ categoryScores }) => {
   // Filter out the fluency level categories for the radar chart
+  // We want to keep only the skill categories, not the difficulty levels
+  const skillCategories = ['Prompt Engineering', 'AI Ethics', 'Technical Concepts', 'Practical Applications', 'AI Tools'];
+  
   const filteredScores = categoryScores.filter(score => 
     !['Novice', 'Advanced Beginner', 'Competent', 'Proficient', 'Expert'].includes(score.categoryName)
   );
+  
+  // Make sure we have data to display
+  if (filteredScores.length === 0) {
+    return (
+      <div className="h-[300px] w-full flex items-center justify-center">
+        <p className="text-gray-500">No category data available</p>
+      </div>
+    );
+  }
 
   const chartData = filteredScores.map((score) => ({
     subject: score.categoryName,
