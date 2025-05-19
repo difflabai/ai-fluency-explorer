@@ -11,4 +11,5 @@ export type AuthContextType = {
   sendMagicLink: (email: string) => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   cleanupAuthState: () => void;
+  makeUserAdmin: (email: string) => Promise<void>;
 };

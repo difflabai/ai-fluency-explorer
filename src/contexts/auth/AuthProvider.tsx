@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -185,6 +184,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const makeUserAdmin = async (email: string) => {
+    try {
+      if (!email || !email.trim()) {
+        throw new Error('Email is required');
+      }
+
+      const { data, error } = await supabase.rpc('add_user_role', {
+        user_email: email,
+        role_name: 'admin'
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: 'Admin privileges granted',
+        description: `User ${email} has been given admin privileges.`
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Failed to grant admin privileges',
+        description: error.message || 'An error occurred while granting admin privileges',
+        variant: 'destructive'
+      });
+      throw error;
+    }
+  };
+
   const value = {
     user,
     session,
@@ -194,7 +220,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signOut,
     sendMagicLink,
     resetPassword,
-    cleanupAuthState
+    cleanupAuthState,
+    makeUserAdmin
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
