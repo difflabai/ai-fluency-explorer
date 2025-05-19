@@ -1,80 +1,17 @@
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-
-type AuthContextType = {
-  user: User | null;
-  session: Session | null;
-  isLoading: boolean;
-  isAdmin: boolean;
-  isAdminLoading: boolean; // New state for tracking admin status loading
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
-  signOut: () => Promise<void>;
-  sendMagicLink: (email: string) => Promise<void>;
-  resetPassword: (email: string) => Promise<void>;
-  cleanupAuthState: () => void;
-  makeUserAdmin: (email: string) => Promise<void>;
-};
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
-
-export const cleanupAuthState = () => {
-  // Remove standard auth tokens
-  localStorage.removeItem('supabase.auth.token');
-  
-  // Remove all Supabase auth keys from localStorage
-  Object.keys(localStorage).forEach((key) => {
-    if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
-      localStorage.removeItem(key);
-    }
-  });
-  
-  // Remove from sessionStorage if in use
-  Object.keys(sessionStorage || {}).forEach((key) => {
-    if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
-      sessionStorage.removeItem(key);
-    }
-  });
-};
+import { AuthContext } from './AuthContext';
+import { cleanupAuthState, checkAdminStatus } from '@/utils/authUtils';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
-  const [isAdminLoading, setIsAdminLoading] = useState<boolean>(true); // Add admin loading state
-
-  // Check if user is admin - with proper search path
-  const checkAdminStatus = async (userId: string) => {
-    try {
-      console.log("Checking admin status for user:", userId);
-      // Use the RPC endpoint that has proper search_path set
-      const { data, error } = await supabase
-        .rpc('is_admin', { user_id: userId });
-      
-      if (error) {
-        console.error('Error checking admin status:', error);
-        return false;
-      }
-      
-      console.log("Admin status result:", data);
-      return data || false;
-    } catch (error) {
-      console.error('Error checking admin status:', error);
-      return false;
-    }
-  };
+  const [isAdminLoading, setIsAdminLoading] = useState<boolean>(true);
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -91,7 +28,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           // Check admin status with a longer delay to ensure RPC is ready
           setTimeout(async () => {
             try {
-              const isUserAdmin = await checkAdminStatus(newSession.user.id);
+              const isUserAdmin = await checkAdminStatus(newSession.user.id, supabase);
               console.log(`Admin status check completed: ${isUserAdmin}`);
               setIsAdmin(isUserAdmin);
             } catch (err) {
@@ -130,7 +67,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (currentSession?.user) {
           setTimeout(async () => {
             try {
-              const isUserAdmin = await checkAdminStatus(currentSession.user.id);
+              const isUserAdmin = await checkAdminStatus(currentSession.user.id, supabase);
               console.log("Initial admin status check:", isUserAdmin);
               setIsAdmin(isUserAdmin);
             } catch (err) {
@@ -327,7 +264,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     session,
     isLoading,
     isAdmin,
-    isAdminLoading, // Expose the new state
+    isAdminLoading,
     signIn,
     signUp,
     signOut,
