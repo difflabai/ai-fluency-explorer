@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Loader2, CheckCircle2, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { runSystemCheck } from '@/utils/systemCheck';
 import { useAuth } from '@/contexts/AuthContext';
-import { Navigate } from 'react-router-dom';
 import { TestHarness } from '@/components/admin';
 
 type CheckResult = {
@@ -18,12 +17,6 @@ const SystemCheck: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<CheckResult[] | null>(null);
   const [expandedDetails, setExpandedDetails] = useState<{[key: string]: boolean}>({});
-  const { isAdmin } = useAuth();
-  
-  // Redirect non-admin users to the home page
-  if (!isAdmin) {
-    return <Navigate to="/" replace />;
-  }
   
   const handleRunCheck = async () => {
     setIsLoading(true);
