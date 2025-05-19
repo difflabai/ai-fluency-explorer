@@ -1,8 +1,7 @@
 
 import React from 'react';
-import { Button } from "@/components/ui/button";
-import { Loader2 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DatabaseInitialization, JsonMigration } from './controls';
 
 interface MigrationControlsProps {
   isLoading: boolean;
@@ -28,14 +27,13 @@ const MigrationControls: React.FC<MigrationControlsProps> = ({
           <p className="mt-1 text-muted-foreground">This is the recommended approach for stable data migrations.</p>
         </div>
         
-        <Button
+        <button
           onClick={onJsonMigration}
           disabled={isLoading}
-          className="w-full gap-2"
+          className="w-full inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
         >
-          {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
           {isLoading ? 'Running JSON Migration...' : 'Run JSON Migration'}
-        </Button>
+        </button>
       </TabsContent>
       
       <TabsContent value="legacy" className="space-y-4">
@@ -44,14 +42,13 @@ const MigrationControls: React.FC<MigrationControlsProps> = ({
           <p className="mt-1 text-muted-foreground">This method is maintained for backward compatibility.</p>
         </div>
         
-        <Button
+        <button
           onClick={onLegacyMigration}
           disabled={isLoading}
-          className="w-full gap-2"
+          className="w-full inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
         >
-          {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
           {isLoading ? 'Initializing...' : 'Initialize Application (Legacy)'}
-        </Button>
+        </button>
       </TabsContent>
     </Tabs>
   );

@@ -3,12 +3,12 @@ import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Database, Loader2 } from 'lucide-react';
-import { verifyDatabasePopulated, initializeApplication } from '@/utils/appInitialization';
-import { migrateJsonDataWithNotifications } from '@/utils/database/jsonDataOrchestrator';
+import { verifyDatabasePopulated } from '@/utils/appInitialization';
 import { toast } from "@/hooks/use-toast";
-import DatabaseStatusCard from './admin/DatabaseStatusCard';
-import MigrationControls from './admin/MigrationControls';
-import MigrationLogs from './admin/MigrationLogs';
+import { DatabaseStatusCard } from './admin';
+import { MigrationLogs } from './admin';
+import { setupLogCapture } from './admin/controls/LogCaptureUtils';
+import { MigrationPanel } from './admin/controls';
 
 /**
  * Administrative control panel for initializing the application
@@ -54,81 +54,8 @@ const AdminControls: React.FC = () => {
     }
   };
   
-  // Capture console logs during migration
-  const setupLogCapture = () => {
-    const originalConsoleLog = console.log;
-    const originalConsoleError = console.error;
-    
-    console.log = (...args) => {
-      originalConsoleLog(...args);
-      setMigrationLogs(prev => [...prev, args.map(arg => 
-        typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
-      ).join(' ')]);
-    };
-    
-    console.error = (...args) => {
-      originalConsoleError(...args);
-      setMigrationLogs(prev => [...prev, `ERROR: ${args.map(arg => 
-        typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
-      ).join(' ')}`]);
-    };
-    
-    return () => {
-      console.log = originalConsoleLog;
-      console.error = originalConsoleError;
-    };
-  };
-  
-  const handleInitialize = async () => {
-    setIsLoading(true);
-    setMigrationLogs([]);
-    
-    const restoreConsole = setupLogCapture();
-    
-    try {
-      await initializeApplication();
-      // Give time for initialization to complete
-      setTimeout(async () => {
-        await checkDatabaseStatus();
-        setIsLoading(false);
-        restoreConsole();
-      }, 5000);
-    } catch (error) {
-      console.error('Error during initialization:', error);
-      setIsLoading(false);
-      restoreConsole();
-      toast({
-        title: "Initialization Failed",
-        description: "An error occurred during initialization. See console for details.",
-        variant: "destructive"
-      });
-    }
-  };
-  
-  const handleJsonMigration = async () => {
-    setIsLoading(true);
-    setMigrationLogs([]);
-    
-    const restoreConsole = setupLogCapture();
-    
-    try {
-      await migrateJsonDataWithNotifications();
-      // Give time for migration to complete
-      setTimeout(async () => {
-        await checkDatabaseStatus();
-        setIsLoading(false);
-        restoreConsole();
-      }, 5000);
-    } catch (error) {
-      console.error('Error during JSON migration:', error);
-      setIsLoading(false);
-      restoreConsole();
-      toast({
-        title: "Migration Failed",
-        description: "An error occurred during JSON migration. See console for details.",
-        variant: "destructive"
-      });
-    }
+  const setupLogCaptureWrapper = () => {
+    return setupLogCapture(setMigrationLogs);
   };
   
   const handleClearLogs = () => {
@@ -152,10 +79,12 @@ const AdminControls: React.FC = () => {
           isInitialized={isInitialized} 
         />
         
-        <MigrationControls
+        <MigrationPanel
           isLoading={isLoading}
-          onJsonMigration={handleJsonMigration}
-          onLegacyMigration={handleInitialize}
+          setIsLoading={setIsLoading}
+          setMigrationLogs={setMigrationLogs}
+          checkDatabaseStatus={checkDatabaseStatus}
+          setupLogCapture={setupLogCaptureWrapper}
         />
         
         <MigrationLogs 
