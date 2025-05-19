@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Category } from '@/utils/testData';
 import { migrateAndNotify } from '@/utils/databaseMigration';
@@ -35,8 +34,23 @@ export interface DBTestType {
 }
 
 // Fetch questions for the specified test type
-export const fetchQuestions = async (testType: 'quick' | 'comprehensive'): Promise<DBQuestion[]> => {
+export const fetchQuestions = async (testType?: 'quick' | 'comprehensive'): Promise<DBQuestion[]> => {
   try {
+    if (!testType) {
+      // If no test type is specified, fetch all active questions
+      const { data, error } = await supabase
+        .from('questions')
+        .select('*')
+        .eq('is_active', true);
+        
+      if (error) {
+        console.error('Error fetching questions:', error);
+        return [];
+      }
+      
+      return data || [];
+    }
+    
     // Map the frontend test type to database test type name
     const testTypeName = testType === 'quick' ? 'Quick Assessment' : 'Comprehensive Assessment';
     

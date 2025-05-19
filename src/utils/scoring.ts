@@ -1,4 +1,3 @@
-
 import { Question, UserAnswer, Category, categories } from './testData';
 
 export type FluencyTier = {
@@ -193,4 +192,20 @@ const calculateFluencyLevelScores = (
       percentage: difficultyQuestions.length > 0 ? (score / difficultyQuestions.length) * 100 : 0
     };
   });
+};
+
+/**
+ * Determines tier based on percentage score
+ */
+export const calculateTierForScore = (percentageScore: number): FluencyTier => {
+  // Convert percentage to absolute score range
+  const score = (percentageScore / 100) * 240;
+  
+  for (const tier of fluencyTiers) {
+    if (score >= tier.range[0] && score <= tier.range[1]) {
+      return tier;
+    }
+  }
+  
+  return fluencyTiers[0]; // Default to novice if something goes wrong
 };
