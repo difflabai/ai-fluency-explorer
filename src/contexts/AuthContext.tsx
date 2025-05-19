@@ -12,6 +12,8 @@ type AuthContextType = {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
+  sendMagicLink: (email: string) => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -207,6 +209,59 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const sendMagicLink = async (email: string) => {
+    try {
+      // Clean up existing state
+      cleanupAuthState();
+      
+      const { data, error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          shouldCreateUser: true,
+        }
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: 'Magic link sent',
+        description: 'Check your email for the login link'
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Failed to send magic link',
+        description: error.message || 'An error occurred while sending the magic link',
+        variant: 'destructive'
+      });
+      throw error;
+    }
+  };
+
+  const resetPassword = async (email: string) => {
+    try {
+      // Clean up existing state
+      cleanupAuthState();
+      
+      const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + '/auth',
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: 'Password reset email sent',
+        description: 'Check your email for the password reset link'
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Failed to send reset email',
+        description: error.message || 'An error occurred while sending the password reset email',
+        variant: 'destructive'
+      });
+      throw error;
+    }
+  };
+
   const value = {
     user,
     session,
@@ -214,7 +269,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isAdmin,
     signIn,
     signUp,
-    signOut
+    signOut,
+    sendMagicLink,
+    resetPassword
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
