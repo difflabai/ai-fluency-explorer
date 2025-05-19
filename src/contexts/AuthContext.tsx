@@ -13,6 +13,8 @@ type AuthContextType = {
   signOut: () => Promise<void>;
   sendMagicLink: (email: string) => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
+  cleanupAuthState: () => void;
+  makeUserAdmin: (email: string) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -50,7 +52,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
-  // Check if user is admin - now with proper search path
+  // Check if user is admin - with proper search path
   const checkAdminStatus = async (userId: string) => {
     try {
       // Use the RPC endpoint that has proper search_path set
@@ -258,6 +260,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // New function to make user an admin
+  const makeUserAdmin = async (email: string) => {
+    try {
+      // First call the RPC function to insert a role
+      const { data, error } = await supabase.rpc('add_user_role', { 
+        user_email: email,
+        role_name: 'admin'
+      });
+      
+      if (error) throw error;
+      
+      return data;
+    } catch (error: any) {
+      toast({
+        title: 'Error granting admin privileges',
+        description: error.message || 'Failed to make user an admin',
+        variant: 'destructive'
+      });
+      throw error;
+    }
+  };
+
   const value = {
     user,
     session,
@@ -267,7 +291,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signUp,
     signOut,
     sendMagicLink,
-    resetPassword
+    resetPassword,
+    cleanupAuthState,
+    makeUserAdmin
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
