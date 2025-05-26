@@ -21,7 +21,7 @@ const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
 
   // Show loading while checking authentication or admin status
   if (isLoading || isCheckingAdmin) {
-    return renderLoadingState("Verifying permissions...");
+    return renderLoadingState("Verifying admin permissions...");
   }
 
   // If not authenticated, redirect to auth page

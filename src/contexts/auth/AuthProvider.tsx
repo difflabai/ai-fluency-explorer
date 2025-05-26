@@ -15,24 +15,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Check if the current user has admin role
   const checkAdminStatus = async (): Promise<boolean> => {
-    if (!user) return false;
+    if (!user) {
+      setIsAdmin(false);
+      return false;
+    }
     
     setIsCheckingAdmin(true);
     try {
-      // Query the user_roles table to check if the user has admin role
+      console.log("Checking admin status for user:", user.email);
+      
+      // Query the user_roles table using the RPC function
       const { data, error } = await supabase.rpc('is_admin', {
         user_id: user.id
       });
       
       if (error) {
         console.error('Error checking admin status:', error);
+        setIsAdmin(false);
         return false;
       }
       
-      setIsAdmin(!!data);
-      return !!data;
+      console.log("Admin check result:", data);
+      const adminStatus = !!data;
+      setIsAdmin(adminStatus);
+      return adminStatus;
     } catch (error) {
       console.error('Error in checkAdminStatus:', error);
+      setIsAdmin(false);
       return false;
     } finally {
       setIsCheckingAdmin(false);
@@ -47,13 +56,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSession(newSession);
         setUser(newSession?.user ?? null);
 
-        if (event === 'SIGNED_IN') {
+        if (event === 'SIGNED_IN' && newSession?.user) {
+          console.log("User signed in, checking admin status");
           // Check admin status on sign in
           // Use setTimeout to prevent potential deadlocks with Supabase client
           setTimeout(() => {
             checkAdminStatus();
-          }, 0);
+          }, 100);
         } else if (event === 'SIGNED_OUT') {
+          console.log("User signed out, clearing admin status");
           setUser(null);
           setSession(null);
           setIsAdmin(false);
@@ -68,10 +79,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         const { data: { session: currentSession } } = await supabase.auth.getSession();
         
+        console.log("Initial session check:", currentSession?.user?.email);
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         
         if (currentSession?.user) {
+          console.log("Found existing session, checking admin status");
           // Check admin status for existing session
           await checkAdminStatus();
         }
@@ -89,6 +102,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       subscription.unsubscribe();
     };
   }, []);
+
+  // Update checkAdminStatus dependency when user changes
+  useEffect(() => {
+    if (user && !isCheckingAdmin) {
+      checkAdminStatus();
+    }
+  }, [user?.id]);
 
   const signIn = async (email: string, password: string) => {
     try {
@@ -108,12 +128,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       
       if (error) throw error;
-      
-      // Check admin status after successful login
-      // Use setTimeout to prevent potential deadlocks
-      setTimeout(async () => {
-        await checkAdminStatus();
-      }, 0);
       
       toast({
         title: 'Welcome back!',
@@ -252,6 +266,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // If the current user was made admin, refresh their admin status
       if (user && user.email === email) {
+        console.log("Current user was made admin, refreshing status");
         await checkAdminStatus();
       }
     } catch (error: any) {
