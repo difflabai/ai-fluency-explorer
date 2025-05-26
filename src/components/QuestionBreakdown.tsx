@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -107,8 +106,8 @@ const QuestionBreakdown: React.FC<QuestionBreakdownProps> = ({
           <div className="mt-3 pt-3 border-t border-gray-100">
             <div className="text-sm">
               <span className="font-medium text-gray-600">Expected: </span>
-              <span className={`font-medium ${question.correct_answer ? 'text-green-600' : 'text-red-600'}`}>
-                {question.correct_answer ? 'Yes' : 'No'}
+              <span className={`font-medium ${question.correctAnswer ? 'text-green-600' : 'text-red-600'}`}>
+                {question.correctAnswer ? 'Yes' : 'No'}
               </span>
             </div>
           </div>

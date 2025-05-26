@@ -1,4 +1,3 @@
-
 import { toast } from "@/hooks/use-toast";
 import { calculateResults, TestResult } from '@/utils/scoring';
 import { saveTestResult } from '@/services/testResultService';
@@ -88,7 +87,7 @@ export const handleCompleteTest = async (
           text: q.text,
           category: q.category,
           difficulty: q.difficulty,
-          correct_answer: q.correct_answer
+          correctAnswer: q.correctAnswer
         })),
         userAnswers: userAnswers
       }
