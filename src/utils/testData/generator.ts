@@ -10,11 +10,21 @@ import { TestDataConfig, GenerationResult } from "./types";
 
 /**
  * Generates mock test data based on the provided configuration
+ * Uses the current authenticated admin user's context
  */
 export const generateTestData = async (config: TestDataConfig): Promise<GenerationResult> => {
   const results: SavedTestResult[] = [];
   
   try {
+    // Check if user is authenticated
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !user) {
+      throw new Error("Authentication required to generate test data");
+    }
+    
+    console.log(`Generating test data as authenticated user: ${user.email}`);
+    
     // Fetch real questions to use for the test snapshot
     const questions = await fetchQuestions();
     
@@ -39,10 +49,11 @@ export const generateTestData = async (config: TestDataConfig): Promise<Generati
         })) : [];
       
       try {
-        // Use the service method which handles authentication properly
+        // Insert test data using the authenticated admin user's context
         const { data, error } = await supabase
           .from('test_results')
           .insert({
+            user_id: user.id, // Use the authenticated admin user's ID
             username,
             overall_score: score,
             max_possible_score: maxScore,
@@ -59,38 +70,6 @@ export const generateTestData = async (config: TestDataConfig): Promise<Generati
         
         if (error) {
           console.error(`Error creating test result ${i + 1}:`, error);
-          
-          // If it's an RLS error, try without user_id (anonymous test data)
-          if (error.message?.includes('row-level security') || error.message?.includes('policy')) {
-            console.log(`Retrying test result ${i + 1} as anonymous data...`);
-            const { data: retryData, error: retryError } = await supabase
-              .from('test_results')
-              .insert({
-                username,
-                overall_score: score,
-                max_possible_score: maxScore,
-                percentage_score: percentage,
-                tier_name: tier.name,
-                category_scores: categoryScores,
-                created_at: createdAt,
-                is_test_data: true,
-                public: true,
-                questions_snapshot: questionsSnapshot,
-                user_id: null // Explicitly set to null for test data
-              })
-              .select()
-              .single();
-            
-            if (retryError) {
-              console.error(`Retry failed for test result ${i + 1}:`, retryError);
-              continue;
-            }
-            
-            if (retryData) {
-              results.push(retryData);
-              console.log(`Successfully created test result ${i + 1} (retry)`);
-            }
-          }
           continue;
         }
         
@@ -118,14 +97,25 @@ export const generateTestData = async (config: TestDataConfig): Promise<Generati
 
 /**
  * Removes all test data from the database
+ * Uses the current authenticated admin user's context
  */
 export const cleanupTestData = async (): Promise<{ count: number }> => {
   try {
-    // Delete all test data
+    // Check if user is authenticated
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !user) {
+      throw new Error("Authentication required to cleanup test data");
+    }
+    
+    console.log(`Cleaning up test data as authenticated user: ${user.email}`);
+    
+    // Delete all test data created by this admin user
     const { error, count } = await supabase
       .from('test_results')
       .delete({ count: 'exact' })
-      .eq('is_test_data', true);
+      .eq('is_test_data', true)
+      .eq('user_id', user.id);
     
     if (error) {
       console.error("Error cleaning up test data:", error);
