@@ -25,6 +25,9 @@ const SharedResultView: React.FC = () => {
       try {
         const data = await fetchResultByShareId(shareId);
         if (data) {
+          console.log("Loaded shared result data:", data);
+          console.log("Category scores type:", typeof data.category_scores);
+          console.log("Category scores value:", data.category_scores);
           setResult(data);
         } else {
           setError("This shared result could not be found or has been removed.");
@@ -58,7 +61,36 @@ const SharedResultView: React.FC = () => {
   };
 
   const tier = result ? fluencyTiers.find(t => t.name === result.tier_name) : null;
-  const categoryScores = result ? result.category_scores as CategoryScore[] : [];
+  
+  // Safely handle category scores - ensure it's always an array
+  const categoryScores: CategoryScore[] = result ? (() => {
+    const scores = result.category_scores;
+    console.log("Processing category scores:", scores);
+    
+    // If it's already an array, return it
+    if (Array.isArray(scores)) {
+      return scores as CategoryScore[];
+    }
+    
+    // If it's an object, try to convert it to an array
+    if (scores && typeof scores === 'object') {
+      // Try to extract array from object if it has array properties
+      if (scores.categoryScores && Array.isArray(scores.categoryScores)) {
+        return scores.categoryScores as CategoryScore[];
+      }
+      
+      // If it's an object with category data, convert to array format
+      return Object.entries(scores).map(([key, value]: [string, any]) => ({
+        categoryId: key,
+        categoryName: value.categoryName || key,
+        score: value.score || 0,
+        totalQuestions: value.totalQuestions || 0,
+        percentage: value.percentage || 0
+      }));
+    }
+    
+    return [];
+  })() : [];
 
   if (isLoading) {
     return (
@@ -186,7 +218,9 @@ const SharedResultView: React.FC = () => {
               
               <div className="space-y-4">
                 {fluencyLevels.map((level) => {
-                  const categoryScore = categoryScores.find(c => c.categoryName === level.name);
+                  const categoryScore = Array.isArray(categoryScores) 
+                    ? categoryScores.find(c => c.categoryName === level.name)
+                    : null;
                   const score = categoryScore?.score || 0;
                   const total = categoryScore?.totalQuestions || level.maxScore;
                   const percentage = (score / total) * 100;
