@@ -14,8 +14,8 @@ export interface SavedTestResult {
   created_at: string;
   public: boolean;
   share_id: string;
-  questions_snapshot?: any; // New field to store the questions used in the test
-  is_test_data?: boolean; // Flag to identify test data
+  questions_snapshot?: any;
+  is_test_data?: boolean;
 }
 
 // Save test result to Supabase
@@ -56,13 +56,23 @@ export const saveTestResult = async (
   }
 };
 
-// Fetch leaderboard data
-export const fetchLeaderboard = async (limit = 20): Promise<SavedTestResult[]> => {
+// Fetch leaderboard data with optional filtering
+export const fetchLeaderboard = async (
+  limit = 20, 
+  includeTestData = true
+): Promise<SavedTestResult[]> => {
   try {
-    const { data, error } = await supabase
+    let query = supabase
       .from('test_results')
       .select('*')
-      .eq('public', true)
+      .eq('public', true);
+    
+    // Filter out test data if requested
+    if (!includeTestData) {
+      query = query.eq('is_test_data', false);
+    }
+    
+    const { data, error } = await query
       .order('overall_score', { ascending: false })
       .limit(limit);
 

@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { fetchLeaderboard, SavedTestResult } from '@/services/testResultService';
 import { Button } from "@/components/ui/button";
-import { Home, Trophy, Calendar, ArrowUp, User, Medal, Database } from 'lucide-react';
+import { Home, Trophy, Calendar, User, Medal, Database } from 'lucide-react';
 import { format } from 'date-fns';
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -21,7 +21,7 @@ const Leaderboard: React.FC = () => {
     try {
       console.log("Leaderboard - showTestData:", showTestData);
       
-      const data = await fetchLeaderboard();
+      const data = await fetchLeaderboard(20, showTestData);
       console.log("Leaderboard - fetched data:", data);
       
       setLeaderboardData(data);
@@ -46,7 +46,7 @@ const Leaderboard: React.FC = () => {
         </Button>
       </div>
       
-      {/* Toggle for test data visibility (now visible to all) */}
+      {/* Toggle for test data visibility */}
       <div className="mb-4 p-3 bg-gray-50 rounded-lg flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Database className="h-4 w-4 text-gray-500" />
