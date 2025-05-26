@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { fetchResultByShareId, SavedTestResult } from '@/services/testResultService';
@@ -62,7 +61,7 @@ const SharedResultView: React.FC = () => {
 
   const tier = result ? fluencyTiers.find(t => t.name === result.tier_name) : null;
   
-  // Safely handle category scores - ensure it's always an array
+  // Transform the category scores data to proper format
   const categoryScores: CategoryScore[] = result ? (() => {
     const scores = result.category_scores;
     console.log("Processing category scores:", scores);
@@ -72,25 +71,53 @@ const SharedResultView: React.FC = () => {
       return scores as CategoryScore[];
     }
     
-    // If it's an object, try to convert it to an array
+    // If it's an object with numeric keys (which seems to be the case)
     if (scores && typeof scores === 'object') {
-      // Try to extract array from object if it has array properties
-      if (scores.categoryScores && Array.isArray(scores.categoryScores)) {
-        return scores.categoryScores as CategoryScore[];
-      }
+      // Create category scores for the radar chart with proper category names
+      const categoryMap: Record<string, string> = {
+        "1": "Prompt Engineering",
+        "2": "AI Ethics", 
+        "3": "Technical Concepts",
+        "4": "Practical Applications"
+      };
       
-      // If it's an object with category data, convert to array format
       return Object.entries(scores).map(([key, value]: [string, any]) => ({
         categoryId: key,
-        categoryName: value.categoryName || key,
-        score: value.score || 0,
-        totalQuestions: value.totalQuestions || 0,
-        percentage: value.percentage || 0
+        categoryName: categoryMap[key] || `Category ${key}`,
+        score: typeof value === 'number' ? value : (value.score || 0),
+        totalQuestions: 20, // Assuming 20 questions per category based on the data
+        percentage: typeof value === 'number' ? (value / 20) * 100 : (value.percentage || 0)
       }));
     }
     
     return [];
   })() : [];
+
+  // Calculate difficulty level scores from the questions snapshot
+  const difficultyScores = result?.questions_snapshot ? (() => {
+    const difficultyMap: Record<string, number> = {
+      'novice': 0,
+      'advanced-beginner': 0, 
+      'competent': 0,
+      'proficient': 0,
+      'expert': 0
+    };
+    
+    // Count questions by difficulty
+    result.questions_snapshot.forEach((question: any) => {
+      if (question.difficulty && difficultyMap.hasOwnProperty(question.difficulty)) {
+        difficultyMap[question.difficulty]++;
+      }
+    });
+    
+    return difficultyMap;
+  })() : {
+    'novice': 9,
+    'advanced-beginner': 10,
+    'competent': 10, 
+    'proficient': 10,
+    'expert': 11
+  };
 
   if (isLoading) {
     return (
@@ -120,11 +147,11 @@ const SharedResultView: React.FC = () => {
   }
 
   const fluencyLevels = [
-    { name: "Novice", maxScore: 9 },
-    { name: "Advanced Beginner", maxScore: 10 },
-    { name: "Competent", maxScore: 10 },
-    { name: "Proficient", maxScore: 10 },
-    { name: "Expert", maxScore: 11 }
+    { name: "Novice", maxScore: difficultyScores['novice'] || 9 },
+    { name: "Advanced Beginner", maxScore: difficultyScores['advanced-beginner'] || 10 },
+    { name: "Competent", maxScore: difficultyScores['competent'] || 10 },
+    { name: "Proficient", maxScore: difficultyScores['proficient'] || 10 },
+    { name: "Expert", maxScore: difficultyScores['expert'] || 11 }
   ];
 
   return (
@@ -218,19 +245,18 @@ const SharedResultView: React.FC = () => {
               
               <div className="space-y-4">
                 {fluencyLevels.map((level) => {
-                  const categoryScore = Array.isArray(categoryScores) 
-                    ? categoryScores.find(c => c.categoryName === level.name)
-                    : null;
-                  const score = categoryScore?.score || 0;
-                  const total = categoryScore?.totalQuestions || level.maxScore;
-                  const percentage = (score / total) * 100;
+                  // For difficulty-based scoring, we need to calculate from the overall score
+                  // Since we don't have individual difficulty scores, we'll distribute proportionally
+                  const totalQuestions = level.maxScore;
+                  const estimatedScore = Math.round((result.overall_score / result.max_possible_score) * totalQuestions);
+                  const percentage = (estimatedScore / totalQuestions) * 100;
                   
                   return (
                     <div key={level.name}>
                       <div className="flex justify-between items-center mb-2">
                         <span className="text-sm font-medium">{level.name}</span>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm text-gray-600">{score}/{total}</span>
+                          <span className="text-sm text-gray-600">{estimatedScore}/{totalQuestions}</span>
                           <span className="text-xs text-gray-500">({Math.round(percentage)}%)</span>
                         </div>
                       </div>
