@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { fetchResultByShareId, SavedTestResult } from '@/services/testResultService';
@@ -5,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import ProgressBar from './ProgressBar';
 import ScoreChart from './ScoreChart';
+import QuestionBreakdown from './QuestionBreakdown';
 import { CategoryScore, fluencyTiers } from '@/utils/scoring';
 import { Home, Trophy, Clock, User, Calendar, ExternalLink, Share2, Copy } from 'lucide-react';
 import { format } from 'date-fns';
@@ -27,6 +29,7 @@ const SharedResultView: React.FC = () => {
           console.log("Loaded shared result data:", data);
           console.log("Category scores type:", typeof data.category_scores);
           console.log("Category scores value:", data.category_scores);
+          console.log("Questions snapshot:", data.questions_snapshot);
           setResult(data);
         } else {
           setError("This shared result could not be found or has been removed.");
@@ -85,7 +88,7 @@ const SharedResultView: React.FC = () => {
         categoryId: key,
         categoryName: categoryMap[key] || `Category ${key}`,
         score: typeof value === 'number' ? value : (value.score || 0),
-        totalQuestions: 20, // Assuming 20 questions per category based on the data
+        totalQuestions: 20,
         percentage: typeof value === 'number' ? (value / 20) * 100 : (value.percentage || 0)
       }));
     }
@@ -118,6 +121,21 @@ const SharedResultView: React.FC = () => {
     'proficient': 10,
     'expert': 11
   };
+
+  // Transform questions snapshot for QuestionBreakdown component
+  const questionsForBreakdown = result?.questions_snapshot ? result.questions_snapshot.map((q: any, index: number) => ({
+    id: q.id || index,
+    text: q.text || '',
+    category: q.category || 'Unknown',
+    difficulty: q.difficulty || 'unknown',
+    correct_answer: q.correct_answer || false
+  })) : [];
+
+  // Create user answers for breakdown (we'll need to derive this from the result data)
+  const userAnswersForBreakdown = result?.questions_snapshot ? result.questions_snapshot.map((q: any, index: number) => ({
+    questionId: q.id || index,
+    answer: true // This would need to be derived from actual user answers if stored
+  })) : [];
 
   if (isLoading) {
     return (
@@ -245,8 +263,6 @@ const SharedResultView: React.FC = () => {
               
               <div className="space-y-4">
                 {fluencyLevels.map((level) => {
-                  // For difficulty-based scoring, we need to calculate from the overall score
-                  // Since we don't have individual difficulty scores, we'll distribute proportionally
                   const totalQuestions = level.maxScore;
                   const estimatedScore = Math.round((result.overall_score / result.max_possible_score) * totalQuestions);
                   const percentage = (estimatedScore / totalQuestions) * 100;
@@ -271,6 +287,15 @@ const SharedResultView: React.FC = () => {
             </CardContent>
           </Card>
         </div>
+        
+        {/* Detailed Question Breakdown - only show if questions snapshot is available */}
+        {questionsForBreakdown.length > 0 && (
+          <QuestionBreakdown 
+            questions={questionsForBreakdown}
+            userAnswers={userAnswersForBreakdown}
+            categoryScores={categoryScores}
+          />
+        )}
         
         {/* Chart Card */}
         <Card className="bg-white shadow-sm">

@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import ProgressBar from './ProgressBar';
 import ScoreChart from './ScoreChart';
 import ShareResults from './ShareResults';
+import QuestionBreakdown from './QuestionBreakdown';
 import { TestResult } from '@/utils/scoring';
 import { Trophy, Home, BarChartIcon, Clock, Medal, Users } from 'lucide-react';
 import { fetchLeaderboard, SavedTestResult } from '@/services/testResultService';
@@ -13,9 +14,16 @@ import { Link } from 'react-router-dom';
 interface ResultsDashboardProps {
   result: TestResult;
   onReturnHome: () => void;
+  questions?: any[];
+  userAnswers?: any[];
 }
 
-const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ result, onReturnHome }) => {
+const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ 
+  result, 
+  onReturnHome,
+  questions = [],
+  userAnswers = []
+}) => {
   const { overallScore, maxPossibleScore, percentageScore, tier, categoryScores } = result;
   const [userRank, setUserRank] = useState<number | null>(null);
   const [isLoadingRank, setIsLoadingRank] = useState(true);
@@ -24,17 +32,14 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ result, onReturnHom
   useEffect(() => {
     const fetchUserRank = async () => {
       try {
-        const leaderboardData = await fetchLeaderboard(100); // Fetch top 100 scores
+        const leaderboardData = await fetchLeaderboard(100);
         const position = leaderboardData.findIndex(entry => 
           entry.overall_score < overallScore
         );
         
-        // If user's score is higher than any on the leaderboard
         if (position === -1) {
-          // User's rank depends on if there are any scores at all
           setUserRank(leaderboardData.length > 0 ? leaderboardData.length + 1 : 1);
         } else {
-          // Position is 0-indexed, so add 1
           setUserRank(position + 1);
         }
       } catch (error) {
@@ -142,6 +147,15 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ result, onReturnHom
             </div>
           </CardContent>
         </Card>
+        
+        {/* Detailed Question Breakdown */}
+        {questions.length > 0 && userAnswers.length > 0 && (
+          <QuestionBreakdown 
+            questions={questions}
+            userAnswers={userAnswers}
+            categoryScores={categoryScores}
+          />
+        )}
         
         {/* Lower cards section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

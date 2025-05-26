@@ -1,4 +1,3 @@
-
 import React from 'react';
 import ProgressBar from './ProgressBar';
 import QuestionCard from './QuestionCard';
@@ -37,7 +36,14 @@ const TestInterface: React.FC<TestInterfaceProps> = ({ testType, onReturnHome })
   } = useTestState({ testType });
   
   if (testComplete && result) {
-    return <ResultsDashboard result={result} onReturnHome={onReturnHome} />;
+    return (
+      <ResultsDashboard 
+        result={result} 
+        onReturnHome={onReturnHome}
+        questions={questions}
+        userAnswers={userAnswers}
+      />
+    );
   }
   
   if (isLoading) {

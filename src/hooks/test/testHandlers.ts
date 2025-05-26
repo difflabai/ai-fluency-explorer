@@ -49,6 +49,11 @@ export const handleCompleteTest = async (
   setResult: React.Dispatch<React.SetStateAction<TestResult | null>>,
   setTestComplete: React.Dispatch<React.SetStateAction<boolean>>
 ): Promise<void> => {
+  console.log("Completing test with:", { 
+    questionsCount: questions.length, 
+    userAnswersCount: userAnswers.length 
+  });
+  
   const testResult = calculateResults(questions, userAnswers);
   setResult(testResult);
   setTestComplete(true);
@@ -68,21 +73,41 @@ export const handleCompleteTest = async (
   })).filter(a => a.questionId !== '');
   
   try {
-    // Save test result to database
-    await saveTestResult(
+    console.log("Saving test result with questions snapshot...");
+    
+    // Save test result to database with complete question and answer data
+    const savedResult = await saveTestResult(
       testResult,
       undefined, // username (optional)
       false, // make public
       {
-        questionsSnapshot: questions,
+        questionsSnapshot: questions.map(q => ({
+          ...q,
+          // Ensure all question properties are preserved
+          id: q.id,
+          text: q.text,
+          category: q.category,
+          difficulty: q.difficulty,
+          correct_answer: q.correct_answer
+        })),
         userAnswers: userAnswers
       }
     );
     
-    toast({
-      title: "Test Completed!",
-      description: "Your results are ready to view.",
-    });
+    if (savedResult) {
+      console.log("Test result saved successfully:", savedResult);
+      toast({
+        title: "Test Completed!",
+        description: "Your results are ready to view and have been saved.",
+      });
+    } else {
+      console.error("Failed to save test result");
+      toast({
+        title: "Test Completed",
+        description: "Your results are ready, but there was an error saving them.",
+        variant: "destructive"
+      });
+    }
   } catch (error) {
     console.error('Error saving test results:', error);
     toast({
