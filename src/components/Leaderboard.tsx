@@ -2,10 +2,12 @@
 import React, { useEffect, useState } from 'react';
 import { fetchLeaderboard, SavedTestResult } from '@/services/testResultService';
 import { Button } from "@/components/ui/button";
-import { Home, Trophy, Calendar, User, Medal, Database } from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Home, Trophy, Calendar, User, Medal, Database, ExternalLink } from 'lucide-react';
 import { format } from 'date-fns';
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Link } from 'react-router-dom';
 
 const Leaderboard: React.FC = () => {
   const [leaderboardData, setLeaderboardData] = useState<SavedTestResult[]>([]);
@@ -68,26 +70,32 @@ const Leaderboard: React.FC = () => {
         </div>
       ) : leaderboardData.length > 0 ? (
         <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Score</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Fluency Level</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Date</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-gray-50">
+                <TableHead className="w-16">Rank</TableHead>
+                <TableHead>User</TableHead>
+                <TableHead>Score</TableHead>
+                <TableHead className="hidden md:table-cell">Fluency Level</TableHead>
+                <TableHead className="hidden md:table-cell">Date</TableHead>
+                <TableHead className="w-16"></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {leaderboardData.map((entry, index) => (
-                <tr key={entry.id} className={
-                  entry.is_test_data 
-                    ? "bg-blue-50" 
-                    : index < 3 
-                      ? "bg-purple-50" 
-                      : ""
-                }>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                <TableRow 
+                  key={entry.id} 
+                  className={`
+                    cursor-pointer hover:bg-gray-50 transition-colors
+                    ${entry.is_test_data 
+                      ? "bg-blue-50 hover:bg-blue-100" 
+                      : index < 3 
+                        ? "bg-purple-50 hover:bg-purple-100" 
+                        : "hover:bg-gray-50"
+                    }
+                  `}
+                >
+                  <TableCell>
                     <div className="flex items-center">
                       {index < 3 ? (
                         <div className={`
@@ -102,8 +110,8 @@ const Leaderboard: React.FC = () => {
                         <span className="text-gray-500 font-medium">{index + 1}</span>
                       )}
                     </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  </TableCell>
+                  <TableCell>
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-8 w-8 bg-purple-100 rounded-full flex items-center justify-center">
                         {entry.is_test_data ? (
@@ -123,12 +131,12 @@ const Leaderboard: React.FC = () => {
                         </div>
                       </div>
                     </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  </TableCell>
+                  <TableCell>
                     <div className="text-sm text-gray-900 font-semibold">{entry.overall_score}</div>
                     <div className="text-xs text-gray-500">of {entry.max_possible_score}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap hidden md:table-cell">
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell">
                     <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
                       ${entry.tier_name === 'Expert' ? 'bg-purple-100 text-purple-800' :
                         entry.tier_name === 'Proficient' ? 'bg-blue-100 text-blue-800' :
@@ -138,17 +146,24 @@ const Leaderboard: React.FC = () => {
                     `}>
                       {entry.tier_name}
                     </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap hidden md:table-cell">
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell">
                     <div className="text-sm text-gray-500 flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
                       {format(new Date(entry.created_at), 'MMM d, yyyy')}
                     </div>
-                  </td>
-                </tr>
+                  </TableCell>
+                  <TableCell>
+                    <Link to={`/shared/${entry.share_id}`}>
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                        <ExternalLink className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       ) : (
         <div className="text-center py-10 bg-gray-50 rounded-lg border border-gray-100">

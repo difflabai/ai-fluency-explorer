@@ -3,10 +3,9 @@ import React, { useEffect, useState } from 'react';
 import { fetchLeaderboard, SavedTestResult } from '@/services/testResultService';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trophy, Medal, ChevronRight, Database } from 'lucide-react';
+import { Trophy, Medal, ChevronRight, Database, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
-import { useAuth } from '@/contexts/auth';
 
 const LeaderboardPreview: React.FC = () => {
   const [leaderboardData, setLeaderboardData] = useState<SavedTestResult[]>([]);
@@ -45,34 +44,43 @@ const LeaderboardPreview: React.FC = () => {
         ) : leaderboardData.length > 0 ? (
           <div className="space-y-4">
             {leaderboardData.map((entry, index) => (
-              <div key={entry.id} className="flex items-center justify-between gap-2 py-2">
-                <div className="flex items-center gap-3">
-                  <div className={`
-                    flex items-center justify-center w-7 h-7 rounded-full 
-                    ${index === 0 ? "bg-yellow-100 text-yellow-600" : 
-                      index === 1 ? "bg-gray-100 text-gray-600" : 
-                      index === 2 ? "bg-amber-100 text-amber-600" :
-                      "bg-purple-50 text-purple-500"}
-                  `}>
-                    {index < 3 ? <Medal className="h-3 w-3" /> : <span className="text-xs">{index + 1}</span>}
+              <Link 
+                key={entry.id} 
+                to={`/shared/${entry.share_id}`}
+                className="block hover:bg-gray-50 p-2 rounded-lg transition-colors"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-3">
+                    <div className={`
+                      flex items-center justify-center w-7 h-7 rounded-full 
+                      ${index === 0 ? "bg-yellow-100 text-yellow-600" : 
+                        index === 1 ? "bg-gray-100 text-gray-600" : 
+                        index === 2 ? "bg-amber-100 text-amber-600" :
+                        "bg-purple-50 text-purple-500"}
+                    `}>
+                      {index < 3 ? <Medal className="h-3 w-3" /> : <span className="text-xs">{index + 1}</span>}
+                    </div>
+                    <div>
+                      <div className="font-medium flex items-center gap-1">
+                        {entry.username || "Anonymous User"}
+                        {entry.is_test_data && (
+                          <Database className="h-3 w-3 text-blue-500" />
+                        )}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {format(new Date(entry.created_at), 'MMM d, yyyy')}
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <div className="font-medium flex items-center gap-1">
-                      {entry.username || "Anonymous User"}
-                      {entry.is_test_data && (
-                        <Database className="h-3 w-3 text-blue-500" />
-                      )}
+                  <div className="flex items-center gap-2">
+                    <div className="text-right">
+                      <div className="font-semibold">{entry.overall_score} pts</div>
+                      <div className="text-xs text-gray-500">{entry.tier_name}</div>
                     </div>
-                    <div className="text-xs text-gray-500">
-                      {format(new Date(entry.created_at), 'MMM d, yyyy')}
-                    </div>
+                    <ExternalLink className="h-4 w-4 text-gray-400" />
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="font-semibold">{entry.overall_score} pts</div>
-                  <div className="text-xs text-gray-500">{entry.tier_name}</div>
-                </div>
-              </div>
+              </Link>
             ))}
             
             <Link to="/leaderboard" className="block mt-4 pt-3 border-t border-gray-100">
