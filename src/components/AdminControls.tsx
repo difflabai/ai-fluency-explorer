@@ -11,6 +11,7 @@ import { setupLogCapture } from './admin/controls/LogCaptureUtils';
 import { MigrationPanel } from './admin/controls';
 import { useAuth } from '@/contexts/auth';
 import AccessDeniedAlert from './admin/AccessDeniedAlert';
+import DatabaseQueryPanel from './admin/DatabaseQueryPanel';
 
 /**
  * Administrative control panel for initializing the application
@@ -91,52 +92,56 @@ const AdminControls: React.FC = () => {
   }
   
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Database className="h-5 w-5" /> Application Data Management
-        </CardTitle>
-        <CardDescription>
-          Initialize and verify application data
-        </CardDescription>
-      </CardHeader>
-      
-      <CardContent className="space-y-4">
-        {permissionError && (
-          <AccessDeniedAlert />
-        )}
+    <div className="w-full max-w-4xl mx-auto space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Database className="h-5 w-5" /> Application Data Management
+          </CardTitle>
+          <CardDescription>
+            Initialize and verify application data
+          </CardDescription>
+        </CardHeader>
         
-        <DatabaseStatusCard 
-          isChecking={isChecking} 
-          isInitialized={isInitialized} 
-        />
+        <CardContent className="space-y-4">
+          {permissionError && (
+            <AccessDeniedAlert />
+          )}
+          
+          <DatabaseStatusCard 
+            isChecking={isChecking} 
+            isInitialized={isInitialized} 
+          />
+          
+          <MigrationPanel
+            isLoading={isLoading}
+            setIsLoading={setIsLoading}
+            setMigrationLogs={setMigrationLogs}
+            checkDatabaseStatus={checkDatabaseStatus}
+            setupLogCapture={setupLogCaptureWrapper}
+          />
+          
+          <MigrationLogs 
+            logs={migrationLogs} 
+            onClear={handleClearLogs} 
+          />
+        </CardContent>
         
-        <MigrationPanel
-          isLoading={isLoading}
-          setIsLoading={setIsLoading}
-          setMigrationLogs={setMigrationLogs}
-          checkDatabaseStatus={checkDatabaseStatus}
-          setupLogCapture={setupLogCaptureWrapper}
-        />
-        
-        <MigrationLogs 
-          logs={migrationLogs} 
-          onClear={handleClearLogs} 
-        />
-      </CardContent>
-      
-      <CardFooter className="flex justify-between">
-        <Button 
-          variant="outline" 
-          onClick={checkDatabaseStatus} 
-          disabled={isChecking}
-          className="flex items-center gap-2"
-        >
-          {isChecking && <Loader2 className="h-4 w-4 animate-spin" />}
-          {isChecking ? 'Checking...' : 'Check Status'}
-        </Button>
-      </CardFooter>
-    </Card>
+        <CardFooter className="flex justify-between">
+          <Button 
+            variant="outline" 
+            onClick={checkDatabaseStatus} 
+            disabled={isChecking}
+            className="flex items-center gap-2"
+          >
+            {isChecking && <Loader2 className="h-4 w-4 animate-spin" />}
+            {isChecking ? 'Checking...' : 'Check Status'}
+          </Button>
+        </CardFooter>
+      </Card>
+
+      <DatabaseQueryPanel />
+    </div>
   );
 };
 
