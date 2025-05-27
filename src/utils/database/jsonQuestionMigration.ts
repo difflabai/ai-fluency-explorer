@@ -65,16 +65,21 @@ export async function migrateJsonQuestions(categoryMap: Map<string, string>): Pr
           if (existingQuestions && existingQuestions.length > 0) {
             // Question exists, check if we need to update the explanation
             const existingQuestion = existingQuestions[0];
-            const newExplanation = question.explanation || '';
             
-            if (existingQuestion.explanation !== newExplanation) {
+            // Use the detailed explanation from JSON, or fallback to existing
+            const jsonExplanation = question.explanation?.trim() || '';
+            const existingExplanation = existingQuestion.explanation?.trim() || '';
+            
+            // Only update if JSON has a different explanation
+            if (jsonExplanation && jsonExplanation !== existingExplanation) {
               console.log(`Updating explanation for question: "${question.text.substring(0, 50)}..."`);
+              console.log(`New explanation: "${jsonExplanation.substring(0, 100)}..."`);
               
-              // Update the explanation
+              // Update the explanation with the detailed one from JSON
               const { error: updateError } = await supabase
                 .from('questions')
                 .update({ 
-                  explanation: newExplanation,
+                  explanation: jsonExplanation,
                   updated_at: new Date().toISOString()
                 })
                 .eq('id', existingQuestion.id);
@@ -85,23 +90,49 @@ export async function migrateJsonQuestions(categoryMap: Map<string, string>): Pr
                 continue;
               }
               
-              console.log(`Updated explanation for question ID ${existingQuestion.id}`);
+              console.log(`Successfully updated explanation for question ID ${existingQuestion.id}`);
               categoryAdded++; // Count as "added" since we updated it
+            } else if (!jsonExplanation && !existingExplanation) {
+              // Both are empty, generate a default explanation
+              const defaultExplanation = generateDefaultExplanation(question.difficulty, categoryName);
+              console.log(`Adding default explanation for question: "${question.text.substring(0, 50)}..."`);
+              
+              const { error: updateError } = await supabase
+                .from('questions')
+                .update({ 
+                  explanation: defaultExplanation,
+                  updated_at: new Date().toISOString()
+                })
+                .eq('id', existingQuestion.id);
+                
+              if (updateError) {
+                console.error(`Error adding default explanation:`, updateError);
+                categorySkipped++;
+                continue;
+              }
+              
+              categoryAdded++;
             } else {
-              console.log(`Question already up to date: "${question.text.substring(0, 30)}..."`);
+              console.log(`Question already has appropriate explanation: "${question.text.substring(0, 30)}..."`);
               categorySkipped++;
             }
             continue;
           }
           
-          // Question doesn't exist, insert it with explanation using the enhanced function
+          // Question doesn't exist, insert it with explanation from JSON
+          const explanationToUse = question.explanation?.trim() || 
+            generateDefaultExplanation(question.difficulty, categoryName);
+          
+          console.log(`Inserting new question with explanation: "${question.text.substring(0, 50)}..."`);
+          console.log(`Explanation: "${explanationToUse.substring(0, 100)}..."`);
+          
           const { data: newQuestionId, error: insertError } = await supabase
             .rpc('admin_insert_question', {
               question_text: question.text,
               category_id: categoryDbId,
               difficulty: question.difficulty || 'novice',
               correct_answer: question.correctAnswer,
-              explanation_text: question.explanation || null
+              explanation_text: explanationToUse
             });
             
           if (insertError) {
@@ -110,7 +141,7 @@ export async function migrateJsonQuestions(categoryMap: Map<string, string>): Pr
             continue;
           }
           
-          console.log(`Added question with ID ${newQuestionId} and explanation`);
+          console.log(`Successfully added question with ID ${newQuestionId} and detailed explanation`);
           categoryAdded++;
         } catch (err) {
           console.error(`Unexpected error processing question:`, err);
@@ -129,4 +160,45 @@ export async function migrateJsonQuestions(categoryMap: Map<string, string>): Pr
     console.error('Error in migrateJsonQuestions:', error);
     return [totalAdded, totalSkipped];
   }
+}
+
+/**
+ * Generate a default explanation when none exists in JSON
+ */
+function generateDefaultExplanation(difficulty: string, category: string): string {
+  const explanations: Record<string, Record<string, string>> = {
+    'novice': {
+      'Practical Applications': 'This foundational skill demonstrates your ability to apply AI tools in everyday scenarios, which is essential for building confidence and practical experience.',
+      'Prompt Engineering': 'Understanding basic prompting techniques is crucial for getting better results from AI systems and forms the foundation for more advanced interactions.',
+      'Technical Concepts': 'Grasping fundamental AI concepts helps you understand what these tools can and cannot do, leading to more realistic expectations and better usage.',
+      'AI Ethics': 'Awareness of basic ethical considerations ensures responsible AI use and helps you avoid common pitfalls in AI-assisted work.'
+    },
+    'advanced-beginner': {
+      'Practical Applications': 'Advanced application skills show you can leverage AI for more complex tasks and integrate it effectively into your workflow.',
+      'Prompt Engineering': 'Refined prompting abilities allow you to get more precise and useful outputs from AI systems through better communication.',
+      'Technical Concepts': 'Deeper technical understanding helps you troubleshoot issues and make informed decisions about which AI tools to use.',
+      'AI Ethics': 'Enhanced ethical awareness ensures you can navigate complex situations and maintain integrity in AI-assisted work.'
+    },
+    'competent': {
+      'Practical Applications': 'Competent application demonstrates mastery of AI tools for professional tasks and the ability to train others.',
+      'Prompt Engineering': 'Advanced prompting skills enable you to handle complex, multi-step tasks and get consistently high-quality results.',
+      'Technical Concepts': 'Strong technical knowledge allows you to evaluate AI capabilities and limitations for strategic decision-making.',
+      'AI Ethics': 'Comprehensive ethical understanding enables you to establish guidelines and best practices for AI use in your organization.'
+    },
+    'proficient': {
+      'Practical Applications': 'Proficient application shows expertise in leveraging AI for innovation and solving complex, domain-specific problems.',
+      'Prompt Engineering': 'Expert-level prompting enables you to push the boundaries of what AI can accomplish through sophisticated interaction techniques.',
+      'Technical Concepts': 'Advanced technical mastery allows you to contribute to AI strategy and implementation at an organizational level.',
+      'AI Ethics': 'Advanced ethical reasoning enables you to navigate cutting-edge scenarios and contribute to policy development.'
+    },
+    'expert': {
+      'Practical Applications': 'Expert-level application demonstrates the ability to pioneer new use cases and mentor others in advanced AI utilization.',
+      'Prompt Engineering': 'Mastery of prompting techniques positions you as a thought leader capable of developing new methodologies.',
+      'Technical Concepts': 'Expert technical knowledge enables you to shape the future of AI adoption and implementation strategies.',
+      'AI Ethics': 'Expert ethical understanding allows you to lead discussions on AI governance and responsible innovation.'
+    }
+  };
+  
+  return explanations[difficulty]?.[category] || 
+    `This ${difficulty}-level skill in ${category} demonstrates important capabilities for effective AI utilization.`;
 }

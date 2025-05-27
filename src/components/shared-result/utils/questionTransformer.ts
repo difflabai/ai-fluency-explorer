@@ -34,12 +34,26 @@ export const transformQuestionsWithCategories = async (questionsSnapshot: any[])
   const categoryMapping = await createCategoryMapping();
   console.log("Category mapping:", categoryMapping);
   
-  return questionsSnapshot.map(question => ({
-    ...question,
-    category: categoryMapping[question.category_id?.toString()] || question.category || 'Unknown Category',
-    // Ensure explanation is included and not empty
-    explanation: question.explanation || getDefaultExplanation(question.difficulty, question.category || categoryMapping[question.category_id?.toString()])
-  }));
+  return questionsSnapshot.map(question => {
+    const categoryName = categoryMapping[question.category_id?.toString()] || question.category || 'Unknown Category';
+    
+    // Prioritize explanation from database, then fallback to snapshot, then default
+    let explanation = '';
+    if (question.explanation && question.explanation.trim().length > 0) {
+      explanation = question.explanation.trim();
+      console.log(`Using database explanation for question: "${question.text?.substring(0, 30)}..."`);
+    } else {
+      // Fallback to default explanation if none exists
+      explanation = getDefaultExplanation(question.difficulty, categoryName);
+      console.log(`Using default explanation for question: "${question.text?.substring(0, 30)}..."`);
+    }
+    
+    return {
+      ...question,
+      category: categoryName,
+      explanation: explanation
+    };
+  });
 };
 
 // Provide default explanations based on difficulty and category

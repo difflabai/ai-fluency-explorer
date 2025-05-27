@@ -35,10 +35,17 @@ const SharedResultView: React.FC = () => {
           console.log("Questions snapshot:", data.questions_snapshot);
           setResult(data);
           
-          // Transform questions with proper category names
+          // Transform questions with proper category names and explanations
           if (data.questions_snapshot) {
+            console.log("Transforming questions with enhanced explanations...");
             const transformedQuestions = await transformQuestionsWithCategories(data.questions_snapshot);
-            console.log("Transformed questions with categories:", transformedQuestions);
+            console.log("Transformed questions with categories and explanations:", transformedQuestions);
+            
+            // Log a sample of the explanations to verify they're detailed
+            if (transformedQuestions.length > 0) {
+              console.log("Sample explanation:", transformedQuestions[0].explanation);
+            }
+            
             setQuestionsForBreakdown(transformedQuestions);
           }
         } else {
