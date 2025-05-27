@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -73,6 +72,9 @@ const QuestionBreakdown: React.FC<QuestionBreakdownProps> = ({
     const userAnswer = getUserAnswer(question.id);
     const isCorrect = userAnswer?.answer === true;
     
+    // Check if question has explanation content
+    const hasExplanation = question.explanation && question.explanation.trim().length > 0;
+    
     return (
       <div className="border rounded-lg p-4 mb-3 bg-white">
         <div className="flex items-start justify-between mb-2">
@@ -118,8 +120,8 @@ const QuestionBreakdown: React.FC<QuestionBreakdownProps> = ({
           </div>
         )}
 
-        {/* Explanation Section */}
-        {showExplanations && question.explanation && (
+        {/* Explanation Section - Show if explanations are enabled AND question has explanation */}
+        {showExplanations && hasExplanation && (
           <div className="mt-3 pt-3 border-t border-gray-100">
             <Collapsible open={explanationOpen} onOpenChange={setExplanationOpen}>
               <CollapsibleTrigger className="flex items-center justify-between w-full p-2 text-left bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors">
