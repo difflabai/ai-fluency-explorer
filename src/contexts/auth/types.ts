@@ -1,7 +1,7 @@
 
 import { User, Session } from '@supabase/supabase-js';
 
-export type AuthContextType = {
+export interface AuthContextType {
   user: User | null;
   session: Session | null;
   isLoading: boolean;
@@ -15,4 +15,5 @@ export type AuthContextType = {
   cleanupAuthState: () => void;
   makeUserAdmin: (email: string) => Promise<void>;
   checkAdminStatus: () => Promise<boolean>;
-};
+  refreshAdminStatus: () => Promise<boolean>;
+}
