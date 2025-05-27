@@ -6,14 +6,14 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 
 interface AccessDeniedAlertProps {
+  message?: string;
   title?: string;
-  description?: string;
   showAuthLink?: boolean;
 }
 
 const AccessDeniedAlert: React.FC<AccessDeniedAlertProps> = ({
+  message = "You don't have permission to perform this action.",
   title = "Admin Access Required",
-  description = "You don't have permission to perform this action.",
   showAuthLink = false
 }) => {
   return (
@@ -22,7 +22,7 @@ const AccessDeniedAlert: React.FC<AccessDeniedAlertProps> = ({
       <AlertTitle>{title}</AlertTitle>
       <AlertDescription>
         <div className="mt-2">
-          {description}
+          {message}
         </div>
         {showAuthLink && (
           <div className="mt-4">

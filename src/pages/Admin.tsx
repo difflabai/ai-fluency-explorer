@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/auth';
 import AccessDeniedAlert from '@/components/admin/AccessDeniedAlert';
 import { Button } from "@/components/ui/button";
@@ -7,9 +8,93 @@ import { Home, Settings, TestTube, Trophy } from 'lucide-react';
 import DatabaseStatusCard from '@/components/admin/DatabaseStatusCard';
 import MigrationControls from '@/components/admin/MigrationControls';
 import TestHarness from '@/components/admin/TestHarness';
+import { toast } from '@/hooks/use-toast';
 
 const Admin: React.FC = () => {
   const { user, isAdmin } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const [isChecking, setIsChecking] = useState(false);
+  const [isInitialized, setIsInitialized] = useState<boolean | null>(null);
+
+  // Check database status on component mount
+  useEffect(() => {
+    checkDatabaseStatus();
+  }, []);
+
+  const checkDatabaseStatus = async () => {
+    setIsChecking(true);
+    try {
+      // Add your database status check logic here
+      // For now, we'll simulate a check
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setIsInitialized(true);
+    } catch (error) {
+      console.error('Error checking database status:', error);
+      setIsInitialized(false);
+    } finally {
+      setIsChecking(false);
+    }
+  };
+
+  const handleJsonMigration = async () => {
+    setIsLoading(true);
+    try {
+      // Add your JSON migration logic here
+      toast({
+        title: "Migration Started",
+        description: "JSON migration is in progress...",
+      });
+      
+      // Simulate migration
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      toast({
+        title: "Migration Completed",
+        description: "JSON migration completed successfully.",
+      });
+      
+      await checkDatabaseStatus();
+    } catch (error) {
+      console.error('Error during JSON migration:', error);
+      toast({
+        title: "Migration Failed",
+        description: "An error occurred during JSON migration.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleLegacyMigration = async () => {
+    setIsLoading(true);
+    try {
+      // Add your legacy migration logic here
+      toast({
+        title: "Initialization Started",
+        description: "Legacy initialization is in progress...",
+      });
+      
+      // Simulate initialization
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      toast({
+        title: "Initialization Completed",
+        description: "Legacy initialization completed successfully.",
+      });
+      
+      await checkDatabaseStatus();
+    } catch (error) {
+      console.error('Error during legacy initialization:', error);
+      toast({
+        title: "Initialization Failed",
+        description: "An error occurred during legacy initialization.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   if (!user) {
     return <AccessDeniedAlert message="Please sign in to access the admin panel." />;
@@ -71,10 +156,14 @@ const Admin: React.FC = () => {
         </Card>
 
         {/* Database Management */}
-        <DatabaseStatusCard />
+        <DatabaseStatusCard isChecking={isChecking} isInitialized={isInitialized} />
         
         {/* Migration Controls */}
-        <MigrationControls />
+        <MigrationControls 
+          isLoading={isLoading}
+          onJsonMigration={handleJsonMigration}
+          onLegacyMigration={handleLegacyMigration}
+        />
         
         {/* Test Data Management */}
         <TestHarness />

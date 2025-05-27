@@ -1,9 +1,10 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import UserMenu from '@/components/auth/UserMenu';
 import { Brain, Home, Trophy, Settings, TestTube, User } from 'lucide-react';
 import { useAuth, useLocation } from '@/hooks';
-import { toast } from 'react-toastify';
+import { toast } from '@/hooks/use-toast';
 
 const Header: React.FC = () => {
   const { user, signOut, isAdmin } = useAuth();
@@ -79,7 +80,7 @@ const Header: React.FC = () => {
           {/* User Menu */}
           <div className="flex items-center space-x-4">
             {user ? (
-              <UserMenu user={user} onSignOut={handleSignOut} isAdmin={isAdmin} />
+              <UserMenu />
             ) : (
               <Link
                 to="/auth"
