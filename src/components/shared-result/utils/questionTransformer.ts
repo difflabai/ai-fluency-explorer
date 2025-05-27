@@ -22,6 +22,7 @@ export const transformQuestionsWithCategories = async (questionsSnapshot: any[])
     text: q.text || '',
     category: q.category_id ? categoryMap.get(q.category_id) || 'Unknown' : (q.category || 'Unknown'),
     difficulty: q.difficulty || 'unknown',
-    correctAnswer: q.correct_answer || false
+    correctAnswer: q.correct_answer || false,
+    explanation: q.explanation || ''
   }));
 };

@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Category } from '@/utils/testData';
 import { migrateAndNotify } from '@/utils/databaseMigration';
@@ -12,6 +13,7 @@ export interface DBQuestion {
   version: number;
   is_active: boolean;
   correct_answer: boolean;
+  explanation: string | null;
   created_at: string;
   updated_at: string;
   parent_question_id: string | null;
@@ -228,6 +230,7 @@ export const convertDBQuestionToAppFormat = (
     correctAnswer: dbQuestion.correct_answer,
     category: category ? category.name : 'unknown',
     difficulty: dbQuestion.difficulty,
+    explanation: dbQuestion.explanation || '',
     dbId: dbQuestion.id // Keep the original DB ID for reference
   };
 };

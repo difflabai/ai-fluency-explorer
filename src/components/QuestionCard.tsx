@@ -1,8 +1,9 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Question } from '@/utils/testData';
-import { Check, X } from 'lucide-react';
+import { Check, X, ChevronDown, ChevronUp, HelpCircle } from 'lucide-react';
 
 interface QuestionCardProps {
   question: Question;
@@ -19,6 +20,8 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   selectedAnswer = null,
   showFeedback = false
 }) => {
+  const [explanationOpen, setExplanationOpen] = useState(false);
+
   const handleAnswer = (answer: boolean) => {
     if (!isAnswered) {
       onAnswer(answer);
@@ -113,6 +116,30 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
       </div>
       
       {renderFeedback()}
+      
+      {/* Educational Explanation Section */}
+      {question.explanation && (
+        <div className="mt-6">
+          <Collapsible open={explanationOpen} onOpenChange={setExplanationOpen}>
+            <CollapsibleTrigger className="flex items-center justify-between w-full p-3 text-left bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors">
+              <div className="flex items-center gap-2">
+                <HelpCircle className="h-4 w-4 text-blue-600" />
+                <span className="font-medium text-gray-700">Why this matters</span>
+              </div>
+              {explanationOpen ? (
+                <ChevronUp className="h-4 w-4 text-gray-500" />
+              ) : (
+                <ChevronDown className="h-4 w-4 text-gray-500" />
+              )}
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-2">
+              <div className="p-4 bg-blue-50 border border-blue-100 rounded-lg">
+                <p className="text-gray-700 leading-relaxed">{question.explanation}</p>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        </div>
+      )}
     </div>
   );
 };

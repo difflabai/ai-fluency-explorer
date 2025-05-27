@@ -36,6 +36,7 @@ export type Database = {
           correct_answer: boolean
           created_at: string
           difficulty: Database["public"]["Enums"]["difficulty_level"]
+          explanation: string | null
           id: string
           is_active: boolean
           parent_question_id: string | null
@@ -48,6 +49,7 @@ export type Database = {
           correct_answer: boolean
           created_at?: string
           difficulty: Database["public"]["Enums"]["difficulty_level"]
+          explanation?: string | null
           id?: string
           is_active?: boolean
           parent_question_id?: string | null
@@ -60,6 +62,7 @@ export type Database = {
           correct_answer?: boolean
           created_at?: string
           difficulty?: Database["public"]["Enums"]["difficulty_level"]
+          explanation?: string | null
           id?: string
           is_active?: boolean
           parent_question_id?: string | null

@@ -7,6 +7,7 @@ export interface Question {
   correctAnswer: boolean;
   category: string;
   difficulty: 'novice' | 'advanced-beginner' | 'competent' | 'proficient' | 'expert';
+  explanation?: string;
   dbId?: string; // Database ID for when saving answers
 }
 
