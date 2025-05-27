@@ -13,10 +13,12 @@ import {
 } from './shared-result';
 import { generateUserAnswers } from './shared-result/utils/answerGenerator';
 import { transformCategoryScores } from './shared-result/utils/categoryScoreTransformer';
+import { transformQuestionsWithCategories } from './shared-result/utils/questionTransformer';
 
 const SharedResultView: React.FC = () => {
   const { shareId } = useParams<{ shareId: string }>();
   const [result, setResult] = useState<SavedTestResult | null>(null);
+  const [questionsForBreakdown, setQuestionsForBreakdown] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -27,12 +29,18 @@ const SharedResultView: React.FC = () => {
       setIsLoading(true);
       try {
         const data = await fetchResultByShareId(shareId);
+        
         if (data) {
           console.log("Loaded shared result data:", data);
-          console.log("Category scores type:", typeof data.category_scores);
-          console.log("Category scores value:", data.category_scores);
           console.log("Questions snapshot:", data.questions_snapshot);
           setResult(data);
+          
+          // Transform questions with proper category names
+          if (data.questions_snapshot) {
+            const transformedQuestions = await transformQuestionsWithCategories(data.questions_snapshot);
+            console.log("Transformed questions with categories:", transformedQuestions);
+            setQuestionsForBreakdown(transformedQuestions);
+          }
         } else {
           setError("This shared result could not be found or has been removed.");
         }
@@ -119,15 +127,6 @@ const SharedResultView: React.FC = () => {
     'proficient': 10,
     'expert': 11
   };
-
-  // Transform questions snapshot for QuestionBreakdown component
-  const questionsForBreakdown = result?.questions_snapshot ? result.questions_snapshot.map((q: any, index: number) => ({
-    id: q.id || index,
-    text: q.text || '',
-    category: q.category || 'Unknown',
-    difficulty: q.difficulty || 'unknown',
-    correctAnswer: q.correct_answer || false
-  })) : [];
 
   // Generate realistic user answers based on overall score and question difficulty
   const userAnswersForBreakdown = result?.questions_snapshot ? 
