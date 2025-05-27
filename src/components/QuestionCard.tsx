@@ -73,6 +73,12 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
     }
   };
 
+  // Debug log to see what explanation is being used
+  console.log(`QuestionCard - Question: "${question.text?.substring(0, 50)}..." - Explanation: "${question.explanation?.substring(0, 50)}..."`);
+
+  // Check if question has a valid explanation
+  const hasExplanation = question.explanation && question.explanation.trim().length > 0;
+
   return (
     <div className="bg-white p-8 rounded-xl shadow-lg animate-scale-in border border-gray-100">
       <div className="mb-8">
@@ -117,8 +123,8 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
       
       {renderFeedback()}
       
-      {/* Educational Explanation Section */}
-      {question.explanation && (
+      {/* Educational Explanation Section - Only show if explanation exists */}
+      {hasExplanation && (
         <div className="mt-6">
           <Collapsible open={explanationOpen} onOpenChange={setExplanationOpen}>
             <CollapsibleTrigger className="flex items-center justify-between w-full p-3 text-left bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors">

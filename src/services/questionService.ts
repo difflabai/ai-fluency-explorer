@@ -189,6 +189,21 @@ export const fetchQuestions = async (testType?: 'quick' | 'comprehensive'): Prom
       return [];
     }
     
+    // Log explanation status for debugging
+    const questionsWithExplanations = questions.filter(q => q.explanation && q.explanation.trim().length > 0);
+    const questionsWithoutExplanations = questions.filter(q => !q.explanation || q.explanation.trim().length === 0);
+    
+    console.log(`✅ Questions with explanations: ${questionsWithExplanations.length}`);
+    console.log(`❌ Questions without explanations: ${questionsWithoutExplanations.length}`);
+    
+    // Show sample explanations for debugging
+    if (questionsWithExplanations.length > 0) {
+      console.log("📝 Sample explanations from fetchQuestions:");
+      questionsWithExplanations.slice(0, 3).forEach((q, index) => {
+        console.log(`${index + 1}. "${q.text.substring(0, 50)}..." - "${q.explanation?.substring(0, 100)}..."`);
+      });
+    }
+    
     console.log('Successfully fetched mapped questions:', questions.length);
     return questions;
     
@@ -224,13 +239,17 @@ export const convertDBQuestionToAppFormat = (
   categoriesMap: Map<string, DBCategory>
 ) => {
   const category = categoriesMap.get(dbQuestion.category_id);
+  
+  // Log the explanation for debugging
+  console.log(`Converting question: "${dbQuestion.text.substring(0, 50)}..." - Explanation: "${dbQuestion.explanation?.substring(0, 100) || 'NONE'}..."`);
+  
   return {
     id: parseInt(dbQuestion.id.slice(0, 8), 16), // Generate a numeric ID from UUID
     text: dbQuestion.text,
     correctAnswer: dbQuestion.correct_answer,
     category: category ? category.name : 'unknown',
     difficulty: dbQuestion.difficulty,
-    explanation: dbQuestion.explanation || '',
+    explanation: dbQuestion.explanation || '', // Ensure we pass the explanation from DB
     dbId: dbQuestion.id // Keep the original DB ID for reference
   };
 };

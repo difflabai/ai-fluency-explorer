@@ -34,14 +34,42 @@ export const transformQuestionsWithCategories = async (questionsSnapshot: any[])
   const categoryMapping = await createCategoryMapping();
   console.log("Category mapping:", categoryMapping);
   
+  // Fetch fresh explanations from the database to ensure consistency
+  const questionIds = questionsSnapshot.map(q => q.dbId).filter(Boolean);
+  
+  let dbQuestions: Record<string, any> = {};
+  
+  if (questionIds.length > 0) {
+    try {
+      const { data: freshQuestions, error } = await supabase
+        .from('questions')
+        .select('id, explanation')
+        .in('id', questionIds);
+        
+      if (!error && freshQuestions) {
+        freshQuestions.forEach(q => {
+          dbQuestions[q.id] = q;
+        });
+        console.log(`Fetched fresh explanations for ${freshQuestions.length} questions from database`);
+      }
+    } catch (error) {
+      console.error('Error fetching fresh explanations:', error);
+    }
+  }
+  
   return questionsSnapshot.map(question => {
     const categoryName = categoryMapping[question.category_id?.toString()] || question.category || 'Unknown Category';
     
-    // Prioritize explanation from database, then fallback to snapshot, then default
+    // Use fresh explanation from database if available, otherwise use snapshot explanation
     let explanation = '';
-    if (question.explanation && question.explanation.trim().length > 0) {
+    const freshQuestion = question.dbId ? dbQuestions[question.dbId] : null;
+    
+    if (freshQuestion && freshQuestion.explanation && freshQuestion.explanation.trim().length > 0) {
+      explanation = freshQuestion.explanation.trim();
+      console.log(`Using fresh database explanation for question: "${question.text?.substring(0, 30)}..."`);
+    } else if (question.explanation && question.explanation.trim().length > 0) {
       explanation = question.explanation.trim();
-      console.log(`Using database explanation for question: "${question.text?.substring(0, 30)}..."`);
+      console.log(`Using snapshot explanation for question: "${question.text?.substring(0, 30)}..."`);
     } else {
       // Fallback to default explanation if none exists
       explanation = getDefaultExplanation(question.difficulty, categoryName);
