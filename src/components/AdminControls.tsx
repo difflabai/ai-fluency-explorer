@@ -84,10 +84,7 @@ const AdminControls: React.FC = () => {
           <CardDescription>Manage application data and configurations</CardDescription>
         </CardHeader>
         <CardContent>
-          <AccessDeniedAlert 
-            title="Admin Access Required" 
-            description="You need admin privileges to access these controls. Please contact an administrator or request admin access." 
-          />
+          <AccessDeniedAlert />
         </CardContent>
       </Card>
     );
@@ -106,7 +103,7 @@ const AdminControls: React.FC = () => {
       
       <CardContent className="space-y-4">
         {permissionError && (
-          <AccessDeniedAlert description={permissionError} />
+          <AccessDeniedAlert />
         )}
         
         <DatabaseStatusCard 
