@@ -3,7 +3,8 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ChevronDown, ChevronUp, CheckCircle, XCircle, Eye, EyeOff } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ChevronDown, ChevronUp, CheckCircle, XCircle, Eye, EyeOff, HelpCircle } from 'lucide-react';
 import { Question, UserAnswer } from '@/hooks/test/types';
 
 interface QuestionBreakdownProps {
@@ -19,6 +20,7 @@ const QuestionBreakdown: React.FC<QuestionBreakdownProps> = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showAnswers, setShowAnswers] = useState(false);
+  const [showExplanations, setShowExplanations] = useState(false);
 
   // Group questions by category
   const questionsByCategory = questions.reduce((acc, question) => {
@@ -67,6 +69,7 @@ const QuestionBreakdown: React.FC<QuestionBreakdownProps> = ({
   };
 
   const QuestionItem: React.FC<{ question: Question }> = ({ question }) => {
+    const [explanationOpen, setExplanationOpen] = useState(false);
     const userAnswer = getUserAnswer(question.id);
     const isCorrect = userAnswer?.answer === true;
     
@@ -112,6 +115,30 @@ const QuestionBreakdown: React.FC<QuestionBreakdownProps> = ({
                 {question.correctAnswer ? 'Yes' : 'No'}
               </span>
             </div>
+          </div>
+        )}
+
+        {/* Explanation Section */}
+        {showExplanations && question.explanation && (
+          <div className="mt-3 pt-3 border-t border-gray-100">
+            <Collapsible open={explanationOpen} onOpenChange={setExplanationOpen}>
+              <CollapsibleTrigger className="flex items-center justify-between w-full p-2 text-left bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors">
+                <div className="flex items-center gap-2">
+                  <HelpCircle className="h-4 w-4 text-blue-600" />
+                  <span className="font-medium text-gray-700 text-sm">Why this matters</span>
+                </div>
+                {explanationOpen ? (
+                  <ChevronUp className="h-4 w-4 text-gray-500" />
+                ) : (
+                  <ChevronDown className="h-4 w-4 text-gray-500" />
+                )}
+              </CollapsibleTrigger>
+              <CollapsibleContent className="mt-2">
+                <div className="p-3 bg-blue-50 border border-blue-100 rounded-lg">
+                  <p className="text-sm text-gray-700 leading-relaxed">{question.explanation}</p>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
           </div>
         )}
       </div>
@@ -207,6 +234,15 @@ const QuestionBreakdown: React.FC<QuestionBreakdownProps> = ({
             >
               {showAnswers ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               {showAnswers ? 'Hide' : 'Show'} Answers
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowExplanations(!showExplanations)}
+              className="flex items-center gap-1"
+            >
+              <HelpCircle className="h-4 w-4" />
+              {showExplanations ? 'Hide' : 'Show'} Explanations
             </Button>
             <Button 
               variant="ghost" 
