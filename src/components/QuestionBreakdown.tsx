@@ -1,6 +1,8 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ChevronDown, ChevronUp, CheckCircle, XCircle, Eye, EyeOff } from 'lucide-react';
 import { Question, UserAnswer } from '@/hooks/test/types';
 
@@ -116,6 +118,58 @@ const QuestionBreakdown: React.FC<QuestionBreakdownProps> = ({
     );
   };
 
+  const DifficultySection: React.FC<{ difficulty: string; difficultyQuestions: Question[] }> = ({ 
+    difficulty, 
+    difficultyQuestions 
+  }) => {
+    const correctCount = difficultyQuestions.filter(q => {
+      const userAnswer = getUserAnswer(q.id);
+      return userAnswer?.answer === true;
+    }).length;
+    
+    return (
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-3">
+          <h5 className="font-medium text-gray-700">{formatDifficultyName(difficulty)}</h5>
+          <span className="text-sm text-gray-600">
+            {correctCount}/{difficultyQuestions.length} correct ({Math.round((correctCount/difficultyQuestions.length) * 100)}%)
+          </span>
+        </div>
+        <div className="space-y-2">
+          {difficultyQuestions.map(question => (
+            <QuestionItem key={question.id} question={question} />
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  const CategorySection: React.FC<{ category: string; categoryQuestions: Question[] }> = ({ 
+    category, 
+    categoryQuestions 
+  }) => {
+    const correctCount = categoryQuestions.filter(q => {
+      const userAnswer = getUserAnswer(q.id);
+      return userAnswer?.answer === true;
+    }).length;
+    
+    return (
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-3">
+          <h5 className="font-medium text-gray-700">{category}</h5>
+          <span className="text-sm text-gray-600">
+            {correctCount}/{categoryQuestions.length} correct ({Math.round((correctCount/categoryQuestions.length) * 100)}%)
+          </span>
+        </div>
+        <div className="space-y-2">
+          {categoryQuestions.map(question => (
+            <QuestionItem key={question.id} question={question} />
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   if (!isExpanded) {
     return (
       <Card className="bg-white shadow-sm">
@@ -166,60 +220,41 @@ const QuestionBreakdown: React.FC<QuestionBreakdownProps> = ({
           </div>
         </div>
       </CardHeader>
-      <CardContent className="p-6 space-y-6">
-        {/* By Difficulty Level */}
-        <div>
-          <h4 className="font-semibold text-gray-800 mb-4">Questions by Difficulty Level</h4>
-          {Object.entries(questionsByDifficulty).map(([difficulty, difficultyQuestions]) => {
-            const correctCount = difficultyQuestions.filter(q => {
-              const userAnswer = getUserAnswer(q.id);
-              return userAnswer?.answer === true;
-            }).length;
-            
-            return (
-              <div key={difficulty} className="mb-6">
-                <div className="flex items-center justify-between mb-3">
-                  <h5 className="font-medium text-gray-700">{formatDifficultyName(difficulty)}</h5>
-                  <span className="text-sm text-gray-600">
-                    {correctCount}/{difficultyQuestions.length} correct ({Math.round((correctCount/difficultyQuestions.length) * 100)}%)
-                  </span>
-                </div>
-                <div className="space-y-2">
-                  {difficultyQuestions.map(question => (
-                    <QuestionItem key={question.id} question={question} />
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* By Category */}
-        <div>
-          <h4 className="font-semibold text-gray-800 mb-4">Questions by Category</h4>
-          {Object.entries(questionsByCategory).map(([category, categoryQuestions]) => {
-            const correctCount = categoryQuestions.filter(q => {
-              const userAnswer = getUserAnswer(q.id);
-              return userAnswer?.answer === true;
-            }).length;
-            
-            return (
-              <div key={category} className="mb-6">
-                <div className="flex items-center justify-between mb-3">
-                  <h5 className="font-medium text-gray-700">{category}</h5>
-                  <span className="text-sm text-gray-600">
-                    {correctCount}/{categoryQuestions.length} correct ({Math.round((correctCount/categoryQuestions.length) * 100)}%)
-                  </span>
-                </div>
-                <div className="space-y-2">
-                  {categoryQuestions.map(question => (
-                    <QuestionItem key={question.id} question={question} />
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+      <CardContent className="p-6">
+        <Tabs defaultValue="difficulty" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-6">
+            <TabsTrigger value="difficulty" className="flex items-center gap-2">
+              By Difficulty Level
+            </TabsTrigger>
+            <TabsTrigger value="category" className="flex items-center gap-2">
+              By Category
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="difficulty" className="mt-0">
+            <div className="space-y-6">
+              {Object.entries(questionsByDifficulty).map(([difficulty, difficultyQuestions]) => (
+                <DifficultySection 
+                  key={difficulty} 
+                  difficulty={difficulty} 
+                  difficultyQuestions={difficultyQuestions} 
+                />
+              ))}
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="category" className="mt-0">
+            <div className="space-y-6">
+              {Object.entries(questionsByCategory).map(([category, categoryQuestions]) => (
+                <CategorySection 
+                  key={category} 
+                  category={category} 
+                  categoryQuestions={categoryQuestions} 
+                />
+              ))}
+            </div>
+          </TabsContent>
+        </Tabs>
       </CardContent>
     </Card>
   );
