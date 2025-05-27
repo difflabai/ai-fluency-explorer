@@ -94,31 +94,20 @@ export async function migrateJsonQuestions(categoryMap: Map<string, string>): Pr
             continue;
           }
           
-          // Question doesn't exist, insert it with explanation
+          // Question doesn't exist, insert it with explanation using the enhanced function
           const { data: newQuestionId, error: insertError } = await supabase
             .rpc('admin_insert_question', {
               question_text: question.text,
               category_id: categoryDbId,
               difficulty: question.difficulty || 'novice',
-              correct_answer: question.correctAnswer
+              correct_answer: question.correctAnswer,
+              explanation_text: question.explanation || null
             });
             
           if (insertError) {
             console.error(`Error inserting question:`, insertError);
             categorySkipped++;
             continue;
-          }
-          
-          // Update the explanation separately since admin_insert_question might not handle it
-          if (question.explanation) {
-            const { error: explanationError } = await supabase
-              .from('questions')
-              .update({ explanation: question.explanation })
-              .eq('id', newQuestionId);
-              
-            if (explanationError) {
-              console.error(`Error updating explanation for new question:`, explanationError);
-            }
           }
           
           console.log(`Added question with ID ${newQuestionId} and explanation`);

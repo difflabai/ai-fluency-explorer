@@ -275,12 +275,20 @@ export type Database = {
         Returns: string
       }
       admin_insert_question: {
-        Args: {
-          question_text: string
-          category_id: string
-          difficulty: string
-          correct_answer: boolean
-        }
+        Args:
+          | {
+              question_text: string
+              category_id: string
+              difficulty: string
+              correct_answer: boolean
+            }
+          | {
+              question_text: string
+              category_id: string
+              difficulty: string
+              correct_answer: boolean
+              explanation_text?: string
+            }
         Returns: string
       }
       check_category_exists: {
