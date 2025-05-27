@@ -1,55 +1,65 @@
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import React from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from '@/contexts/auth';
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
-import LeaderboardPage from "./pages/Leaderboard";
-import SharedResultView from "./components/SharedResultView";
-import SystemCheck from "./components/SystemCheck";
-import AdminPage from './pages/Admin';
-import AuthPage from './pages/Auth';
-import Header from './components/layout/Header';
-import ProtectedRoute from './components/auth/ProtectedRoute';
-import AdminRoute from './components/auth/AdminRoute';
+import { Toaster } from '@/components/ui/toaster';
+import Header from '@/components/layout/Header';
+
+// Pages
+import Index from '@/pages/Index';
+import Auth from '@/pages/Auth';
+import Admin from '@/pages/Admin';
+import SystemTest from '@/pages/SystemTest';
+import LeaderboardPage from '@/pages/Leaderboard';
+import NotFound from '@/pages/NotFound';
+
+// Components
+import SharedResultView from '@/components/SharedResultView';
+import AdminRoute from '@/components/auth/AdminRoute';
+
+import './App.css';
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Header />
-          <main>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/leaderboard" element={<LeaderboardPage />} />
-              <Route path="/shared/:shareId" element={<SharedResultView />} />
-              <Route path="/system-check" element={
-                <ProtectedRoute>
-                  <SystemCheck />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin" element={
-                <AdminRoute>
-                  <AdminPage />
-                </AdminRoute>
-              } />
-              <Route path="/auth" element={<AuthPage />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </main>
-        </BrowserRouter>
+        <Router>
+          <div className="min-h-screen bg-gray-50">
+            <Header />
+            <main>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/leaderboard" element={<LeaderboardPage />} />
+                <Route path="/shared/:shareId" element={<SharedResultView />} />
+                <Route 
+                  path="/admin" 
+                  element={
+                    <AdminRoute>
+                      <Admin />
+                    </AdminRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin/system-test" 
+                  element={
+                    <AdminRoute>
+                      <SystemTest />
+                    </AdminRoute>
+                  } 
+                />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </main>
+            <Toaster />
+          </div>
+        </Router>
       </AuthProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+    </QueryClientProvider>
+  );
+}
 
 export default App;
