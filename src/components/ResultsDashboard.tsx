@@ -33,8 +33,9 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
     const fetchUserRank = async () => {
       try {
         const leaderboardData = await fetchLeaderboard(100);
-        const position = leaderboardData.findIndex(entry => 
-          entry.overall_score < overallScore
+        // Use <= so users with the same score receive the same rank
+        const position = leaderboardData.findIndex(entry =>
+          entry.overall_score <= overallScore
         );
         
         if (position === -1) {
