@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Question } from '@/utils/testData';
+import { Question } from '@/hooks/test/types';
 import { Check, X, ChevronDown, ChevronUp, HelpCircle } from 'lucide-react';
 
 interface QuestionCardProps {
