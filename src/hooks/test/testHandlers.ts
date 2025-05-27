@@ -1,3 +1,4 @@
+
 import { toast } from "@/hooks/use-toast";
 import { calculateResults, TestResult } from '@/utils/scoring';
 import { saveTestResult } from '@/services/testResultService';
@@ -32,6 +33,12 @@ export const handleAnswer = (
     });
   }
   
+  console.log('Answer recorded:', {
+    questionId: currentQuestion.id,
+    answer,
+    totalAnswers: updatedAnswers.length
+  });
+  
   setUserAnswers(updatedAnswers);
   
   // Auto-advance to next question after slight delay
@@ -50,10 +57,23 @@ export const handleCompleteTest = async (
 ): Promise<void> => {
   console.log("Completing test with:", { 
     questionsCount: questions.length, 
-    userAnswersCount: userAnswers.length 
+    userAnswersCount: userAnswers.length,
+    questions: questions.map(q => ({ id: q.id, category: q.category, difficulty: q.difficulty })),
+    userAnswers: userAnswers.map(a => ({ questionId: a.questionId, answer: a.answer }))
   });
   
+  // Validate that we have answers for all questions
+  if (userAnswers.length !== questions.length) {
+    console.warn('Mismatch between questions and answers:', {
+      questionsCount: questions.length,
+      answersCount: userAnswers.length,
+      missingAnswers: questions.filter(q => !userAnswers.find(a => a.questionId === q.id)).map(q => q.id)
+    });
+  }
+  
   const testResult = calculateResults(questions, userAnswers);
+  console.log('Test result calculated:', testResult);
+  
   setResult(testResult);
   setTestComplete(true);
   
@@ -65,14 +85,40 @@ export const handleCompleteTest = async (
     }
   });
   
-  // Map user answers to include database question IDs
+  // Map user answers to include database question IDs - include ALL answers
   const answersForDb = userAnswers.map(answer => ({
-    questionId: questionIdToDbId.get(answer.questionId) || '',
+    questionId: questionIdToDbId.get(answer.questionId) || answer.questionId.toString(),
     answer: answer.answer
-  })).filter(a => a.questionId !== '');
+  }));
+  
+  console.log('Preparing to save test result:', {
+    answersForDb: answersForDb.length,
+    testResult: {
+      overallScore: testResult.overallScore,
+      categoryScores: testResult.categoryScores.length
+    }
+  });
   
   try {
-    console.log("Saving test result with questions snapshot...");
+    console.log("Saving test result with complete data...");
+    
+    // Create a comprehensive questions snapshot that preserves all question data
+    const questionsSnapshot = questions.map(q => ({
+      id: q.id,
+      text: q.text,
+      category: q.category,
+      difficulty: q.difficulty,
+      correctAnswer: q.correctAnswer,
+      dbId: q.dbId
+    }));
+    
+    // Create user answers snapshot with proper mapping
+    const userAnswersSnapshot = userAnswers.map(answer => ({
+      questionId: answer.questionId,
+      answer: answer.answer,
+      // Include the actual question for reference
+      questionData: questions.find(q => q.id === answer.questionId)
+    }));
     
     // Save test result to database with complete question and answer data
     const savedResult = await saveTestResult(
@@ -80,27 +126,24 @@ export const handleCompleteTest = async (
       undefined, // username (optional)
       false, // make public
       {
-        questionsSnapshot: questions.map(q => ({
-          ...q,
-          // Ensure all question properties are preserved
-          id: q.id,
-          text: q.text,
-          category: q.category,
-          difficulty: q.difficulty,
-          correctAnswer: q.correctAnswer
-        })),
-        userAnswers: userAnswers
+        questionsSnapshot,
+        userAnswers: userAnswersSnapshot
       }
     );
     
     if (savedResult) {
-      console.log("Test result saved successfully:", savedResult);
+      console.log("Test result saved successfully:", {
+        id: savedResult.id,
+        score: savedResult.overall_score,
+        questionsCount: questionsSnapshot.length,
+        answersCount: userAnswersSnapshot.length
+      });
       toast({
         title: "Test Completed!",
         description: "Your results are ready to view and have been saved.",
       });
     } else {
-      console.error("Failed to save test result");
+      console.error("Failed to save test result - no data returned");
       toast({
         title: "Test Completed",
         description: "Your results are ready, but there was an error saving them.",
