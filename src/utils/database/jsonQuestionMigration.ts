@@ -50,10 +50,10 @@ export async function migrateJsonQuestions(categoryMap: Map<string, string>): Pr
       // Process each question in the category
       for (const question of categoryQuestions) {
         try {
-          // Check if question already exists
+          // Check if question already exists by text
           const { data: existingQuestions, error: checkError } = await supabase
             .from('questions')
-            .select('id')
+            .select('id, explanation')
             .eq('text', question.text);
             
           if (checkError) {
@@ -63,17 +63,43 @@ export async function migrateJsonQuestions(categoryMap: Map<string, string>): Pr
           }
           
           if (existingQuestions && existingQuestions.length > 0) {
-            console.log(`Question already exists: "${question.text.substring(0, 30)}..."`);
-            categorySkipped++;
+            // Question exists, check if we need to update the explanation
+            const existingQuestion = existingQuestions[0];
+            const newExplanation = question.explanation || '';
+            
+            if (existingQuestion.explanation !== newExplanation) {
+              console.log(`Updating explanation for question: "${question.text.substring(0, 50)}..."`);
+              
+              // Update the explanation
+              const { error: updateError } = await supabase
+                .from('questions')
+                .update({ 
+                  explanation: newExplanation,
+                  updated_at: new Date().toISOString()
+                })
+                .eq('id', existingQuestion.id);
+                
+              if (updateError) {
+                console.error(`Error updating question explanation:`, updateError);
+                categorySkipped++;
+                continue;
+              }
+              
+              console.log(`Updated explanation for question ID ${existingQuestion.id}`);
+              categoryAdded++; // Count as "added" since we updated it
+            } else {
+              console.log(`Question already up to date: "${question.text.substring(0, 30)}..."`);
+              categorySkipped++;
+            }
             continue;
           }
           
-          // Use the admin_insert_question function to bypass RLS
+          // Question doesn't exist, insert it with explanation
           const { data: newQuestionId, error: insertError } = await supabase
             .rpc('admin_insert_question', {
               question_text: question.text,
               category_id: categoryDbId,
-              difficulty: question.difficulty || 'novice', // Default to novice if not specified
+              difficulty: question.difficulty || 'novice',
               correct_answer: question.correctAnswer
             });
             
@@ -83,7 +109,19 @@ export async function migrateJsonQuestions(categoryMap: Map<string, string>): Pr
             continue;
           }
           
-          console.log(`Added question with ID ${newQuestionId}`);
+          // Update the explanation separately since admin_insert_question might not handle it
+          if (question.explanation) {
+            const { error: explanationError } = await supabase
+              .from('questions')
+              .update({ explanation: question.explanation })
+              .eq('id', newQuestionId);
+              
+            if (explanationError) {
+              console.error(`Error updating explanation for new question:`, explanationError);
+            }
+          }
+          
+          console.log(`Added question with ID ${newQuestionId} and explanation`);
           categoryAdded++;
         } catch (err) {
           console.error(`Unexpected error processing question:`, err);
@@ -91,7 +129,7 @@ export async function migrateJsonQuestions(categoryMap: Map<string, string>): Pr
         }
       }
       
-      console.log(`Category '${categoryName}' - Added: ${categoryAdded}, Skipped: ${categorySkipped}`);
+      console.log(`Category '${categoryName}' - Added/Updated: ${categoryAdded}, Skipped: ${categorySkipped}`);
       totalAdded += categoryAdded;
       totalSkipped += categorySkipped;
     }
