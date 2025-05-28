@@ -73,11 +73,15 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
     }
   };
 
-  // Debug log to see what explanation is being used
-  console.log(`QuestionCard - Question: "${question.text?.substring(0, 50)}..." - Explanation: "${question.explanation?.substring(0, 50)}..."`);
+  // Enhanced debugging for explanation tracking
+  const explanation = question.explanation?.trim() || '';
+  console.log(`QuestionCard - Question: "${question.text?.substring(0, 50)}..."`);
+  console.log(`QuestionCard - Explanation length: ${explanation.length}`);
+  console.log(`QuestionCard - Explanation preview: "${explanation.substring(0, 100)}..."`);
+  console.log(`QuestionCard - DB ID: ${question.dbId || 'N/A'}`);
 
   // Check if question has a valid explanation
-  const hasExplanation = question.explanation && question.explanation.trim().length > 0;
+  const hasExplanation = explanation.length > 0;
 
   return (
     <div className="bg-white p-8 rounded-xl shadow-lg animate-scale-in border border-gray-100">
@@ -123,7 +127,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
       
       {renderFeedback()}
       
-      {/* Educational Explanation Section - Only show if explanation exists */}
+      {/* Educational Explanation Section - Show if explanation exists */}
       {hasExplanation && (
         <div className="mt-6">
           <Collapsible open={explanationOpen} onOpenChange={setExplanationOpen}>
@@ -140,10 +144,19 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
             </CollapsibleTrigger>
             <CollapsibleContent className="mt-2">
               <div className="p-4 bg-blue-50 border border-blue-100 rounded-lg">
-                <p className="text-gray-700 leading-relaxed">{question.explanation}</p>
+                <p className="text-gray-700 leading-relaxed">{explanation}</p>
               </div>
             </CollapsibleContent>
           </Collapsible>
+        </div>
+      )}
+      
+      {/* Debug info for development */}
+      {!hasExplanation && (
+        <div className="mt-6 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <p className="text-sm text-yellow-800">
+            ⚠️ No explanation available for this question. Run migration to populate explanations.
+          </p>
         </div>
       )}
     </div>

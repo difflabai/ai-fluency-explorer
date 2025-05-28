@@ -7,8 +7,16 @@ export const convertDBQuestionToAppFormat = (
 ) => {
   const category = categoriesMap.get(dbQuestion.category_id);
   
+  // Ensure we have a proper explanation
+  const explanation = dbQuestion.explanation?.trim() || '';
+  
   // Log the explanation for debugging
-  console.log(`Converting question: "${dbQuestion.text.substring(0, 50)}..." - Explanation: "${dbQuestion.explanation?.substring(0, 100) || 'NONE'}..."`);
+  console.log(`Converting question: "${dbQuestion.text.substring(0, 50)}..." - Explanation length: ${explanation.length}`);
+  if (explanation) {
+    console.log(`Explanation preview: "${explanation.substring(0, 100)}..."`);
+  } else {
+    console.log(`WARNING: No explanation found for question "${dbQuestion.text.substring(0, 50)}..."`);
+  }
   
   return {
     id: parseInt(dbQuestion.id.slice(0, 8), 16), // Generate a numeric ID from UUID
@@ -16,7 +24,7 @@ export const convertDBQuestionToAppFormat = (
     correctAnswer: dbQuestion.correct_answer,
     category: category ? category.name : 'unknown',
     difficulty: dbQuestion.difficulty,
-    explanation: dbQuestion.explanation || '', // Ensure we pass the explanation from DB
+    explanation: explanation, // Pass through the explanation directly
     dbId: dbQuestion.id // Keep the original DB ID for reference
   };
 };

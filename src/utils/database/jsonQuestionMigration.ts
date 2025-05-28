@@ -3,12 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 import questionsData from '@/data/questions.json';
 
 /**
- * Migrate questions from the JSON data source
+ * Migrate questions from the JSON data source with proper explanation handling
  * @param categoryMap Map of category IDs to their database IDs
  * @returns Array containing [questionsAdded, questionsSkipped]
  */
 export async function migrateJsonQuestions(categoryMap: Map<string, string>): Promise<number[]> {
-  console.log('Starting migration of questions from JSON data...');
+  console.log('Starting migration of questions from JSON data with enhanced explanation handling...');
   
   let totalAdded = 0;
   let totalSkipped = 0;
@@ -62,24 +62,32 @@ export async function migrateJsonQuestions(categoryMap: Map<string, string>): Pr
             continue;
           }
           
+          // Prepare the explanation - prioritize JSON explanation, then generate default
+          const jsonExplanation = question.explanation?.trim() || '';
+          const explanationToUse = jsonExplanation || 
+            generateDefaultExplanation(question.difficulty, categoryName);
+          
+          console.log(`Processing: "${question.text.substring(0, 40)}..."`);
+          console.log(`JSON explanation available: ${jsonExplanation ? 'YES' : 'NO'}`);
+          console.log(`Using explanation: "${explanationToUse.substring(0, 60)}..."`);
+          
           if (existingQuestions && existingQuestions.length > 0) {
-            // Question exists, check if we need to update the explanation
+            // Question exists, update with proper explanation
             const existingQuestion = existingQuestions[0];
-            
-            // Use the detailed explanation from JSON, or fallback to existing
-            const jsonExplanation = question.explanation?.trim() || '';
             const existingExplanation = existingQuestion.explanation?.trim() || '';
             
-            // Only update if JSON has a different explanation
-            if (jsonExplanation && jsonExplanation !== existingExplanation) {
-              console.log(`Updating explanation for question: "${question.text.substring(0, 50)}..."`);
-              console.log(`New explanation: "${jsonExplanation.substring(0, 100)}..."`);
+            // Always update if we have a better explanation from JSON or if existing is empty/default
+            const shouldUpdate = jsonExplanation || 
+              !existingExplanation || 
+              isDefaultExplanation(existingExplanation);
+            
+            if (shouldUpdate) {
+              console.log(`Updating explanation for existing question ID ${existingQuestion.id}`);
               
-              // Update the explanation with the detailed one from JSON
               const { error: updateError } = await supabase
                 .from('questions')
                 .update({ 
-                  explanation: jsonExplanation,
+                  explanation: explanationToUse,
                   updated_at: new Date().toISOString()
                 })
                 .eq('id', existingQuestion.id);
@@ -91,26 +99,6 @@ export async function migrateJsonQuestions(categoryMap: Map<string, string>): Pr
               }
               
               console.log(`Successfully updated explanation for question ID ${existingQuestion.id}`);
-              categoryAdded++; // Count as "added" since we updated it
-            } else if (!jsonExplanation && !existingExplanation) {
-              // Both are empty, generate a default explanation
-              const defaultExplanation = generateDefaultExplanation(question.difficulty, categoryName);
-              console.log(`Adding default explanation for question: "${question.text.substring(0, 50)}..."`);
-              
-              const { error: updateError } = await supabase
-                .from('questions')
-                .update({ 
-                  explanation: defaultExplanation,
-                  updated_at: new Date().toISOString()
-                })
-                .eq('id', existingQuestion.id);
-                
-              if (updateError) {
-                console.error(`Error adding default explanation:`, updateError);
-                categorySkipped++;
-                continue;
-              }
-              
               categoryAdded++;
             } else {
               console.log(`Question already has appropriate explanation: "${question.text.substring(0, 30)}..."`);
@@ -119,12 +107,8 @@ export async function migrateJsonQuestions(categoryMap: Map<string, string>): Pr
             continue;
           }
           
-          // Question doesn't exist, insert it with explanation from JSON
-          const explanationToUse = question.explanation?.trim() || 
-            generateDefaultExplanation(question.difficulty, categoryName);
-          
-          console.log(`Inserting new question with explanation: "${question.text.substring(0, 50)}..."`);
-          console.log(`Explanation: "${explanationToUse.substring(0, 100)}..."`);
+          // Question doesn't exist, insert it with proper explanation
+          console.log(`Inserting new question with explanation: "${question.text.substring(0, 40)}..."`);
           
           const { data: newQuestionId, error: insertError } = await supabase
             .rpc('admin_insert_question', {
@@ -141,7 +125,7 @@ export async function migrateJsonQuestions(categoryMap: Map<string, string>): Pr
             continue;
           }
           
-          console.log(`Successfully added question with ID ${newQuestionId} and detailed explanation`);
+          console.log(`Successfully added question with ID ${newQuestionId} and explanation`);
           categoryAdded++;
         } catch (err) {
           console.error(`Unexpected error processing question:`, err);
@@ -154,6 +138,7 @@ export async function migrateJsonQuestions(categoryMap: Map<string, string>): Pr
       totalSkipped += categorySkipped;
     }
     
+    console.log(`JSON question migration completed: ${totalAdded} added/updated, ${totalSkipped} skipped`);
     return [totalAdded, totalSkipped];
     
   } catch (error) {
@@ -201,4 +186,20 @@ function generateDefaultExplanation(difficulty: string, category: string): strin
   
   return explanations[difficulty]?.[category] || 
     `This ${difficulty}-level skill in ${category} demonstrates important capabilities for effective AI utilization.`;
+}
+
+/**
+ * Check if an explanation appears to be a default/generic one
+ */
+function isDefaultExplanation(explanation: string): boolean {
+  const defaultPhrases = [
+    'demonstrates important capabilities',
+    'This foundational skill',
+    'Advanced application skills',
+    'Competent application demonstrates',
+    'Proficient application shows',
+    'Expert-level application demonstrates'
+  ];
+  
+  return defaultPhrases.some(phrase => explanation.includes(phrase));
 }
