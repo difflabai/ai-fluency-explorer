@@ -69,7 +69,7 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
               onSort={handleSort}
               className="w-16"
             >
-              {/* Empty header for actions column */}
+              Actions
             </SortableTableHeader>
           </TableRow>
         </TableHeader>
