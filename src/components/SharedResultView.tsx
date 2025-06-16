@@ -12,8 +12,8 @@ import {
   SharedResultCharts 
 } from './shared-result';
 import { generateUserAnswers } from './shared-result/utils/answerGenerator';
-import { transformCategoryScores } from './shared-result/utils/categoryScoreTransformer';
 import { transformQuestionsWithCategories } from './shared-result/utils/questionTransformer';
+import { CategoryScore } from '@/utils/scoring';
 
 const SharedResultView: React.FC = () => {
   const { shareId } = useParams<{ shareId: string }>();
@@ -32,20 +32,11 @@ const SharedResultView: React.FC = () => {
         
         if (data) {
           console.log("Loaded shared result data:", data);
-          console.log("Questions snapshot:", data.questions_snapshot);
           setResult(data);
           
           // Transform questions with proper category names and explanations
           if (data.questions_snapshot) {
-            console.log("Transforming questions with enhanced explanations...");
             const transformedQuestions = await transformQuestionsWithCategories(data.questions_snapshot);
-            console.log("Transformed questions with categories and explanations:", transformedQuestions);
-            
-            // Log a sample of the explanations to verify they're detailed
-            if (transformedQuestions.length > 0) {
-              console.log("Sample explanation:", transformedQuestions[0].explanation);
-            }
-            
             setQuestionsForBreakdown(transformedQuestions);
           }
         } else {
@@ -71,7 +62,6 @@ const SharedResultView: React.FC = () => {
         description: "The result link has been copied to your clipboard!"
       });
     } catch (err) {
-      // Fallback for browsers that don't support clipboard API
       toast({
         title: "Share Link",
         description: "Copy this URL to share: " + currentUrl,
@@ -106,8 +96,10 @@ const SharedResultView: React.FC = () => {
     );
   }
 
-  // Transform the category scores data to proper format for radar chart
-  const categoryScores = transformCategoryScores(result.category_scores, result.percentage_score);
+  // Convert stored category_scores to CategoryScore[] format
+  const categoryScores: CategoryScore[] = Array.isArray(result.category_scores) 
+    ? result.category_scores 
+    : [];
 
   // Calculate difficulty level scores from the questions snapshot
   const difficultyScores = result?.questions_snapshot ? (() => {

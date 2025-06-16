@@ -50,10 +50,7 @@ const SharedResultCharts: React.FC<SharedResultChartsProps> = ({ categoryScores 
           </Badge>
         </div>
         <div className="text-sm text-gray-600">
-          This radar chart visualizes your expertise across key AI knowledge domains. 
-          {averageScore >= 85 && " Your expert-level performance demonstrates exceptional capabilities across all areas."}
-          {averageScore >= 70 && averageScore < 85 && " Your strong performance shows solid competency in AI fundamentals."}
-          {averageScore < 70 && " Focus on strengthening weaker areas to improve overall AI fluency."}
+          This radar chart visualizes your expertise across key AI knowledge domains.
         </div>
       </CardHeader>
       
@@ -124,12 +121,6 @@ const SharedResultCharts: React.FC<SharedResultChartsProps> = ({ categoryScores 
               <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
               <span><strong>Overall Performance:</strong> {getPerformanceLevel(averageScore).label} level across all categories</span>
             </div>
-            {averageScore >= 80 && (
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <span><strong>Achievement:</strong> Demonstrates advanced AI literacy and practical understanding</span>
-              </div>
-            )}
           </div>
         </div>
       </CardContent>

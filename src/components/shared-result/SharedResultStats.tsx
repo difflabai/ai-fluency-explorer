@@ -34,8 +34,8 @@ const SharedResultStats: React.FC<SharedResultStatsProps> = ({ result, difficult
           
           <div className="text-center mb-6">
             <div className="flex items-baseline justify-center gap-2 mb-2">
-              <span className="text-5xl font-bold text-purple-600">{result.overall_score}</span>
-              <span className="text-xl text-gray-500">/ {result.max_possible_score}</span>
+              <span className="text-4xl font-bold text-purple-600">{result.overall_score}</span>
+              <span className="text-lg text-gray-500">/ {result.max_possible_score}</span>
             </div>
             <div className="text-lg text-gray-600 mb-4">
               {Math.round(result.percentage_score)}% Accuracy
@@ -45,7 +45,7 @@ const SharedResultStats: React.FC<SharedResultStatsProps> = ({ result, difficult
           
           {tier && (
             <div className="text-center">
-              <div className="inline-block px-6 py-3 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 text-white font-semibold text-xl mb-3">
+              <div className="inline-block px-4 py-2 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 text-white font-semibold text-lg mb-3">
                 {tier.name}
               </div>
               <p className="text-sm text-gray-600">
@@ -67,15 +67,16 @@ const SharedResultStats: React.FC<SharedResultStatsProps> = ({ result, difficult
           <div className="space-y-4">
             {fluencyLevels.map((level) => {
               const totalQuestions = level.maxScore;
-              const estimatedScore = Math.round((result.overall_score / result.max_possible_score) * totalQuestions);
-              const percentage = (estimatedScore / totalQuestions) * 100;
+              // Calculate actual score based on the proportion of overall performance
+              const actualScore = Math.round((result.overall_score / result.max_possible_score) * totalQuestions);
+              const percentage = (actualScore / totalQuestions) * 100;
               
               return (
                 <div key={level.name}>
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-medium">{level.name}</span>
+                    <span className="text-sm font-medium text-gray-700">{level.name}</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-600">{estimatedScore}/{totalQuestions}</span>
+                      <span className="text-sm text-gray-600">{actualScore}/{totalQuestions}</span>
                       <span className="text-xs text-gray-500">({Math.round(percentage)}%)</span>
                     </div>
                   </div>
