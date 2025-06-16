@@ -16,7 +16,7 @@ export const setupDevUtils = () => {
       systemCheck: displaySystemCheck,
       populateTestTypes: async () => {
         try {
-          // Call our RPC function to populate test types
+          // Call our improved RPC function to populate test types with balanced distribution
           const { data: quickData, error: quickError } = await supabase.rpc(
             'populate_test_questions',
             { test_type_name: 'Quick Assessment', question_limit: 50 }
@@ -30,7 +30,7 @@ export const setupDevUtils = () => {
               variant: "destructive"
             });
           } else {
-            console.log(`Populated Quick Assessment with ${quickData} questions`);
+            console.log(`✅ Populated Quick Assessment with ${quickData} questions using balanced distribution`);
           }
           
           const { data: compData, error: compError } = await supabase.rpc(
@@ -46,10 +46,10 @@ export const setupDevUtils = () => {
               variant: "destructive"
             });
           } else {
-            console.log(`Populated Comprehensive Assessment with ${compData} questions`);
+            console.log(`✅ Populated Comprehensive Assessment with ${compData} questions using balanced distribution`);
             toast({
               title: "Success",
-              description: `Test types populated with ${quickData} and ${compData} questions respectively.`
+              description: `Test types populated with balanced distribution: ${quickData} and ${compData} questions respectively.`
             });
           }
         } catch (error) {
@@ -61,6 +61,56 @@ export const setupDevUtils = () => {
           });
         }
       },
+      
+      // Enhanced function to test and analyze question distribution
+      analyzeQuestionDistribution: async () => {
+        try {
+          console.log('🔍 Analyzing current question distribution...');
+          
+          // Fetch questions for both test types to analyze distribution
+          const { data: quickQuestions } = await supabase
+            .from('test_questions_map')
+            .select(`
+              question_id,
+              questions!inner(
+                text,
+                difficulty,
+                category_id,
+                categories!inner(name)
+              )
+            `)
+            .eq('test_types.name', 'Quick Assessment');
+            
+          const { data: compQuestions } = await supabase
+            .from('test_questions_map')
+            .select(`
+              question_id,
+              questions!inner(
+                text,
+                difficulty,
+                category_id,
+                categories!inner(name)
+              )
+            `)
+            .eq('test_types.name', 'Comprehensive Assessment');
+            
+          console.log('📊 Quick Assessment Distribution:', quickQuestions?.length || 0, 'questions');
+          console.log('📊 Comprehensive Assessment Distribution:', compQuestions?.length || 0, 'questions');
+          
+          toast({
+            title: "Distribution Analysis",
+            description: "Check console for detailed question distribution analysis."
+          });
+        } catch (error) {
+          console.error('Error analyzing distribution:', error);
+          toast({
+            title: "Analysis Failed",
+            description: "Could not analyze question distribution. See console for details.",
+            variant: "destructive"
+          });
+        }
+      },
+      
       migrateQuestionsToDatabase,
       runMigrationWithNotifications: migrateAndNotify,
       initializeApplication,
@@ -73,10 +123,11 @@ export const setupDevUtils = () => {
     };
     
     console.log(
-      'Dev utilities available in console:\n' +
+      '🛠️ Dev utilities available in console:\n' +
       '- window.devUtils.migrateData() - Migrate test data to the database\n' +
       '- window.devUtils.systemCheck() - Verify system setup\n' +
-      '- window.devUtils.populateTestTypes() - Populate test types with questions\n' +
+      '- window.devUtils.populateTestTypes() - Populate test types with BALANCED distribution\n' +
+      '- window.devUtils.analyzeQuestionDistribution() - Analyze current question distribution\n' +
       '- window.devUtils.migrateQuestionsToDatabase() - Migrate and populate test questions\n' +
       '- window.devUtils.runMigrationWithNotifications() - Run migration with toast notifications\n' +
       '- window.devUtils.initializeApplication() - Complete initialization of the app (migration + system check)\n' +

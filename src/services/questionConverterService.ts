@@ -10,8 +10,8 @@ export const convertDBQuestionToAppFormat = (
   // Ensure we have a proper explanation
   const explanation = dbQuestion.explanation?.trim() || '';
   
-  // Log the explanation for debugging
-  console.log(`Converting question: "${dbQuestion.text.substring(0, 50)}..." - Explanation length: ${explanation.length}`);
+  // Enhanced logging for debugging balanced distribution
+  console.log(`Converting question: "${dbQuestion.text.substring(0, 50)}..." - Category: ${category?.name || 'unknown'}, Difficulty: ${dbQuestion.difficulty}, Explanation length: ${explanation.length}`);
   if (explanation) {
     console.log(`Explanation preview: "${explanation.substring(0, 100)}..."`);
   } else {
