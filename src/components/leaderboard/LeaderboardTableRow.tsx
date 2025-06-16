@@ -29,16 +29,15 @@ const LeaderboardTableRow: React.FC<LeaderboardTableRowProps> = ({
   const calculateRank = () => {
     const baseOffset = (currentPage - 1) * pageSize;
     
-    // For score-based sorting (which is what rank column represents)
+    // For score-based sorting (rank column), we need to consider what rank means
     if (sortConfig.field === 'rank' || sortConfig.field === 'score') {
       if (sortConfig.direction === 'desc') {
-        // Descending score (best to worst): rank 1 = highest score
+        // Descending score (best to worst): rank 1 = highest score = first position
         return baseOffset + index + 1;
       } else {
-        // Ascending score (worst to best): reverse the ranking
-        // The last item on the last page should be rank totalCount
-        // The first item on the first page should be rank 1
-        return baseOffset + index + 1;
+        // Ascending score (worst to best): rank 1 = highest score = last position
+        // We need to reverse the calculation since worst scores appear first but have higher ranks
+        return totalCount - (baseOffset + index);
       }
     }
     
