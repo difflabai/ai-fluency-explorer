@@ -33,6 +33,7 @@ export const generateTestData = async (config: TestDataConfig): Promise<Generati
     
     // Update toast for fetching questions
     initialToast.update({
+      id: initialToast.id,
       title: "Test Data Generation",
       description: "Fetching test questions...",
     });
@@ -48,6 +49,7 @@ export const generateTestData = async (config: TestDataConfig): Promise<Generati
     
     // Update toast for data creation
     initialToast.update({
+      id: initialToast.id,
       title: "Test Data Generation",
       description: `Creating ${config.count} test results...`,
     });
@@ -56,6 +58,7 @@ export const generateTestData = async (config: TestDataConfig): Promise<Generati
       // Update progress toast
       if (i % 5 === 0 || i === config.count - 1) {
         initialToast.update({
+          id: initialToast.id,
           title: "Test Data Generation",
           description: `Creating test result ${i + 1} of ${config.count}...`,
         });
@@ -125,6 +128,7 @@ export const generateTestData = async (config: TestDataConfig): Promise<Generati
     
     // Update toast for writing to database completion
     initialToast.update({
+      id: initialToast.id,
       title: "Test Data Generation",
       description: `Writing ${results.length} records to database...`,
     });
@@ -136,6 +140,7 @@ export const generateTestData = async (config: TestDataConfig): Promise<Generati
     
     // Final success toast that will fade
     initialToast.update({
+      id: initialToast.id,
       title: "Test Data Generated Successfully",
       description: `Created ${results.length} test results and saved to database.`,
     });
@@ -200,6 +205,7 @@ export const cleanupTestData = async (): Promise<{ count: number }> => {
     
     // Update toast for success
     cleanupToast.update({
+      id: cleanupToast.id,
       title: "Test Data Cleaned",
       description: `Removed ${count || 0} test data records from database.`,
     });
