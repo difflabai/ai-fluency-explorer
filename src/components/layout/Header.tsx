@@ -46,10 +46,10 @@ const Header: React.FC = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo and Brand */}
           <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
+            <Link to="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
               <Brain className="h-8 w-8 text-purple-600" />
               <span className="text-xl font-bold text-gray-900">AI Fluency</span>
-            </div>
+            </Link>
           </div>
 
           {/* Navigation */}

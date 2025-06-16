@@ -84,8 +84,8 @@ const LeaderboardPreview: React.FC = () => {
                     `}
                   >
                     <TableCell className="text-center py-3 px-3">
-                      <div className={`inline-flex items-center justify-center h-7 w-7 rounded-full ${getRankBadgeColor(index)}`}>
-                        {getRankIcon(index)}
+                      <div className="flex items-center justify-center">
+                        <span className="text-gray-500 font-medium">{index + 1}</span>
                       </div>
                     </TableCell>
                     <TableCell className="py-3 px-3">
