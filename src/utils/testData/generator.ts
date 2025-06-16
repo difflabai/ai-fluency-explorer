@@ -16,6 +16,12 @@ export const generateTestData = async (config: TestDataConfig): Promise<Generati
   const results: SavedTestResult[] = [];
   
   try {
+    // Show initial toast
+    const initialToast = toast({
+      title: "Test Data Generation Started",
+      description: "Initializing test data creation process...",
+    });
+
     // Check if user is authenticated
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
@@ -24,6 +30,12 @@ export const generateTestData = async (config: TestDataConfig): Promise<Generati
     }
     
     console.log(`Generating test data as authenticated user: ${user.email}`);
+    
+    // Update toast for fetching questions
+    initialToast.update({
+      title: "Test Data Generation",
+      description: "Fetching test questions...",
+    });
     
     // Fetch actual questions that would be used for each test type
     console.log('🎯 Fetching actual test questions for accurate test data generation...');
@@ -34,7 +46,21 @@ export const generateTestData = async (config: TestDataConfig): Promise<Generati
     
     console.log(`📊 Available questions: Quick (${quickQuestions.length}), Comprehensive (${comprehensiveQuestions.length})`);
     
+    // Update toast for data creation
+    initialToast.update({
+      title: "Test Data Generation",
+      description: `Creating ${config.count} test results...`,
+    });
+
     for (let i = 0; i < config.count; i++) {
+      // Update progress toast
+      if (i % 5 === 0 || i === config.count - 1) {
+        initialToast.update({
+          title: "Test Data Generation",
+          description: `Creating test result ${i + 1} of ${config.count}...`,
+        });
+      }
+
       const username = `${config.usernamePattern}${i + 1}`;
       const { score, maxScore, percentage } = generateScore(
         config.minScore, 
@@ -97,7 +123,27 @@ export const generateTestData = async (config: TestDataConfig): Promise<Generati
       }
     }
     
+    // Update toast for writing to database completion
+    initialToast.update({
+      title: "Test Data Generation",
+      description: `Writing ${results.length} records to database...`,
+    });
+
+    // Small delay to show the writing message
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
     console.log(`🎉 Generated ${results.length} out of ${config.count} requested test results using actual system questions`);
+    
+    // Final success toast that will fade
+    initialToast.update({
+      title: "Test Data Generated Successfully",
+      description: `Created ${results.length} test results and saved to database.`,
+    });
+
+    // Dismiss the toast after 3 seconds
+    setTimeout(() => {
+      initialToast.dismiss();
+    }, 3000);
     
     return {
       count: results.length,
@@ -105,6 +151,14 @@ export const generateTestData = async (config: TestDataConfig): Promise<Generati
     };
   } catch (error) {
     console.error("Error generating test data:", error);
+    
+    // Show error toast
+    toast({
+      title: "Test Data Generation Failed",
+      description: error instanceof Error ? error.message : "Failed to generate test data",
+      variant: "destructive"
+    });
+    
     throw new Error("Failed to generate test data");
   }
 };
@@ -115,6 +169,12 @@ export const generateTestData = async (config: TestDataConfig): Promise<Generati
  */
 export const cleanupTestData = async (): Promise<{ count: number }> => {
   try {
+    // Show initial toast
+    const cleanupToast = toast({
+      title: "Cleaning Test Data",
+      description: "Removing test data from database...",
+    });
+
     // Check if user is authenticated
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
@@ -137,9 +197,29 @@ export const cleanupTestData = async (): Promise<{ count: number }> => {
     }
     
     console.log(`Cleaned up ${count || 0} test data records`);
+    
+    // Update toast for success
+    cleanupToast.update({
+      title: "Test Data Cleaned",
+      description: `Removed ${count || 0} test data records from database.`,
+    });
+
+    // Dismiss the toast after 3 seconds
+    setTimeout(() => {
+      cleanupToast.dismiss();
+    }, 3000);
+    
     return { count: count || 0 };
   } catch (error) {
     console.error("Error cleaning up test data:", error);
+    
+    // Show error toast
+    toast({
+      title: "Cleanup Failed", 
+      description: error instanceof Error ? error.message : "Failed to clean up test data",
+      variant: "destructive"
+    });
+    
     throw new Error("Failed to clean up test data");
   }
 };
