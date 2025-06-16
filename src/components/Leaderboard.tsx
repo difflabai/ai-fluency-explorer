@@ -1,8 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
-import { fetchPaginatedLeaderboard, PaginatedLeaderboardResponse, SavedTestResult } from '@/services/testResultService';
+import { fetchPaginatedLeaderboard, PaginatedLeaderboardResponse, SavedTestResult, SortOptions } from '@/services/testResultService';
 import { SortConfig } from './leaderboard/types';
-import { sortLeaderboardData } from './leaderboard/sortingUtils';
 import LeaderboardHeader from './leaderboard/LeaderboardHeader';
 import LeaderboardControls from './leaderboard/LeaderboardControls';
 import DebugInfo from './leaderboard/DebugInfo';
@@ -21,7 +20,6 @@ const Leaderboard: React.FC = () => {
     currentPage: 1,
     pageSize: 20
   });
-  const [sortedData, setSortedData] = useState<SavedTestResult[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isChangingPage, setIsChangingPage] = useState(false);
   const [showTestData, setShowTestData] = useState(true);
@@ -29,22 +27,10 @@ const Leaderboard: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
 
+  // Load leaderboard whenever dependencies change
   useEffect(() => {
     loadLeaderboard();
-  }, [showTestData, currentPage, pageSize]);
-
-  useEffect(() => {
-    // Sort data whenever paginatedData or sortConfig changes
-    const sorted = sortLeaderboardData(paginatedData.data, sortConfig);
-
-    console.log(`Sorted data for ${sortConfig.field} ${sortConfig.direction}:`, sorted.map(item => ({
-      username: item.username,
-      date: item.created_at,
-      isTestData: item.is_test_data
-    })));
-
-    setSortedData(sorted);
-  }, [paginatedData.data, sortConfig]);
+  }, [showTestData, currentPage, pageSize, sortConfig]);
 
   const loadLeaderboard = async (showLoading = true) => {
     if (showLoading) {
@@ -54,9 +40,14 @@ const Leaderboard: React.FC = () => {
     }
     
     try {
-      console.log("🔍 Leaderboard - loading page:", currentPage, "size:", pageSize, "showTestData:", showTestData);
+      console.log("🔍 Leaderboard - loading page:", currentPage, "size:", pageSize, "showTestData:", showTestData, "sort:", sortConfig);
       
-      const response = await fetchPaginatedLeaderboard(currentPage, pageSize, showTestData);
+      const sortOptions: SortOptions = {
+        field: sortConfig.field,
+        direction: sortConfig.direction
+      };
+      
+      const response = await fetchPaginatedLeaderboard(currentPage, pageSize, showTestData, sortOptions);
       console.log("🔍 Leaderboard - paginated response:", response);
       
       setPaginatedData(response);
@@ -78,6 +69,12 @@ const Leaderboard: React.FC = () => {
     setCurrentPage(1); // Reset to first page when changing page size
   };
 
+  const handleSortChange = (newSortConfig: SortConfig) => {
+    console.log("🔍 Sort changing from", sortConfig, "to", newSortConfig);
+    setSortConfig(newSortConfig);
+    setCurrentPage(1); // Reset to first page when sorting changes
+  };
+
   const handleRefresh = () => {
     loadLeaderboard(false);
   };
@@ -87,7 +84,7 @@ const Leaderboard: React.FC = () => {
       return <TableSkeleton rows={pageSize} />;
     }
 
-    if (sortedData.length === 0) {
+    if (paginatedData.data.length === 0) {
       return <EmptyState />;
     }
 
@@ -99,9 +96,9 @@ const Leaderboard: React.FC = () => {
           </div>
         )}
         <LeaderboardTable 
-          sortedData={sortedData}
+          sortedData={paginatedData.data}
           sortConfig={sortConfig}
-          setSortConfig={setSortConfig}
+          setSortConfig={handleSortChange}
         />
       </>
     );
@@ -127,7 +124,7 @@ const Leaderboard: React.FC = () => {
 
       <DebugInfo 
         sortConfig={sortConfig}
-        sortedData={sortedData}
+        sortedData={paginatedData.data}
         showTestData={showTestData}
       />
       
@@ -139,6 +136,7 @@ const Leaderboard: React.FC = () => {
         <p><strong>Page size:</strong> {paginatedData.pageSize}</p>
         <p><strong>Records on current page:</strong> {paginatedData.data.length}</p>
         <p><strong>Test data records on page:</strong> {paginatedData.data.filter(item => item.is_test_data).length}</p>
+        <p><strong>Current sort:</strong> {sortConfig.field} ({sortConfig.direction})</p>
       </div>
       
       <div className="relative">

@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { TestResult } from "@/utils/scoring";
 
@@ -23,6 +24,11 @@ export interface PaginatedLeaderboardResponse {
   totalPages: number;
   currentPage: number;
   pageSize: number;
+}
+
+export interface SortOptions {
+  field: 'rank' | 'username' | 'score' | 'tier' | 'date';
+  direction: 'asc' | 'desc';
 }
 
 // Save test result to Supabase
@@ -126,14 +132,15 @@ export const fetchLeaderboard = async (
   }
 };
 
-// Fetch paginated leaderboard data
+// Fetch paginated leaderboard data with sorting
 export const fetchPaginatedLeaderboard = async (
   page = 1,
   pageSize = 20,
-  includeTestData = true
+  includeTestData = true,
+  sortOptions: SortOptions = { field: 'rank', direction: 'asc' }
 ): Promise<PaginatedLeaderboardResponse> => {
   try {
-    console.log("🔍 fetchPaginatedLeaderboard called with:", { page, pageSize, includeTestData });
+    console.log("🔍 fetchPaginatedLeaderboard called with:", { page, pageSize, includeTestData, sortOptions });
     
     let baseQuery = supabase
       .from('test_results')
@@ -145,12 +152,36 @@ export const fetchPaginatedLeaderboard = async (
       baseQuery = baseQuery.eq('is_test_data', false);
     }
     
+    // Apply sorting based on the sort options
+    switch (sortOptions.field) {
+      case 'rank':
+      case 'score':
+        // For rank/score, we want to sort by overall_score (higher score = better rank)
+        baseQuery = baseQuery.order('overall_score', { ascending: sortOptions.direction === 'asc' });
+        // Secondary sort by date for tie-breaking
+        baseQuery = baseQuery.order('created_at', { ascending: false });
+        break;
+      case 'username':
+        baseQuery = baseQuery.order('username', { ascending: sortOptions.direction === 'asc' });
+        break;
+      case 'tier':
+        // For tier sorting, we need to handle the tier names properly
+        // Since we can't easily sort by tier hierarchy in SQL, we'll sort by overall_score as a proxy
+        baseQuery = baseQuery.order('overall_score', { ascending: sortOptions.direction === 'asc' });
+        break;
+      case 'date':
+        baseQuery = baseQuery.order('created_at', { ascending: sortOptions.direction === 'asc' });
+        break;
+      default:
+        // Default to score-based ranking
+        baseQuery = baseQuery.order('overall_score', { ascending: false });
+        baseQuery = baseQuery.order('created_at', { ascending: false });
+    }
+    
     // Calculate offset for pagination
     const offset = (page - 1) * pageSize;
     
     const { data, error, count } = await baseQuery
-      .order('overall_score', { ascending: false }) // Order by score for proper ranking
-      .order('created_at', { ascending: false }) // Secondary sort by date
       .range(offset, offset + pageSize - 1);
 
     if (error) {
@@ -171,7 +202,9 @@ export const fetchPaginatedLeaderboard = async (
       records: data?.length || 0,
       totalCount,
       totalPages,
-      currentPage: page
+      currentPage: page,
+      sortField: sortOptions.field,
+      sortDirection: sortOptions.direction
     });
 
     return {
