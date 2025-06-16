@@ -54,14 +54,25 @@ const Leaderboard: React.FC = () => {
           comparison = tierA - tierB;
           break;
         case 'date':
-          comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+          const dateA = new Date(a.created_at).getTime();
+          const dateB = new Date(b.created_at).getTime();
+          comparison = dateA - dateB;
+          console.log(`Comparing dates: ${a.created_at} (${dateA}) vs ${b.created_at} (${dateB}) = ${comparison}`);
           break;
         default:
           comparison = 0;
       }
 
-      return direction === 'asc' ? comparison : -comparison;
+      const result = direction === 'asc' ? comparison : -comparison;
+      console.log(`Sort ${field} ${direction}: ${result}`);
+      return result;
     });
+
+    console.log(`Sorted data for ${sortConfig.field} ${sortConfig.direction}:`, sorted.map(item => ({
+      username: item.username,
+      date: item.created_at,
+      isTestData: item.is_test_data
+    })));
 
     setSortedData(sorted);
   }, [leaderboardData, sortConfig]);
@@ -73,6 +84,11 @@ const Leaderboard: React.FC = () => {
       
       const data = await fetchLeaderboard(20, showTestData);
       console.log("Leaderboard - fetched data:", data);
+      console.log("Leaderboard - data with dates:", data.map(item => ({
+        username: item.username,
+        date: item.created_at,
+        isTestData: item.is_test_data
+      })));
       
       setLeaderboardData(data);
     } catch (error) {
@@ -126,6 +142,14 @@ const Leaderboard: React.FC = () => {
           />
           <Label htmlFor="test-data-toggle" className="text-sm">Show Test Data</Label>
         </div>
+      </div>
+
+      {/* Debug info */}
+      <div className="mb-4 p-3 bg-blue-50 rounded-lg text-sm">
+        <p><strong>Current sort:</strong> {sortConfig.field} ({sortConfig.direction})</p>
+        <p><strong>Total records:</strong> {sortedData.length}</p>
+        <p><strong>Test data visible:</strong> {showTestData ? 'Yes' : 'No'}</p>
+        <p><strong>Test data count:</strong> {sortedData.filter(item => item.is_test_data).length}</p>
       </div>
       
       {isLoading ? (
@@ -255,6 +279,9 @@ const Leaderboard: React.FC = () => {
                     <div className="text-sm text-gray-500 flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
                       {format(new Date(entry.created_at), 'MMM d, yyyy')}
+                      <span className="text-xs ml-1">
+                        ({format(new Date(entry.created_at), 'HH:mm')})
+                      </span>
                     </div>
                   </TableCell>
                   <TableCell>
