@@ -2,7 +2,7 @@
 import React from 'react';
 import { TableRow, TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { User, Medal, Calendar, Database, ExternalLink } from 'lucide-react';
+import { User, Calendar, Database, ExternalLink } from 'lucide-react';
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { SavedTestResult } from '@/services/testResultService';
@@ -33,18 +33,7 @@ const LeaderboardTableRow: React.FC<LeaderboardTableRowProps> = ({
     >
       <TableCell>
         <div className="flex items-center">
-          {sortConfig.field === 'rank' && sortConfig.direction === 'asc' && index < 3 ? (
-            <div className={`
-              flex items-center justify-center w-8 h-8 rounded-full 
-              ${index === 0 ? "bg-yellow-100 text-yellow-600" : 
-                index === 1 ? "bg-gray-100 text-gray-600" : 
-                "bg-amber-100 text-amber-600"}
-            `}>
-              <Medal className="h-4 w-4" />
-            </div>
-          ) : (
-            <span className="text-gray-500 font-medium">{index + 1}</span>
-          )}
+          <span className="text-gray-500 font-medium">{index + 1}</span>
         </div>
       </TableCell>
       <TableCell>
