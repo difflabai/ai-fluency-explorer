@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { TestResult } from "@/utils/scoring";
 
@@ -62,28 +61,59 @@ export const fetchLeaderboard = async (
   includeTestData = true
 ): Promise<SavedTestResult[]> => {
   try {
+    console.log("🔍 fetchLeaderboard called with:", { limit, includeTestData });
+    
     let query = supabase
       .from('test_results')
       .select('*')
       .eq('public', true);
     
+    console.log("🔍 Base query created for public results");
+    
     // Filter out test data if requested
     if (!includeTestData) {
+      console.log("🔍 Filtering out test data");
       query = query.eq('is_test_data', false);
+    } else {
+      console.log("🔍 Including test data in results");
     }
     
     const { data, error } = await query
-      .order('overall_score', { ascending: false })
+      .order('created_at', { ascending: false }) // Get newest first
       .limit(limit);
 
     if (error) {
-      console.error('Error fetching leaderboard:', error);
+      console.error('❌ Error fetching leaderboard:', error);
       return [];
+    }
+
+    console.log("✅ Leaderboard query successful, returned:", data?.length || 0, "records");
+    console.log("🔍 Raw data from Supabase:", data);
+    
+    // Additional debugging for test data
+    if (data) {
+      const testDataRecords = data.filter(item => item.is_test_data);
+      console.log("🔍 Test data records in response:", testDataRecords.length);
+      
+      const todayRecords = data.filter(item => {
+        const today = new Date().toISOString().split('T')[0];
+        return item.created_at.startsWith(today);
+      });
+      console.log("🔍 Today's records in response:", todayRecords.length);
+      
+      // Show the most recent 3 records for debugging
+      const recent = data.slice(0, 3);
+      console.log("🔍 Most recent 3 records:", recent.map(item => ({
+        username: item.username,
+        created_at: item.created_at,
+        is_test_data: item.is_test_data,
+        public: item.public
+      })));
     }
 
     return data || [];
   } catch (error) {
-    console.error('Error fetching leaderboard:', error);
+    console.error('❌ Error fetching leaderboard:', error);
     return [];
   }
 };

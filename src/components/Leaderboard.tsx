@@ -37,11 +37,30 @@ const Leaderboard: React.FC = () => {
   const loadLeaderboard = async () => {
     setIsLoading(true);
     try {
-      console.log("Leaderboard - showTestData:", showTestData);
+      console.log("🔍 Leaderboard - showTestData:", showTestData);
+      console.log("🔍 Today's date:", new Date().toISOString());
       
       const data = await fetchLeaderboard(20, showTestData);
-      console.log("Leaderboard - fetched data:", data);
-      console.log("Leaderboard - data with dates:", data.map(item => ({
+      console.log("🔍 Leaderboard - fetched data count:", data.length);
+      console.log("🔍 Leaderboard - raw fetched data:", data);
+      
+      // Check for today's data specifically
+      const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+      const todaysData = data.filter(item => item.created_at.startsWith(today));
+      console.log("🔍 Today's data found:", todaysData.length, todaysData);
+      
+      // Check test data specifically
+      const testData = data.filter(item => item.is_test_data);
+      console.log("🔍 Test data found:", testData.length, testData.map(item => ({
+        username: item.username,
+        date: item.created_at,
+        isTestData: item.is_test_data
+      })));
+      
+      // Check for very recent data (last hour)
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+      const recentData = data.filter(item => item.created_at >= oneHourAgo);
+      console.log("🔍 Recent data (last hour):", recentData.length, recentData.map(item => ({
         username: item.username,
         date: item.created_at,
         isTestData: item.is_test_data
@@ -49,7 +68,7 @@ const Leaderboard: React.FC = () => {
       
       setLeaderboardData(data);
     } catch (error) {
-      console.error("Failed to load leaderboard data:", error);
+      console.error("❌ Failed to load leaderboard data:", error);
     } finally {
       setIsLoading(false);
     }
@@ -69,6 +88,15 @@ const Leaderboard: React.FC = () => {
         sortedData={sortedData}
         showTestData={showTestData}
       />
+      
+      {/* Additional debug section */}
+      <div className="mb-4 p-3 bg-yellow-50 rounded-lg text-sm border border-yellow-200">
+        <p><strong>🔍 Debug Analysis:</strong></p>
+        <p><strong>Total fetched records:</strong> {leaderboardData.length}</p>
+        <p><strong>Test data records:</strong> {leaderboardData.filter(item => item.is_test_data).length}</p>
+        <p><strong>Today's records:</strong> {leaderboardData.filter(item => item.created_at.startsWith(new Date().toISOString().split('T')[0])).length}</p>
+        <p><strong>Most recent record:</strong> {leaderboardData.length > 0 ? new Date(Math.max(...leaderboardData.map(item => new Date(item.created_at).getTime()))).toISOString() : 'None'}</p>
+      </div>
       
       {isLoading ? (
         <LoadingSpinner />
