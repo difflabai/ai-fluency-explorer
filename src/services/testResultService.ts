@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { TestResult } from "@/utils/scoring";
 
@@ -69,13 +68,14 @@ export const saveTestResult = async (
   }
 };
 
-// Fetch leaderboard data with pagination
+// Fetch leaderboard data with pagination and weighted ranking support
 export const fetchLeaderboard = async (
   limit = 20, 
-  includeTestData = true
+  includeTestData = true,
+  useWeightedRanking = false
 ): Promise<SavedTestResult[]> => {
   try {
-    console.log("🔍 fetchLeaderboard called with:", { limit, includeTestData });
+    console.log("🔍 fetchLeaderboard called with:", { limit, includeTestData, useWeightedRanking });
     
     let query = supabase
       .from('test_results')
@@ -92,9 +92,7 @@ export const fetchLeaderboard = async (
       console.log("🔍 Including test data in results");
     }
     
-    const { data, error } = await query
-      .order('created_at', { ascending: false }) // Get newest first
-      .limit(limit);
+    let { data, error } = await query;
 
     if (error) {
       console.error('❌ Error fetching leaderboard:', error);
@@ -102,30 +100,56 @@ export const fetchLeaderboard = async (
     }
 
     console.log("✅ Leaderboard query successful, returned:", data?.length || 0, "records");
-    console.log("🔍 Raw data from Supabase:", data);
+    
+    if (!data) return [];
+
+    // Apply weighted ranking if requested
+    if (useWeightedRanking) {
+      console.log("🔍 Applying weighted ranking");
+      
+      // Calculate weighted score: percentage_score * max_possible_score
+      data = data.map(entry => ({
+        ...entry,
+        weighted_score: (entry.percentage_score / 100) * entry.max_possible_score
+      }));
+      
+      // Sort by weighted score (highest first)
+      data.sort((a, b) => (b as any).weighted_score - (a as any).weighted_score);
+    } else {
+      // Default sort by created_at (newest first)
+      data.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    }
+    
+    // Apply limit
+    const limitedData = data.slice(0, limit);
+    
+    console.log("🔍 Final data after sorting and limiting:", limitedData.length, "records");
     
     // Additional debugging for test data
-    if (data) {
-      const testDataRecords = data.filter(item => item.is_test_data);
+    if (limitedData.length > 0) {
+      const testDataRecords = limitedData.filter(item => item.is_test_data);
       console.log("🔍 Test data records in response:", testDataRecords.length);
       
-      const todayRecords = data.filter(item => {
+      const todayRecords = limitedData.filter(item => {
         const today = new Date().toISOString().split('T')[0];
         return item.created_at.startsWith(today);
       });
       console.log("🔍 Today's records in response:", todayRecords.length);
       
-      // Show the most recent 3 records for debugging
-      const recent = data.slice(0, 3);
-      console.log("🔍 Most recent 3 records:", recent.map(item => ({
+      // Show the top 3 records for debugging
+      const top3 = limitedData.slice(0, 3);
+      console.log("🔍 Top 3 records:", top3.map(item => ({
         username: item.username,
+        overall_score: item.overall_score,
+        max_possible_score: item.max_possible_score,
+        percentage_score: item.percentage_score,
+        weighted_score: useWeightedRanking ? (item as any).weighted_score : 'N/A',
         created_at: item.created_at,
-        is_test_data: item.is_test_data,
-        public: item.public
+        is_test_data: item.is_test_data
       })));
     }
 
-    return data || [];
+    return limitedData;
   } catch (error) {
     console.error('❌ Error fetching leaderboard:', error);
     return [];
