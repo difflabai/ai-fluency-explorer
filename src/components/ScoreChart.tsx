@@ -7,7 +7,8 @@ import {
   PolarAngleAxis, 
   PolarRadiusAxis,
   Radar, 
-  Legend
+  Legend,
+  Tooltip
 } from 'recharts';
 import { CategoryScore } from '@/utils/scoring';
 
@@ -39,42 +40,55 @@ const ScoreChart: React.FC<ScoreChartProps> = ({ categoryScores }) => {
     }));
     
     return (
-      <div className="h-[300px] w-full">
+      <div className="h-[350px] w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <RadarChart cx="50%" cy="50%" outerRadius="70%" data={defaultData}>
-            <PolarGrid stroke="#e0e0e0" />
+          <RadarChart cx="50%" cy="50%" outerRadius="75%" data={defaultData}>
+            <PolarGrid 
+              stroke="#e5e7eb" 
+              strokeWidth={1}
+              radialLines={true}
+            />
             <PolarAngleAxis 
               dataKey="subject" 
-              tick={{ fill: '#666', fontSize: 12 }} 
-              axisLine={{ stroke: '#e0e0e0' }}
-              className="text-xs"
+              tick={{ 
+                fill: '#374151', 
+                fontSize: 13, 
+                fontWeight: 500 
+              }} 
+              axisLine={false}
+              className="text-sm font-medium"
             />
             <PolarRadiusAxis
               angle={0}
               domain={[0, 100]}
-              tick={{ fill: '#999', fontSize: 10 }}
-              tickCount={5}
+              tick={{ 
+                fill: '#9ca3af', 
+                fontSize: 11 
+              }}
+              tickCount={6}
+              axisLine={false}
             />
             <Radar
               name="Your Score (%)"
               dataKey="score"
-              stroke="#9b87f5"
-              fill="#9b87f5"
-              fillOpacity={0.3}
-              strokeWidth={2}
+              stroke="#8b5cf6"
+              fill="#8b5cf6"
+              fillOpacity={0.25}
+              strokeWidth={3}
+              dot={{ fill: '#8b5cf6', strokeWidth: 2, r: 4 }}
             />
             <Legend 
               wrapperStyle={{ 
                 position: 'relative', 
-                marginTop: '10px',
+                marginTop: '15px',
                 textAlign: 'center'
               }}
-              formatter={() => <span className="text-purple-500 text-sm font-medium">Your Score (%)</span>}
+              formatter={() => <span className="text-purple-600 text-sm font-semibold">Your Score (%)</span>}
             />
           </RadarChart>
         </ResponsiveContainer>
-        <div className="text-center mt-2 text-sm text-gray-500">
-          No skill category data available - complete a test to see your performance breakdown
+        <div className="text-center mt-3 text-sm text-gray-500 bg-yellow-50 border border-yellow-200 rounded-md p-3">
+          📊 Complete a test to see your detailed performance breakdown across AI knowledge areas
         </div>
       </div>
     );
@@ -88,38 +102,68 @@ const ScoreChart: React.FC<ScoreChartProps> = ({ categoryScores }) => {
 
   console.log("Final radar chart data:", chartData);
 
+  // Custom tooltip component
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0];
+      return (
+        <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
+          <p className="font-semibold text-gray-900">{label}</p>
+          <p className="text-purple-600">
+            Score: <span className="font-bold">{data.value}%</span>
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
-    <div className="h-[300px] w-full">
+    <div className="h-[350px] w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <RadarChart cx="50%" cy="50%" outerRadius="70%" data={chartData}>
-          <PolarGrid stroke="#e0e0e0" />
+        <RadarChart cx="50%" cy="50%" outerRadius="75%" data={chartData}>
+          <PolarGrid 
+            stroke="#e5e7eb" 
+            strokeWidth={1}
+            radialLines={true}
+          />
           <PolarAngleAxis 
             dataKey="subject" 
-            tick={{ fill: '#666', fontSize: 12 }} 
-            axisLine={{ stroke: '#e0e0e0' }}
-            className="text-xs"
+            tick={{ 
+              fill: '#374151', 
+              fontSize: 13, 
+              fontWeight: 500 
+            }} 
+            axisLine={false}
+            className="text-sm font-medium"
           />
           <PolarRadiusAxis
             angle={0}
             domain={[0, 100]}
-            tick={{ fill: '#999', fontSize: 10 }}
-            tickCount={5}
+            tick={{ 
+              fill: '#9ca3af', 
+              fontSize: 11 
+            }}
+            tickCount={6}
+            axisLine={false}
           />
+          <Tooltip content={<CustomTooltip />} />
           <Radar
             name="Your Score (%)"
             dataKey="score"
-            stroke="#9b87f5"
-            fill="#9b87f5"
-            fillOpacity={0.3}
-            strokeWidth={2}
+            stroke="#8b5cf6"
+            fill="#8b5cf6"
+            fillOpacity={0.25}
+            strokeWidth={3}
+            dot={{ fill: '#8b5cf6', strokeWidth: 2, r: 4 }}
           />
           <Legend 
             wrapperStyle={{ 
               position: 'relative', 
-              marginTop: '10px',
+              marginTop: '15px',
               textAlign: 'center'
             }}
-            formatter={() => <span className="text-purple-500 text-sm font-medium">Your Score (%)</span>}
+            formatter={() => <span className="text-purple-600 text-sm font-semibold">Your Score (%)</span>}
           />
         </RadarChart>
       </ResponsiveContainer>
