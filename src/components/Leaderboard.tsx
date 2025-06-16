@@ -3,20 +3,68 @@ import React, { useEffect, useState } from 'react';
 import { fetchLeaderboard, SavedTestResult } from '@/services/testResultService';
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Home, Trophy, Calendar, User, Medal, Database, ExternalLink } from 'lucide-react';
+import { Home, Trophy, Calendar, User, Medal, Database, ExternalLink, ChevronUp, ChevronDown } from 'lucide-react';
 import { format } from 'date-fns';
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Link } from 'react-router-dom';
 
+type SortField = 'rank' | 'username' | 'score' | 'tier' | 'date';
+type SortDirection = 'asc' | 'desc';
+
+interface SortConfig {
+  field: SortField;
+  direction: SortDirection;
+}
+
 const Leaderboard: React.FC = () => {
   const [leaderboardData, setLeaderboardData] = useState<SavedTestResult[]>([]);
+  const [sortedData, setSortedData] = useState<SavedTestResult[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showTestData, setShowTestData] = useState(true);
+  const [sortConfig, setSortConfig] = useState<SortConfig>({ field: 'rank', direction: 'asc' });
 
   useEffect(() => {
     loadLeaderboard();
   }, [showTestData]);
+
+  useEffect(() => {
+    // Sort data whenever leaderboardData or sortConfig changes
+    const sorted = [...leaderboardData].sort((a, b) => {
+      const { field, direction } = sortConfig;
+      let comparison = 0;
+
+      switch (field) {
+        case 'rank':
+          // Rank is based on score (higher score = better rank)
+          comparison = b.overall_score - a.overall_score;
+          break;
+        case 'username':
+          const usernameA = (a.username || 'Anonymous User').toLowerCase();
+          const usernameB = (b.username || 'Anonymous User').toLowerCase();
+          comparison = usernameA.localeCompare(usernameB);
+          break;
+        case 'score':
+          comparison = a.overall_score - b.overall_score;
+          break;
+        case 'tier':
+          const tierOrder = { 'Novice': 1, 'Advanced Beginner': 2, 'Competent': 3, 'Proficient': 4, 'Expert': 5 };
+          const tierA = tierOrder[a.tier_name as keyof typeof tierOrder] || 0;
+          const tierB = tierOrder[b.tier_name as keyof typeof tierOrder] || 0;
+          comparison = tierA - tierB;
+          break;
+        case 'date':
+          comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+          break;
+        default:
+          comparison = 0;
+      }
+
+      return direction === 'asc' ? comparison : -comparison;
+    });
+
+    setSortedData(sorted);
+  }, [leaderboardData, sortConfig]);
 
   const loadLeaderboard = async () => {
     setIsLoading(true);
@@ -32,6 +80,22 @@ const Leaderboard: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSort = (field: SortField) => {
+    setSortConfig(prevConfig => ({
+      field,
+      direction: prevConfig.field === field && prevConfig.direction === 'asc' ? 'desc' : 'asc'
+    }));
+  };
+
+  const getSortIcon = (field: SortField) => {
+    if (sortConfig.field !== field) {
+      return <ChevronUp className="h-4 w-4 text-gray-300" />;
+    }
+    return sortConfig.direction === 'asc' ? 
+      <ChevronUp className="h-4 w-4 text-gray-600" /> : 
+      <ChevronDown className="h-4 w-4 text-gray-600" />;
   };
 
   return (
@@ -68,21 +132,61 @@ const Leaderboard: React.FC = () => {
         <div className="flex justify-center items-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
         </div>
-      ) : leaderboardData.length > 0 ? (
+      ) : sortedData.length > 0 ? (
         <div className="bg-white shadow-sm rounded-lg overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow className="bg-gray-50">
-                <TableHead className="w-16">Rank</TableHead>
-                <TableHead>User</TableHead>
-                <TableHead>Score</TableHead>
-                <TableHead className="hidden md:table-cell">Fluency Level</TableHead>
-                <TableHead className="hidden md:table-cell">Date</TableHead>
+                <TableHead className="w-16">
+                  <button 
+                    onClick={() => handleSort('rank')}
+                    className="flex items-center gap-1 hover:text-gray-900 transition-colors"
+                  >
+                    Rank
+                    {getSortIcon('rank')}
+                  </button>
+                </TableHead>
+                <TableHead>
+                  <button 
+                    onClick={() => handleSort('username')}
+                    className="flex items-center gap-1 hover:text-gray-900 transition-colors"
+                  >
+                    User
+                    {getSortIcon('username')}
+                  </button>
+                </TableHead>
+                <TableHead>
+                  <button 
+                    onClick={() => handleSort('score')}
+                    className="flex items-center gap-1 hover:text-gray-900 transition-colors"
+                  >
+                    Score
+                    {getSortIcon('score')}
+                  </button>
+                </TableHead>
+                <TableHead className="hidden md:table-cell">
+                  <button 
+                    onClick={() => handleSort('tier')}
+                    className="flex items-center gap-1 hover:text-gray-900 transition-colors"
+                  >
+                    Fluency Level
+                    {getSortIcon('tier')}
+                  </button>
+                </TableHead>
+                <TableHead className="hidden md:table-cell">
+                  <button 
+                    onClick={() => handleSort('date')}
+                    className="flex items-center gap-1 hover:text-gray-900 transition-colors"
+                  >
+                    Date
+                    {getSortIcon('date')}
+                  </button>
+                </TableHead>
                 <TableHead className="w-16"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {leaderboardData.map((entry, index) => (
+              {sortedData.map((entry, index) => (
                 <TableRow 
                   key={entry.id} 
                   className={`
@@ -97,7 +201,7 @@ const Leaderboard: React.FC = () => {
                 >
                   <TableCell>
                     <div className="flex items-center">
-                      {index < 3 ? (
+                      {sortConfig.field === 'rank' && sortConfig.direction === 'asc' && index < 3 ? (
                         <div className={`
                           flex items-center justify-center w-8 h-8 rounded-full 
                           ${index === 0 ? "bg-yellow-100 text-yellow-600" : 
