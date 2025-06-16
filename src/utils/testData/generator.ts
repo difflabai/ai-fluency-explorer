@@ -2,7 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { SavedTestResult } from "@/services/testResultService";
 import { toast } from "@/hooks/use-toast";
-import { fetchQuestions } from "@/services/questionService";
+import { getQuestionsForTest } from "@/services/questionService";
 import { calculateTierForScore } from "@/utils/scoring";
 import { generateScore, generateCategoryScores } from "./scoreGenerator";
 import { generateDate } from "./dateGenerator";
@@ -10,7 +10,7 @@ import { TestDataConfig, GenerationResult } from "./types";
 
 /**
  * Generates mock test data based on the provided configuration
- * Uses the current authenticated admin user's context
+ * Uses the current authenticated admin user's context and actual test questions
  */
 export const generateTestData = async (config: TestDataConfig): Promise<GenerationResult> => {
   const results: SavedTestResult[] = [];
@@ -25,8 +25,14 @@ export const generateTestData = async (config: TestDataConfig): Promise<Generati
     
     console.log(`Generating test data as authenticated user: ${user.email}`);
     
-    // Fetch real questions to use for the test snapshot
-    const questions = await fetchQuestions();
+    // Fetch actual questions that would be used for each test type
+    console.log('🎯 Fetching actual test questions for accurate test data generation...');
+    const [quickQuestions, comprehensiveQuestions] = await Promise.all([
+      getQuestionsForTest('quick'),
+      getQuestionsForTest('comprehensive')
+    ]);
+    
+    console.log(`📊 Available questions: Quick (${quickQuestions.length}), Comprehensive (${comprehensiveQuestions.length})`);
     
     for (let i = 0; i < config.count; i++) {
       const username = `${config.usernamePattern}${i + 1}`;
@@ -39,14 +45,22 @@ export const generateTestData = async (config: TestDataConfig): Promise<Generati
       const categoryScores = generateCategoryScores(score);
       const createdAt = generateDate(config.dateRange.start, config.dateRange.end);
       
-      // Create a snapshot of questions for this test
-      const questionsSnapshot = questions ? 
-        questions.slice(0, Math.min(20, questions.length)).map(q => ({
-          id: q.id,
-          text: q.text,
-          category_id: q.category_id,
-          difficulty: q.difficulty
-        })) : [];
+      // Randomly select which test type this generated result represents
+      const isQuickTest = Math.random() < 0.5;
+      const selectedQuestions = isQuickTest ? quickQuestions : comprehensiveQuestions;
+      const testType = isQuickTest ? 'Quick Assessment' : 'Comprehensive Assessment';
+      
+      console.log(`Generating test result ${i + 1}: ${testType} with ${selectedQuestions.length} questions`);
+      
+      // Create a snapshot using the actual questions that would be used
+      const questionsSnapshot = selectedQuestions.slice(0, Math.min(50, selectedQuestions.length)).map(q => ({
+        id: q.id,
+        text: q.text,
+        category: q.category,
+        difficulty: q.difficulty,
+        correctAnswer: q.correctAnswer,
+        explanation: q.explanation
+      }));
       
       try {
         // Insert test data using the authenticated admin user's context
@@ -75,7 +89,7 @@ export const generateTestData = async (config: TestDataConfig): Promise<Generati
         
         if (data) {
           results.push(data);
-          console.log(`Successfully created test result ${i + 1}`);
+          console.log(`✅ Successfully created ${testType} test result ${i + 1} with ${questionsSnapshot.length} questions`);
         }
       } catch (err) {
         console.error(`Unexpected error creating test result ${i + 1}:`, err);
@@ -83,7 +97,7 @@ export const generateTestData = async (config: TestDataConfig): Promise<Generati
       }
     }
     
-    console.log(`Generated ${results.length} out of ${config.count} requested test results`);
+    console.log(`🎉 Generated ${results.length} out of ${config.count} requested test results using actual system questions`);
     
     return {
       count: results.length,
