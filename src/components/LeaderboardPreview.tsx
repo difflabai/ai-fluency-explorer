@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { fetchLeaderboard, SavedTestResult } from '@/services/testResultService';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableHeader, TableRow, TableCell } from "@/components/ui/table";
+import { Table, TableBody, TableHeader, TableRow, TableCell, TableHead } from "@/components/ui/table";
 import { Trophy, Medal, ChevronRight, Database, ExternalLink, User, Calendar } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
@@ -61,12 +61,12 @@ const LeaderboardPreview: React.FC = () => {
             <Table>
               <TableHeader>
                 <TableRow className="bg-gray-50 border-b">
-                  <TableCell className="font-medium text-xs text-gray-600 py-2 px-3">Rank</TableCell>
-                  <TableCell className="font-medium text-xs text-gray-600 py-2 px-3">User</TableCell>
-                  <TableCell className="font-medium text-xs text-gray-600 py-2 px-3">Score</TableCell>
-                  <TableCell className="font-medium text-xs text-gray-600 py-2 px-3 hidden md:table-cell">Level</TableCell>
-                  <TableCell className="font-medium text-xs text-gray-600 py-2 px-3 hidden md:table-cell">Date</TableCell>
-                  <TableCell className="font-medium text-xs text-gray-600 py-2 px-3 w-12"></TableCell>
+                  <TableHead className="text-center w-16">Rank</TableHead>
+                  <TableHead className="text-left">User</TableHead>
+                  <TableHead className="text-center">Score</TableHead>
+                  <TableHead className="text-center hidden md:table-cell">Level</TableHead>
+                  <TableHead className="text-center hidden md:table-cell">Date</TableHead>
+                  <TableHead className="text-center w-12">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -83,8 +83,8 @@ const LeaderboardPreview: React.FC = () => {
                       }
                     `}
                   >
-                    <TableCell className="py-3 px-3">
-                      <div className={`flex items-center justify-center h-7 w-7 rounded-full ${getRankBadgeColor(index)}`}>
+                    <TableCell className="text-center py-3 px-3">
+                      <div className={`inline-flex items-center justify-center h-7 w-7 rounded-full ${getRankBadgeColor(index)}`}>
                         {getRankIcon(index)}
                       </div>
                     </TableCell>
@@ -109,11 +109,11 @@ const LeaderboardPreview: React.FC = () => {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="py-3 px-3">
+                    <TableCell className="text-center py-3 px-3">
                       <div className="text-sm text-gray-900 font-semibold">{entry.overall_score}</div>
                       <div className="text-xs text-gray-500">of {entry.max_possible_score}</div>
                     </TableCell>
-                    <TableCell className="py-3 px-3 hidden md:table-cell">
+                    <TableCell className="text-center py-3 px-3 hidden md:table-cell">
                       <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
                         ${entry.tier_name === 'Expert' ? 'bg-purple-100 text-purple-800' :
                           entry.tier_name === 'Proficient' ? 'bg-blue-100 text-blue-800' :
@@ -124,13 +124,13 @@ const LeaderboardPreview: React.FC = () => {
                         {entry.tier_name}
                       </span>
                     </TableCell>
-                    <TableCell className="py-3 px-3 hidden md:table-cell">
-                      <div className="text-xs text-gray-500 flex items-center gap-1">
+                    <TableCell className="text-center py-3 px-3 hidden md:table-cell">
+                      <div className="text-xs text-gray-500 flex items-center justify-center gap-1">
                         <Calendar className="h-3 w-3" />
                         {format(new Date(entry.created_at), 'MMM d')}
                       </div>
                     </TableCell>
-                    <TableCell className="py-3 px-3">
+                    <TableCell className="text-center py-3 px-3">
                       <Link to={`/shared/${entry.share_id}`}>
                         <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
                           <ExternalLink className="h-3 w-3" />
