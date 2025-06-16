@@ -99,6 +99,8 @@ const Leaderboard: React.FC = () => {
           sortedData={paginatedData.data}
           sortConfig={sortConfig}
           setSortConfig={handleSortChange}
+          currentPage={paginatedData.currentPage}
+          pageSize={paginatedData.pageSize}
         />
       </>
     );

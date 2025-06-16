@@ -11,12 +11,16 @@ interface LeaderboardTableProps {
   sortedData: SavedTestResult[];
   sortConfig: SortConfig;
   setSortConfig: (config: SortConfig) => void;
+  currentPage: number;
+  pageSize: number;
 }
 
 const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
   sortedData,
   sortConfig,
-  setSortConfig
+  setSortConfig,
+  currentPage,
+  pageSize
 }) => {
   const handleSort = createSortHandler(sortConfig, setSortConfig);
 
@@ -80,6 +84,8 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
               entry={entry}
               index={index}
               sortConfig={sortConfig}
+              currentPage={currentPage}
+              pageSize={pageSize}
             />
           ))}
         </TableBody>

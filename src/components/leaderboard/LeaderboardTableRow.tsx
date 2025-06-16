@@ -12,13 +12,35 @@ interface LeaderboardTableRowProps {
   entry: SavedTestResult;
   index: number;
   sortConfig: SortConfig;
+  currentPage: number;
+  pageSize: number;
 }
 
 const LeaderboardTableRow: React.FC<LeaderboardTableRowProps> = ({
   entry,
   index,
-  sortConfig
+  sortConfig,
+  currentPage,
+  pageSize
 }) => {
+  // Calculate the actual rank based on pagination and sort order
+  const calculateRank = () => {
+    // For score/rank sorting in ascending order, we need to consider pagination offset
+    if (sortConfig.field === 'rank' || sortConfig.field === 'score') {
+      if (sortConfig.direction === 'asc') {
+        // For ascending score (worst to best), rank = total offset + position
+        return (currentPage - 1) * pageSize + index + 1;
+      } else {
+        // For descending score (best to worst), rank = offset + position
+        return (currentPage - 1) * pageSize + index + 1;
+      }
+    }
+    // For other sorts, just show the row number
+    return (currentPage - 1) * pageSize + index + 1;
+  };
+
+  const displayRank = calculateRank();
+
   return (
     <TableRow 
       className={`
@@ -33,7 +55,7 @@ const LeaderboardTableRow: React.FC<LeaderboardTableRowProps> = ({
     >
       <TableCell>
         <div className="flex items-center">
-          <span className="text-gray-500 font-medium">{index + 1}</span>
+          <span className="text-gray-500 font-medium">{displayRank}</span>
         </div>
       </TableCell>
       <TableCell>
