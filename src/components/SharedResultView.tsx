@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import QuestionBreakdown from './QuestionBreakdown';
+import { QuestionBreakdown } from './question-breakdown';
 import { toast } from '@/hooks/use-toast';
 import { 
   SharedResultHeader, 

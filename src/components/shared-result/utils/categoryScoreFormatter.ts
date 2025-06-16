@@ -3,7 +3,7 @@ import { CategoryScore } from '@/utils/scoring';
 
 /**
  * Format category scores from the database into a consistent CategoryScore array
- * This replaces the artificial transformation logic with proper data formatting
+ * Fixed to handle actual scores without artificial capping
  */
 export const formatCategoryScores = (categoryScores: any): CategoryScore[] => {
   console.log("formatCategoryScores input:", categoryScores);
@@ -18,7 +18,6 @@ export const formatCategoryScores = (categoryScores: any): CategoryScore[] => {
   
   // If it's already a properly formatted array, return it
   if (Array.isArray(categoryScores) && categoryScores.length > 0) {
-    // Check if the first item has the expected structure
     const firstItem = categoryScores[0];
     if (firstItem && typeof firstItem === 'object' && 'categoryName' in firstItem) {
       console.log("Category scores already properly formatted");
@@ -40,32 +39,34 @@ export const formatCategoryScores = (categoryScores: any): CategoryScore[] => {
     const formattedScores = Object.entries(categoryScores).map(([key, value]: [string, any]) => {
       console.log(`Processing category ${key}:`, value);
       
-      let score: number;
-      let totalQuestions: number;
+      let rawScore: number;
       
       if (typeof value === 'number') {
-        score = value;
-        totalQuestions = 20; // Default assumption
+        rawScore = value;
       } else if (typeof value === 'object' && value !== null) {
-        score = value.score || 0;
-        totalQuestions = value.totalQuestions || 20;
+        rawScore = value.score || 0;
       } else {
-        score = 0;
-        totalQuestions = 20;
+        rawScore = 0;
       }
       
-      // Ensure score doesn't exceed totalQuestions
-      score = Math.min(score, totalQuestions);
+      // Use the actual raw score to determine realistic totals
+      // Instead of assuming 20 questions per category, calculate based on the score
+      const estimatedTotalQuestions = Math.max(rawScore, 20); // Use at least 20 as baseline
+      const actualScore = Math.max(0, rawScore);
       
-      // Calculate percentage with proper rounding
-      const percentage = totalQuestions > 0 ? Math.round((score / totalQuestions) * 100) : 0;
+      // Calculate realistic percentage based on actual performance
+      const percentage = estimatedTotalQuestions > 0 
+        ? Math.round((actualScore / estimatedTotalQuestions) * 100)
+        : 0;
+      
+      console.log(`Category ${key}: rawScore=${rawScore}, estimatedTotal=${estimatedTotalQuestions}, percentage=${percentage}%`);
       
       return {
         categoryId: key,
         categoryName: categoryMap[key] || `Category ${key}`,
-        score: Math.max(0, score),
-        totalQuestions: Math.max(1, totalQuestions),
-        percentage: Math.max(0, percentage)
+        score: actualScore,
+        totalQuestions: estimatedTotalQuestions,
+        percentage: Math.min(100, percentage) // Cap at 100% but don't artificially reduce scores
       };
     });
     
@@ -80,37 +81,32 @@ export const formatCategoryScores = (categoryScores: any): CategoryScore[] => {
     const categoryNames = ["Prompt Engineering", "AI Ethics", "Technical Concepts", "Practical Applications"];
     
     return categoryScores.map((item, index) => {
-      let score: number;
-      let totalQuestions: number;
+      let rawScore: number;
       
       if (typeof item === 'number') {
-        score = item;
-        totalQuestions = 20;
+        rawScore = item;
       } else if (typeof item === 'object' && item !== null) {
-        score = item.score || 0;
-        totalQuestions = item.totalQuestions || 20;
+        rawScore = item.score || 0;
       } else {
-        score = 0;
-        totalQuestions = 20;
+        rawScore = 0;
       }
       
-      // Ensure score doesn't exceed totalQuestions
-      score = Math.min(score, totalQuestions);
-      
-      // Calculate percentage with proper rounding
-      const percentage = totalQuestions > 0 ? Math.round((score / totalQuestions) * 100) : 0;
+      const estimatedTotalQuestions = Math.max(rawScore, 20);
+      const actualScore = Math.max(0, rawScore);
+      const percentage = estimatedTotalQuestions > 0 
+        ? Math.round((actualScore / estimatedTotalQuestions) * 100)
+        : 0;
       
       return {
         categoryId: (index + 1).toString(),
         categoryName: categoryNames[index] || `Category ${index + 1}`,
-        score: Math.max(0, score),
-        totalQuestions: Math.max(1, totalQuestions),
-        percentage: Math.max(0, percentage)
+        score: actualScore,
+        totalQuestions: estimatedTotalQuestions,
+        percentage: Math.min(100, percentage)
       };
     });
   }
   
-  // Return empty array if no valid data can be processed
   console.log("No valid category score data found, returning empty array");
   return [];
 };
