@@ -19,87 +19,39 @@ interface ScoreChartProps {
 const ScoreChart: React.FC<ScoreChartProps> = ({ categoryScores }) => {
   console.log("ScoreChart received category scores:", categoryScores);
   
-  // Filter for skill categories only (not fluency levels) for the radar chart
-  const skillCategories = ['Prompt Engineering', 'AI Ethics', 'Technical Concepts', 'Practical Applications'];
-  
-  const filteredScores = categoryScores.filter(score => 
-    skillCategories.includes(score.categoryName)
-  );
-  
-  console.log("Filtered scores for radar chart:", filteredScores);
-  
-  // If we don't have skill category data, create default structure
-  if (filteredScores.length === 0) {
-    console.warn("No skill category data found, creating default structure");
-    
-    // Create default data structure for radar chart
-    const defaultData = skillCategories.map(categoryName => ({
-      subject: categoryName,
+  // Create chart data - always show all 4 categories even if no data
+  const chartData = [
+    {
+      subject: 'Prompt Engineering',
       score: 0,
       fullMark: 100,
-    }));
-    
-    return (
-      <div className="h-[400px] w-full">
-        <ResponsiveContainer width="100%" height="100%">
-          <RadarChart cx="50%" cy="50%" outerRadius="80%" data={defaultData} margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
-            <PolarGrid 
-              stroke="#e5e7eb" 
-              strokeWidth={1}
-              radialLines={true}
-            />
-            <PolarAngleAxis 
-              dataKey="subject" 
-              tick={{ 
-                fill: '#374151', 
-                fontSize: 12, 
-                fontWeight: 500 
-              }} 
-              axisLine={false}
-              className="text-xs font-medium"
-            />
-            <PolarRadiusAxis
-              angle={0}
-              domain={[0, 100]}
-              tick={{ 
-                fill: '#9ca3af', 
-                fontSize: 10 
-              }}
-              tickCount={6}
-              axisLine={false}
-            />
-            <Radar
-              name="Your Score (%)"
-              dataKey="score"
-              stroke="#8b5cf6"
-              fill="#8b5cf6"
-              fillOpacity={0.25}
-              strokeWidth={3}
-              dot={{ fill: '#8b5cf6', strokeWidth: 2, r: 4 }}
-            />
-            <Legend 
-              wrapperStyle={{ 
-                position: 'relative', 
-                marginTop: '20px',
-                textAlign: 'center'
-              }}
-              formatter={() => <span className="text-purple-600 text-sm font-semibold">Your Score (%)</span>}
-            />
-          </RadarChart>
-        </ResponsiveContainer>
-        <div className="text-center mt-4 text-sm text-gray-500 bg-yellow-50 border border-yellow-200 rounded-md p-4">
-          📊 Complete a test to see your detailed performance breakdown across AI knowledge areas
-        </div>
-      </div>
-    );
-  }
+    },
+    {
+      subject: 'AI Ethics', 
+      score: 0,
+      fullMark: 100,
+    },
+    {
+      subject: 'Technical Concepts',
+      score: 0,
+      fullMark: 100,
+    },
+    {
+      subject: 'Practical Applications',
+      score: 0,
+      fullMark: 100,
+    }
+  ];
 
-  // Create chart data with proper structure
-  const chartData = filteredScores.map((score) => ({
-    subject: score.categoryName,
-    score: Math.max(0, Math.min(100, Math.round(score.percentage))), // Ensure score is between 0-100
-    fullMark: 100,
-  }));
+  // Update with actual scores if available
+  if (categoryScores && categoryScores.length > 0) {
+    categoryScores.forEach(score => {
+      const chartItem = chartData.find(item => item.subject === score.categoryName);
+      if (chartItem) {
+        chartItem.score = Math.max(0, Math.min(100, Math.round(score.percentage)));
+      }
+    });
+  }
 
   console.log("Final radar chart data:", chartData);
 
@@ -120,9 +72,12 @@ const ScoreChart: React.FC<ScoreChartProps> = ({ categoryScores }) => {
   };
 
   return (
-    <div className="h-[400px] w-full">
+    <div className="w-full" style={{ height: '500px' }}>
       <ResponsiveContainer width="100%" height="100%">
-        <RadarChart cx="50%" cy="50%" outerRadius="80%" data={chartData} margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
+        <RadarChart 
+          data={chartData} 
+          margin={{ top: 40, right: 80, bottom: 40, left: 80 }}
+        >
           <PolarGrid 
             stroke="#e5e7eb" 
             strokeWidth={1}
@@ -132,18 +87,17 @@ const ScoreChart: React.FC<ScoreChartProps> = ({ categoryScores }) => {
             dataKey="subject" 
             tick={{ 
               fill: '#374151', 
-              fontSize: 12, 
+              fontSize: 14, 
               fontWeight: 500 
             }} 
             axisLine={false}
-            className="text-xs font-medium"
           />
           <PolarRadiusAxis
             angle={0}
             domain={[0, 100]}
             tick={{ 
               fill: '#9ca3af', 
-              fontSize: 10 
+              fontSize: 12 
             }}
             tickCount={6}
             axisLine={false}
@@ -156,18 +110,23 @@ const ScoreChart: React.FC<ScoreChartProps> = ({ categoryScores }) => {
             fill="#8b5cf6"
             fillOpacity={0.25}
             strokeWidth={3}
-            dot={{ fill: '#8b5cf6', strokeWidth: 2, r: 4 }}
+            dot={{ fill: '#8b5cf6', strokeWidth: 2, r: 5 }}
           />
           <Legend 
             wrapperStyle={{ 
-              position: 'relative', 
-              marginTop: '20px',
-              textAlign: 'center'
+              paddingTop: '20px'
             }}
             formatter={() => <span className="text-purple-600 text-sm font-semibold">Your Score (%)</span>}
           />
         </RadarChart>
       </ResponsiveContainer>
+      
+      {/* Show message if no real data */}
+      {(!categoryScores || categoryScores.length === 0) && (
+        <div className="text-center mt-4 text-sm text-gray-500 bg-yellow-50 border border-yellow-200 rounded-md p-4">
+          📊 Complete a test to see your detailed performance breakdown across AI knowledge areas
+        </div>
+      )}
     </div>
   );
 };

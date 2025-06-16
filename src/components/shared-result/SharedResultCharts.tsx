@@ -46,7 +46,7 @@ const SharedResultCharts: React.FC<SharedResultChartsProps> = ({ categoryScores 
 
   return (
     <Card className="bg-white shadow-sm">
-      <CardHeader className="pb-6">
+      <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <CardTitle className="text-xl font-bold text-gray-900">Performance Distribution</CardTitle>
           <Badge variant="outline" className="text-sm">
@@ -58,75 +58,79 @@ const SharedResultCharts: React.FC<SharedResultChartsProps> = ({ categoryScores 
         </p>
       </CardHeader>
       
-      <CardContent className="space-y-8">
+      <CardContent className="space-y-6">
         {/* Radar Chart */}
-        <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg p-6">
+        <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg p-4">
           <ScoreChart categoryScores={categoryScores} />
         </div>
 
         {/* Performance Breakdown */}
-        <div className="space-y-6">
-          <h4 className="font-semibold text-gray-900 flex items-center gap-2 text-lg">
-            <TrendingUp className="h-5 w-5 text-purple-500" />
-            Detailed Performance Analysis
-          </h4>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {skillCategories.map((category) => {
-              const performance = getPerformanceLevel(category.percentage);
-              const Icon = categoryIcons[category.categoryName as keyof typeof categoryIcons];
-              
-              return (
-                <div 
-                  key={category.categoryId}
-                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-white rounded-full shadow-sm">
-                      {Icon}
-                    </div>
-                    <div>
-                      <div className="font-medium text-gray-900 text-sm">{category.categoryName}</div>
-                      <div className="text-xs text-gray-600 mt-1">
-                        {category.score} / {category.totalQuestions} questions
+        {skillCategories.length > 0 && (
+          <div className="space-y-4">
+            <h4 className="font-semibold text-gray-900 flex items-center gap-2 text-lg">
+              <TrendingUp className="h-5 w-5 text-purple-500" />
+              Detailed Performance Analysis
+            </h4>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {skillCategories.map((category) => {
+                const performance = getPerformanceLevel(category.percentage);
+                const Icon = categoryIcons[category.categoryName as keyof typeof categoryIcons];
+                
+                return (
+                  <div 
+                    key={category.categoryId}
+                    className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-white rounded-full shadow-sm">
+                        {Icon}
+                      </div>
+                      <div>
+                        <div className="font-medium text-gray-900 text-sm">{category.categoryName}</div>
+                        <div className="text-xs text-gray-600 mt-1">
+                          {category.score} / {category.totalQuestions} questions
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  
-                  <div className="text-right">
-                    <div className="text-lg font-bold text-gray-900">
-                      {Math.round(category.percentage)}%
+                    
+                    <div className="text-right">
+                      <div className="text-lg font-bold text-gray-900">
+                        {Math.round(category.percentage)}%
+                      </div>
+                      <Badge 
+                        variant="secondary" 
+                        className={`text-xs text-white mt-1 ${performance.color}`}
+                      >
+                        {performance.label}
+                      </Badge>
                     </div>
-                    <Badge 
-                      variant="secondary" 
-                      className={`text-xs text-white mt-1 ${performance.color}`}
-                    >
-                      {performance.label}
-                    </Badge>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Key Insights */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-5">
-          <h4 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
-            <Award className="h-5 w-5" />
-            Key Insights
-          </h4>
-          <div className="space-y-3 text-sm text-blue-800">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-              <span><strong>Strongest Area:</strong> {strongestCategory.categoryName} ({Math.round(strongestCategory.percentage)}%)</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-              <span><strong>Overall Performance:</strong> {getPerformanceLevel(averageScore).label} level across all categories</span>
+        {skillCategories.length > 0 && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h4 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
+              <Award className="h-5 w-5" />
+              Key Insights
+            </h4>
+            <div className="space-y-2 text-sm text-blue-800">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <span><strong>Strongest Area:</strong> {strongestCategory.categoryName} ({Math.round(strongestCategory.percentage)}%)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <span><strong>Overall Performance:</strong> {getPerformanceLevel(averageScore).label} level across all categories</span>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </CardContent>
     </Card>
   );
