@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { fetchLeaderboard, SavedTestResult } from '@/services/testResultService';
+import { fetchPaginatedLeaderboard, PaginatedLeaderboardResponse, SavedTestResult } from '@/services/testResultService';
 import { SortConfig } from './leaderboard/types';
 import { sortLeaderboardData } from './leaderboard/sortingUtils';
 import LeaderboardHeader from './leaderboard/LeaderboardHeader';
@@ -9,21 +9,33 @@ import DebugInfo from './leaderboard/DebugInfo';
 import LeaderboardTable from './leaderboard/LeaderboardTable';
 import EmptyState from './leaderboard/EmptyState';
 import LoadingSpinner from './leaderboard/LoadingSpinner';
+import PaginationControls from './leaderboard/PaginationControls';
+import PageSizeSelector from './leaderboard/PageSizeSelector';
+import TableSkeleton from './leaderboard/TableSkeleton';
 
 const Leaderboard: React.FC = () => {
-  const [leaderboardData, setLeaderboardData] = useState<SavedTestResult[]>([]);
+  const [paginatedData, setPaginatedData] = useState<PaginatedLeaderboardResponse>({
+    data: [],
+    totalCount: 0,
+    totalPages: 0,
+    currentPage: 1,
+    pageSize: 20
+  });
   const [sortedData, setSortedData] = useState<SavedTestResult[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isChangingPage, setIsChangingPage] = useState(false);
   const [showTestData, setShowTestData] = useState(true);
   const [sortConfig, setSortConfig] = useState<SortConfig>({ field: 'rank', direction: 'asc' });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
 
   useEffect(() => {
     loadLeaderboard();
-  }, [showTestData]);
+  }, [showTestData, currentPage, pageSize]);
 
   useEffect(() => {
-    // Sort data whenever leaderboardData or sortConfig changes
-    const sorted = sortLeaderboardData(leaderboardData, sortConfig);
+    // Sort data whenever paginatedData or sortConfig changes
+    const sorted = sortLeaderboardData(paginatedData.data, sortConfig);
 
     console.log(`Sorted data for ${sortConfig.field} ${sortConfig.direction}:`, sorted.map(item => ({
       username: item.username,
@@ -32,46 +44,67 @@ const Leaderboard: React.FC = () => {
     })));
 
     setSortedData(sorted);
-  }, [leaderboardData, sortConfig]);
+  }, [paginatedData.data, sortConfig]);
 
-  const loadLeaderboard = async () => {
-    setIsLoading(true);
+  const loadLeaderboard = async (showLoading = true) => {
+    if (showLoading) {
+      setIsLoading(true);
+    } else {
+      setIsChangingPage(true);
+    }
+    
     try {
-      console.log("🔍 Leaderboard - showTestData:", showTestData);
-      console.log("🔍 Today's date:", new Date().toISOString());
+      console.log("🔍 Leaderboard - loading page:", currentPage, "size:", pageSize, "showTestData:", showTestData);
       
-      const data = await fetchLeaderboard(20, showTestData);
-      console.log("🔍 Leaderboard - fetched data count:", data.length);
-      console.log("🔍 Leaderboard - raw fetched data:", data);
+      const response = await fetchPaginatedLeaderboard(currentPage, pageSize, showTestData);
+      console.log("🔍 Leaderboard - paginated response:", response);
       
-      // Check for today's data specifically
-      const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
-      const todaysData = data.filter(item => item.created_at.startsWith(today));
-      console.log("🔍 Today's data found:", todaysData.length, todaysData);
-      
-      // Check test data specifically
-      const testData = data.filter(item => item.is_test_data);
-      console.log("🔍 Test data found:", testData.length, testData.map(item => ({
-        username: item.username,
-        date: item.created_at,
-        isTestData: item.is_test_data
-      })));
-      
-      // Check for very recent data (last hour)
-      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-      const recentData = data.filter(item => item.created_at >= oneHourAgo);
-      console.log("🔍 Recent data (last hour):", recentData.length, recentData.map(item => ({
-        username: item.username,
-        date: item.created_at,
-        isTestData: item.is_test_data
-      })));
-      
-      setLeaderboardData(data);
+      setPaginatedData(response);
     } catch (error) {
       console.error("❌ Failed to load leaderboard data:", error);
     } finally {
       setIsLoading(false);
+      setIsChangingPage(false);
     }
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setCurrentPage(1); // Reset to first page when changing page size
+  };
+
+  const handleRefresh = () => {
+    loadLeaderboard(false);
+  };
+
+  const renderContent = () => {
+    if (isLoading) {
+      return <TableSkeleton rows={pageSize} />;
+    }
+
+    if (sortedData.length === 0) {
+      return <EmptyState />;
+    }
+
+    return (
+      <>
+        {isChangingPage && (
+          <div className="absolute inset-0 bg-white/50 flex items-center justify-center z-10 rounded-lg">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+          </div>
+        )}
+        <LeaderboardTable 
+          sortedData={sortedData}
+          sortConfig={sortConfig}
+          setSortConfig={setSortConfig}
+        />
+      </>
+    );
   };
 
   return (
@@ -83,6 +116,15 @@ const Leaderboard: React.FC = () => {
         setShowTestData={setShowTestData}
       />
 
+      <PageSizeSelector
+        pageSize={pageSize}
+        onPageSizeChange={handlePageSizeChange}
+        onRefresh={handleRefresh}
+        isLoading={isLoading || isChangingPage}
+        totalEntries={paginatedData.totalCount}
+        currentPage={currentPage}
+      />
+
       <DebugInfo 
         sortConfig={sortConfig}
         sortedData={sortedData}
@@ -92,23 +134,23 @@ const Leaderboard: React.FC = () => {
       {/* Additional debug section */}
       <div className="mb-4 p-3 bg-yellow-50 rounded-lg text-sm border border-yellow-200">
         <p><strong>🔍 Debug Analysis:</strong></p>
-        <p><strong>Total fetched records:</strong> {leaderboardData.length}</p>
-        <p><strong>Test data records:</strong> {leaderboardData.filter(item => item.is_test_data).length}</p>
-        <p><strong>Today's records:</strong> {leaderboardData.filter(item => item.created_at.startsWith(new Date().toISOString().split('T')[0])).length}</p>
-        <p><strong>Most recent record:</strong> {leaderboardData.length > 0 ? new Date(Math.max(...leaderboardData.map(item => new Date(item.created_at).getTime()))).toISOString() : 'None'}</p>
+        <p><strong>Total records:</strong> {paginatedData.totalCount}</p>
+        <p><strong>Current page:</strong> {paginatedData.currentPage} of {paginatedData.totalPages}</p>
+        <p><strong>Page size:</strong> {paginatedData.pageSize}</p>
+        <p><strong>Records on current page:</strong> {paginatedData.data.length}</p>
+        <p><strong>Test data records on page:</strong> {paginatedData.data.filter(item => item.is_test_data).length}</p>
       </div>
       
-      {isLoading ? (
-        <LoadingSpinner />
-      ) : sortedData.length > 0 ? (
-        <LeaderboardTable 
-          sortedData={sortedData}
-          sortConfig={sortConfig}
-          setSortConfig={setSortConfig}
-        />
-      ) : (
-        <EmptyState />
-      )}
+      <div className="relative">
+        {renderContent()}
+      </div>
+
+      <PaginationControls
+        currentPage={paginatedData.currentPage}
+        totalPages={paginatedData.totalPages}
+        onPageChange={handlePageChange}
+        isLoading={isLoading || isChangingPage}
+      />
     </div>
   );
 };

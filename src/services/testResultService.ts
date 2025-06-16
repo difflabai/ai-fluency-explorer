@@ -17,6 +17,14 @@ export interface SavedTestResult {
   is_test_data?: boolean;
 }
 
+export interface PaginatedLeaderboardResponse {
+  data: SavedTestResult[];
+  totalCount: number;
+  totalPages: number;
+  currentPage: number;
+  pageSize: number;
+}
+
 // Save test result to Supabase
 export const saveTestResult = async (
   result: TestResult,
@@ -55,7 +63,7 @@ export const saveTestResult = async (
   }
 };
 
-// Fetch leaderboard data with optional filtering
+// Fetch leaderboard data with pagination
 export const fetchLeaderboard = async (
   limit = 20, 
   includeTestData = true
@@ -115,6 +123,73 @@ export const fetchLeaderboard = async (
   } catch (error) {
     console.error('❌ Error fetching leaderboard:', error);
     return [];
+  }
+};
+
+// Fetch paginated leaderboard data
+export const fetchPaginatedLeaderboard = async (
+  page = 1,
+  pageSize = 20,
+  includeTestData = true
+): Promise<PaginatedLeaderboardResponse> => {
+  try {
+    console.log("🔍 fetchPaginatedLeaderboard called with:", { page, pageSize, includeTestData });
+    
+    let baseQuery = supabase
+      .from('test_results')
+      .select('*', { count: 'exact' })
+      .eq('public', true);
+    
+    // Filter out test data if requested
+    if (!includeTestData) {
+      baseQuery = baseQuery.eq('is_test_data', false);
+    }
+    
+    // Calculate offset for pagination
+    const offset = (page - 1) * pageSize;
+    
+    const { data, error, count } = await baseQuery
+      .order('overall_score', { ascending: false }) // Order by score for proper ranking
+      .order('created_at', { ascending: false }) // Secondary sort by date
+      .range(offset, offset + pageSize - 1);
+
+    if (error) {
+      console.error('❌ Error fetching paginated leaderboard:', error);
+      return {
+        data: [],
+        totalCount: 0,
+        totalPages: 0,
+        currentPage: page,
+        pageSize
+      };
+    }
+
+    const totalCount = count || 0;
+    const totalPages = Math.ceil(totalCount / pageSize);
+
+    console.log("✅ Paginated leaderboard query successful:", {
+      records: data?.length || 0,
+      totalCount,
+      totalPages,
+      currentPage: page
+    });
+
+    return {
+      data: data || [],
+      totalCount,
+      totalPages,
+      currentPage: page,
+      pageSize
+    };
+  } catch (error) {
+    console.error('❌ Error fetching paginated leaderboard:', error);
+    return {
+      data: [],
+      totalCount: 0,
+      totalPages: 0,
+      currentPage: page,
+      pageSize
+    };
   }
 };
 
