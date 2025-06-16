@@ -18,9 +18,9 @@ const SharedResultCharts: React.FC<SharedResultChartsProps> = ({ categoryScores 
     ['Prompt Engineering', 'AI Ethics', 'Technical Concepts', 'Practical Applications'].includes(score.categoryName)
   );
 
-  // Calculate insights
+  // Calculate insights with proper rounding
   const averageScore = skillCategories.length > 0 
-    ? skillCategories.reduce((sum, cat) => sum + cat.percentage, 0) / skillCategories.length 
+    ? Math.round(skillCategories.reduce((sum, cat) => sum + cat.percentage, 0) / skillCategories.length)
     : 0;
   
   const strongestCategory = skillCategories.length > 0 
@@ -50,7 +50,7 @@ const SharedResultCharts: React.FC<SharedResultChartsProps> = ({ categoryScores 
         <div className="flex items-center justify-between">
           <CardTitle className="text-xl font-bold text-gray-900">Performance Distribution</CardTitle>
           <Badge variant="outline" className="text-sm">
-            Avg: {Math.round(averageScore)}%
+            Avg: {averageScore}%
           </Badge>
         </div>
         <p className="text-sm text-gray-600 mt-2">
@@ -96,7 +96,7 @@ const SharedResultCharts: React.FC<SharedResultChartsProps> = ({ categoryScores 
                     
                     <div className="text-right">
                       <div className="text-lg font-bold text-gray-900">
-                        {Math.round(category.percentage)}%
+                        {category.percentage}%
                       </div>
                       <Badge 
                         variant="secondary" 
@@ -122,7 +122,7 @@ const SharedResultCharts: React.FC<SharedResultChartsProps> = ({ categoryScores 
             <div className="space-y-2 text-sm text-blue-800">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <span><strong>Strongest Area:</strong> {strongestCategory.categoryName} ({Math.round(strongestCategory.percentage)}%)</span>
+                <span><strong>Strongest Area:</strong> {strongestCategory.categoryName} ({strongestCategory.percentage}%)</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-blue-500 rounded-full"></div>

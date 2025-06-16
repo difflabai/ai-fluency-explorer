@@ -48,7 +48,8 @@ const ScoreChart: React.FC<ScoreChartProps> = ({ categoryScores }) => {
     categoryScores.forEach(score => {
       const chartItem = chartData.find(item => item.subject === score.categoryName);
       if (chartItem) {
-        chartItem.score = Math.max(0, Math.min(100, Math.round(score.percentage)));
+        // Use the actual percentage, ensuring it's properly rounded and within bounds
+        chartItem.score = Math.max(0, Math.min(100, score.percentage));
       }
     });
   }

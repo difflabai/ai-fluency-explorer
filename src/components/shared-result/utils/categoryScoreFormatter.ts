@@ -54,14 +54,18 @@ export const formatCategoryScores = (categoryScores: any): CategoryScore[] => {
         totalQuestions = 20;
       }
       
-      const percentage = totalQuestions > 0 ? (score / totalQuestions) * 100 : 0;
+      // Ensure score doesn't exceed totalQuestions
+      score = Math.min(score, totalQuestions);
+      
+      // Calculate percentage with proper rounding
+      const percentage = totalQuestions > 0 ? Math.round((score / totalQuestions) * 100) : 0;
       
       return {
         categoryId: key,
         categoryName: categoryMap[key] || `Category ${key}`,
         score: Math.max(0, score),
         totalQuestions: Math.max(1, totalQuestions),
-        percentage: Math.min(100, Math.max(0, percentage))
+        percentage: Math.max(0, percentage)
       };
     });
     
@@ -90,14 +94,18 @@ export const formatCategoryScores = (categoryScores: any): CategoryScore[] => {
         totalQuestions = 20;
       }
       
-      const percentage = totalQuestions > 0 ? (score / totalQuestions) * 100 : 0;
+      // Ensure score doesn't exceed totalQuestions
+      score = Math.min(score, totalQuestions);
+      
+      // Calculate percentage with proper rounding
+      const percentage = totalQuestions > 0 ? Math.round((score / totalQuestions) * 100) : 0;
       
       return {
         categoryId: (index + 1).toString(),
         categoryName: categoryNames[index] || `Category ${index + 1}`,
         score: Math.max(0, score),
         totalQuestions: Math.max(1, totalQuestions),
-        percentage: Math.min(100, Math.max(0, percentage))
+        percentage: Math.max(0, percentage)
       };
     });
   }
