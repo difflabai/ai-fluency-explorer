@@ -40,9 +40,9 @@ const ScoreChart: React.FC<ScoreChartProps> = ({ categoryScores }) => {
     }));
     
     return (
-      <div className="h-[350px] w-full">
+      <div className="h-[400px] w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <RadarChart cx="50%" cy="50%" outerRadius="75%" data={defaultData}>
+          <RadarChart cx="50%" cy="50%" outerRadius="80%" data={defaultData} margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
             <PolarGrid 
               stroke="#e5e7eb" 
               strokeWidth={1}
@@ -52,18 +52,18 @@ const ScoreChart: React.FC<ScoreChartProps> = ({ categoryScores }) => {
               dataKey="subject" 
               tick={{ 
                 fill: '#374151', 
-                fontSize: 13, 
+                fontSize: 12, 
                 fontWeight: 500 
               }} 
               axisLine={false}
-              className="text-sm font-medium"
+              className="text-xs font-medium"
             />
             <PolarRadiusAxis
               angle={0}
               domain={[0, 100]}
               tick={{ 
                 fill: '#9ca3af', 
-                fontSize: 11 
+                fontSize: 10 
               }}
               tickCount={6}
               axisLine={false}
@@ -80,23 +80,24 @@ const ScoreChart: React.FC<ScoreChartProps> = ({ categoryScores }) => {
             <Legend 
               wrapperStyle={{ 
                 position: 'relative', 
-                marginTop: '15px',
+                marginTop: '20px',
                 textAlign: 'center'
               }}
               formatter={() => <span className="text-purple-600 text-sm font-semibold">Your Score (%)</span>}
             />
           </RadarChart>
         </ResponsiveContainer>
-        <div className="text-center mt-3 text-sm text-gray-500 bg-yellow-50 border border-yellow-200 rounded-md p-3">
+        <div className="text-center mt-4 text-sm text-gray-500 bg-yellow-50 border border-yellow-200 rounded-md p-4">
           📊 Complete a test to see your detailed performance breakdown across AI knowledge areas
         </div>
       </div>
     );
   }
 
+  // Create chart data with proper structure
   const chartData = filteredScores.map((score) => ({
     subject: score.categoryName,
-    score: Math.round(score.percentage),
+    score: Math.max(0, Math.min(100, Math.round(score.percentage))), // Ensure score is between 0-100
     fullMark: 100,
   }));
 
@@ -119,9 +120,9 @@ const ScoreChart: React.FC<ScoreChartProps> = ({ categoryScores }) => {
   };
 
   return (
-    <div className="h-[350px] w-full">
+    <div className="h-[400px] w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <RadarChart cx="50%" cy="50%" outerRadius="75%" data={chartData}>
+        <RadarChart cx="50%" cy="50%" outerRadius="80%" data={chartData} margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
           <PolarGrid 
             stroke="#e5e7eb" 
             strokeWidth={1}
@@ -131,18 +132,18 @@ const ScoreChart: React.FC<ScoreChartProps> = ({ categoryScores }) => {
             dataKey="subject" 
             tick={{ 
               fill: '#374151', 
-              fontSize: 13, 
+              fontSize: 12, 
               fontWeight: 500 
             }} 
             axisLine={false}
-            className="text-sm font-medium"
+            className="text-xs font-medium"
           />
           <PolarRadiusAxis
             angle={0}
             domain={[0, 100]}
             tick={{ 
               fill: '#9ca3af', 
-              fontSize: 11 
+              fontSize: 10 
             }}
             tickCount={6}
             axisLine={false}
@@ -160,7 +161,7 @@ const ScoreChart: React.FC<ScoreChartProps> = ({ categoryScores }) => {
           <Legend 
             wrapperStyle={{ 
               position: 'relative', 
-              marginTop: '15px',
+              marginTop: '20px',
               textAlign: 'center'
             }}
             formatter={() => <span className="text-purple-600 text-sm font-semibold">Your Score (%)</span>}

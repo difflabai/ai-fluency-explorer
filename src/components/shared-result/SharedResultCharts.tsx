@@ -11,6 +11,8 @@ interface SharedResultChartsProps {
 }
 
 const SharedResultCharts: React.FC<SharedResultChartsProps> = ({ categoryScores }) => {
+  console.log("SharedResultCharts received categoryScores:", categoryScores);
+  
   // Filter for skill categories only
   const skillCategories = categoryScores.filter(score => 
     ['Prompt Engineering', 'AI Ethics', 'Technical Concepts', 'Practical Applications'].includes(score.categoryName)
@@ -21,9 +23,11 @@ const SharedResultCharts: React.FC<SharedResultChartsProps> = ({ categoryScores 
     ? skillCategories.reduce((sum, cat) => sum + cat.percentage, 0) / skillCategories.length 
     : 0;
   
-  const strongestCategory = skillCategories.reduce((prev, current) => 
-    (prev.percentage > current.percentage) ? prev : current, skillCategories[0] || { categoryName: 'N/A', percentage: 0 }
-  );
+  const strongestCategory = skillCategories.length > 0 
+    ? skillCategories.reduce((prev, current) => 
+        (prev.percentage > current.percentage) ? prev : current, skillCategories[0]
+      )
+    : { categoryName: 'N/A', percentage: 0 };
   
   const categoryIcons = {
     'Prompt Engineering': <Target className="h-4 w-4" />,
@@ -42,32 +46,32 @@ const SharedResultCharts: React.FC<SharedResultChartsProps> = ({ categoryScores 
 
   return (
     <Card className="bg-white shadow-sm">
-      <CardHeader className="pb-4">
+      <CardHeader className="pb-6">
         <div className="flex items-center justify-between">
           <CardTitle className="text-xl font-bold text-gray-900">Performance Distribution</CardTitle>
           <Badge variant="outline" className="text-sm">
             Avg: {Math.round(averageScore)}%
           </Badge>
         </div>
-        <div className="text-sm text-gray-600">
+        <p className="text-sm text-gray-600 mt-2">
           This radar chart visualizes your expertise across key AI knowledge domains.
-        </div>
+        </p>
       </CardHeader>
       
-      <CardContent className="space-y-6">
-        {/* Enhanced Radar Chart */}
-        <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg p-4">
+      <CardContent className="space-y-8">
+        {/* Radar Chart */}
+        <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg p-6">
           <ScoreChart categoryScores={categoryScores} />
         </div>
 
         {/* Performance Breakdown */}
-        <div className="space-y-4">
-          <h4 className="font-semibold text-gray-900 flex items-center gap-2">
+        <div className="space-y-6">
+          <h4 className="font-semibold text-gray-900 flex items-center gap-2 text-lg">
             <TrendingUp className="h-5 w-5 text-purple-500" />
             Detailed Performance Analysis
           </h4>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {skillCategories.map((category) => {
               const performance = getPerformanceLevel(category.percentage);
               const Icon = categoryIcons[category.categoryName as keyof typeof categoryIcons];
@@ -75,15 +79,15 @@ const SharedResultCharts: React.FC<SharedResultChartsProps> = ({ categoryScores 
               return (
                 <div 
                   key={category.categoryId}
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-white rounded-full shadow-sm">
                       {Icon}
                     </div>
                     <div>
-                      <div className="font-medium text-gray-900">{category.categoryName}</div>
-                      <div className="text-sm text-gray-600">
+                      <div className="font-medium text-gray-900 text-sm">{category.categoryName}</div>
+                      <div className="text-xs text-gray-600 mt-1">
                         {category.score} / {category.totalQuestions} questions
                       </div>
                     </div>
@@ -95,7 +99,7 @@ const SharedResultCharts: React.FC<SharedResultChartsProps> = ({ categoryScores 
                     </div>
                     <Badge 
                       variant="secondary" 
-                      className={`text-xs text-white ${performance.color}`}
+                      className={`text-xs text-white mt-1 ${performance.color}`}
                     >
                       {performance.label}
                     </Badge>
@@ -107,12 +111,12 @@ const SharedResultCharts: React.FC<SharedResultChartsProps> = ({ categoryScores 
         </div>
 
         {/* Key Insights */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h4 className="font-semibold text-blue-900 mb-2 flex items-center gap-2">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-5">
+          <h4 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
             <Award className="h-5 w-5" />
             Key Insights
           </h4>
-          <div className="space-y-2 text-sm text-blue-800">
+          <div className="space-y-3 text-sm text-blue-800">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
               <span><strong>Strongest Area:</strong> {strongestCategory.categoryName} ({Math.round(strongestCategory.percentage)}%)</span>
