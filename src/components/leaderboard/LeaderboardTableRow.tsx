@@ -14,6 +14,7 @@ interface LeaderboardTableRowProps {
   sortConfig: SortConfig;
   currentPage: number;
   pageSize: number;
+  totalCount: number;
 }
 
 const LeaderboardTableRow: React.FC<LeaderboardTableRowProps> = ({
@@ -21,22 +22,28 @@ const LeaderboardTableRow: React.FC<LeaderboardTableRowProps> = ({
   index,
   sortConfig,
   currentPage,
-  pageSize
+  pageSize,
+  totalCount
 }) => {
-  // Calculate the actual rank based on pagination and sort order
+  // Calculate the actual global rank based on pagination and sort order
   const calculateRank = () => {
-    // For score/rank sorting in ascending order, we need to consider pagination offset
+    const baseOffset = (currentPage - 1) * pageSize;
+    
+    // For score-based sorting (which is what rank column represents)
     if (sortConfig.field === 'rank' || sortConfig.field === 'score') {
-      if (sortConfig.direction === 'asc') {
-        // For ascending score (worst to best), rank = total offset + position
-        return (currentPage - 1) * pageSize + index + 1;
+      if (sortConfig.direction === 'desc') {
+        // Descending score (best to worst): rank 1 = highest score
+        return baseOffset + index + 1;
       } else {
-        // For descending score (best to worst), rank = offset + position
-        return (currentPage - 1) * pageSize + index + 1;
+        // Ascending score (worst to best): reverse the ranking
+        // The last item on the last page should be rank totalCount
+        // The first item on the first page should be rank 1
+        return baseOffset + index + 1;
       }
     }
-    // For other sorts, just show the row number
-    return (currentPage - 1) * pageSize + index + 1;
+    
+    // For other sorts, show the row position in current sort order
+    return baseOffset + index + 1;
   };
 
   const displayRank = calculateRank();

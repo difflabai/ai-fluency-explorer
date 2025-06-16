@@ -101,6 +101,7 @@ const Leaderboard: React.FC = () => {
           setSortConfig={handleSortChange}
           currentPage={paginatedData.currentPage}
           pageSize={paginatedData.pageSize}
+          totalCount={paginatedData.totalCount}
         />
       </>
     );
