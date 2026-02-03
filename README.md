@@ -1,3 +1,16 @@
+# ⚠️ DEPRECATED - This repository has moved
+
+> **This repository is no longer maintained.**
+>
+> The AI Fluency Explorer has moved to **Diff AI Lab**:
+>
+> **➡️ https://github.com/difflabai/ai-fluency-explorer**
+>
+> Please use the new repository for the latest code, issues, and contributions.
+> This repo is kept for historical reference only.
+
+---
+
 # AI Fluency Assessment Platform
 
 An interactive platform to test and evaluate understanding of AI concepts through adaptive assessments.
@@ -36,8 +49,8 @@ An interactive platform to test and evaluate understanding of AI concepts throug
 ### Quick Start (Hosted Supabase)
 
 ```bash
-# Clone the repo
-git clone https://github.com/Catalyst-AI-Services/ai-fluency-explorer.git
+# Clone the repo (NEW LOCATION)
+git clone https://github.com/difflabai/ai-fluency-explorer.git
 cd ai-fluency-explorer
 
 # Install dependencies
@@ -145,4 +158,4 @@ npm run test:watch   # Tests in watch mode
 
 ## License
 
-Private — Catalyst AI Services
+Private — Diff AI Lab (formerly Catalyst AI Services)
