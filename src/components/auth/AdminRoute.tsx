@@ -12,14 +12,6 @@ const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
   const { user, isLoading, isAdmin, isCheckingAdmin, refreshAdminStatus } = useAuth();
   const location = useLocation();
 
-  // Enhanced logging for debugging
-  console.log('🛡️ AdminRoute - Path:', location.pathname);
-  console.log('🛡️ AdminRoute - User:', user?.email);
-  console.log('🛡️ AdminRoute - User ID:', user?.id);
-  console.log('🛡️ AdminRoute - isLoading:', isLoading);
-  console.log('🛡️ AdminRoute - isAdmin:', isAdmin);
-  console.log('🛡️ AdminRoute - isCheckingAdmin:', isCheckingAdmin);
-
   // Show loading while checking authentication or admin status
   if (isLoading || isCheckingAdmin) {
     return renderLoadingState('Verifying admin permissions...');
@@ -27,18 +19,15 @@ const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
 
   // If not authenticated, redirect to auth page
   if (!user) {
-    console.log('🛡️ User not authenticated, redirecting to /auth');
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
   // If authenticated but not admin, show enhanced access denied with debug info
   if (!isAdmin) {
-    console.log('🛡️ User is not an admin, showing access denied');
     return <EnhancedAccessDenied />;
   }
 
   // User is authenticated and is an admin, render children
-  console.log('🛡️ Admin authentication successful, rendering protected content');
   return <>{children}</>;
 };
 
@@ -60,16 +49,9 @@ const EnhancedAccessDenied = () => {
   const handleRefreshAdminStatus = async () => {
     setIsRefreshing(true);
     try {
-      console.log('🔄 Manual admin status refresh triggered');
-      const result = await refreshAdminStatus();
-      console.log('🔄 Refresh result:', result);
-
-      if (!result) {
-        // Still not admin, show helpful message
-        console.log('🚨 Still not admin after refresh - may need role assignment');
-      }
+      await refreshAdminStatus();
     } catch (error) {
-      console.error('💥 Error refreshing admin status:', error);
+      console.error('Error refreshing admin status:', error);
     } finally {
       setIsRefreshing(false);
     }

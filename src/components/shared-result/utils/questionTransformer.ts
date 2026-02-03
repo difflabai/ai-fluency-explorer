@@ -19,7 +19,6 @@ export const createCategoryMapping = async (): Promise<Record<string, string>> =
 
     return mapping;
   } catch (error) {
-    console.error('Error creating category mapping:', error);
     return {};
   }
 };
@@ -33,7 +32,6 @@ export const transformQuestionsWithCategories = async (
   }
 
   const categoryMapping = await createCategoryMapping();
-  console.log('Category mapping:', categoryMapping);
 
   // Fetch fresh explanations from the database to ensure consistency
   const questionIds = questionsSnapshot.map((q) => q.dbId).filter(Boolean);
@@ -51,12 +49,9 @@ export const transformQuestionsWithCategories = async (
         freshQuestions.forEach((q) => {
           dbQuestions[q.id] = q;
         });
-        console.log(
-          `Fetched fresh explanations for ${freshQuestions.length} questions from database`
-        );
       }
     } catch (error) {
-      console.error('Error fetching fresh explanations:', error);
+      // Silently continue with snapshot explanations if fetch fails
     }
   }
 
@@ -76,20 +71,11 @@ export const transformQuestionsWithCategories = async (
       freshQuestion.explanation.trim().length > 0
     ) {
       explanation = freshQuestion.explanation.trim();
-      console.log(
-        `Using fresh database explanation for question: "${question.text?.substring(0, 30)}..."`
-      );
     } else if (question.explanation && question.explanation.trim().length > 0) {
       explanation = question.explanation.trim();
-      console.log(
-        `Using snapshot explanation for question: "${question.text?.substring(0, 30)}..."`
-      );
     } else {
       // Fallback to default explanation if none exists
       explanation = getDefaultExplanation(question.difficulty, categoryName);
-      console.log(
-        `Using default explanation for question: "${question.text?.substring(0, 30)}..."`
-      );
     }
 
     return {

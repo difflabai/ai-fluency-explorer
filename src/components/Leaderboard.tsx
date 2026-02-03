@@ -1,6 +1,10 @@
-
 import React, { useEffect, useState } from 'react';
-import { fetchPaginatedLeaderboard, PaginatedLeaderboardResponse, SavedTestResult, SortOptions } from '@/services/testResultService';
+import {
+  fetchPaginatedLeaderboard,
+  PaginatedLeaderboardResponse,
+  SavedTestResult,
+  SortOptions,
+} from '@/services/testResultService';
 import { SortConfig } from './leaderboard/types';
 import LeaderboardHeader from './leaderboard/LeaderboardHeader';
 import LeaderboardControls from './leaderboard/LeaderboardControls';
@@ -18,12 +22,15 @@ const Leaderboard: React.FC = () => {
     totalCount: 0,
     totalPages: 0,
     currentPage: 1,
-    pageSize: 20
+    pageSize: 20,
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isChangingPage, setIsChangingPage] = useState(false);
   const [showTestData, setShowTestData] = useState(true);
-  const [sortConfig, setSortConfig] = useState<SortConfig>({ field: 'rank', direction: 'asc' });
+  const [sortConfig, setSortConfig] = useState<SortConfig>({
+    field: 'rank',
+    direction: 'asc',
+  });
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
 
@@ -38,21 +45,23 @@ const Leaderboard: React.FC = () => {
     } else {
       setIsChangingPage(true);
     }
-    
+
     try {
-      console.log("🔍 Leaderboard - loading page:", currentPage, "size:", pageSize, "showTestData:", showTestData, "sort:", sortConfig);
-      
       const sortOptions: SortOptions = {
         field: sortConfig.field,
-        direction: sortConfig.direction
+        direction: sortConfig.direction,
       };
-      
-      const response = await fetchPaginatedLeaderboard(currentPage, pageSize, showTestData, sortOptions);
-      console.log("🔍 Leaderboard - paginated response:", response);
-      
+
+      const response = await fetchPaginatedLeaderboard(
+        currentPage,
+        pageSize,
+        showTestData,
+        sortOptions
+      );
+
       setPaginatedData(response);
     } catch (error) {
-      console.error("❌ Failed to load leaderboard data:", error);
+      console.error('Failed to load leaderboard data:', error);
     } finally {
       setIsLoading(false);
       setIsChangingPage(false);
@@ -70,7 +79,6 @@ const Leaderboard: React.FC = () => {
   };
 
   const handleSortChange = (newSortConfig: SortConfig) => {
-    console.log("🔍 Sort changing from", sortConfig, "to", newSortConfig);
     setSortConfig(newSortConfig);
     setCurrentPage(1); // Reset to first page when sorting changes
   };
@@ -95,7 +103,7 @@ const Leaderboard: React.FC = () => {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
           </div>
         )}
-        <LeaderboardTable 
+        <LeaderboardTable
           sortedData={paginatedData.data}
           sortConfig={sortConfig}
           setSortConfig={handleSortChange}
@@ -110,8 +118,8 @@ const Leaderboard: React.FC = () => {
   return (
     <div className="container max-w-4xl mx-auto px-4 py-8">
       <LeaderboardHeader />
-      
-      <LeaderboardControls 
+
+      <LeaderboardControls
         showTestData={showTestData}
         setShowTestData={setShowTestData}
       />
@@ -125,26 +133,40 @@ const Leaderboard: React.FC = () => {
         currentPage={currentPage}
       />
 
-      <DebugInfo 
+      <DebugInfo
         sortConfig={sortConfig}
         sortedData={paginatedData.data}
         showTestData={showTestData}
       />
-      
+
       {/* Additional debug section */}
       <div className="mb-4 p-3 bg-yellow-50 rounded-lg text-sm border border-yellow-200">
-        <p><strong>🔍 Debug Analysis:</strong></p>
-        <p><strong>Total records:</strong> {paginatedData.totalCount}</p>
-        <p><strong>Current page:</strong> {paginatedData.currentPage} of {paginatedData.totalPages}</p>
-        <p><strong>Page size:</strong> {paginatedData.pageSize}</p>
-        <p><strong>Records on current page:</strong> {paginatedData.data.length}</p>
-        <p><strong>Test data records on page:</strong> {paginatedData.data.filter(item => item.is_test_data).length}</p>
-        <p><strong>Current sort:</strong> {sortConfig.field} ({sortConfig.direction})</p>
+        <p>
+          <strong>🔍 Debug Analysis:</strong>
+        </p>
+        <p>
+          <strong>Total records:</strong> {paginatedData.totalCount}
+        </p>
+        <p>
+          <strong>Current page:</strong> {paginatedData.currentPage} of{' '}
+          {paginatedData.totalPages}
+        </p>
+        <p>
+          <strong>Page size:</strong> {paginatedData.pageSize}
+        </p>
+        <p>
+          <strong>Records on current page:</strong> {paginatedData.data.length}
+        </p>
+        <p>
+          <strong>Test data records on page:</strong>{' '}
+          {paginatedData.data.filter((item) => item.is_test_data).length}
+        </p>
+        <p>
+          <strong>Current sort:</strong> {sortConfig.field} ({sortConfig.direction})
+        </p>
       </div>
-      
-      <div className="relative">
-        {renderContent()}
-      </div>
+
+      <div className="relative">{renderContent()}</div>
 
       <PaginationControls
         currentPage={paginatedData.currentPage}

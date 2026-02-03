@@ -17,8 +17,6 @@ interface SharedResultChartsProps {
 }
 
 const SharedResultCharts: React.FC<SharedResultChartsProps> = ({ categoryScores }) => {
-  console.log('SharedResultCharts received categoryScores:', categoryScores);
-
   // Filter for skill categories only
   const skillCategories = categoryScores.filter((score) =>
     [

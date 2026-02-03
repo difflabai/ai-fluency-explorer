@@ -1,5 +1,4 @@
-
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from '@/integrations/supabase/client';
 import { Category } from '@/utils/testData';
 
 /**
@@ -8,16 +7,15 @@ import { Category } from '@/utils/testData';
 export async function categoryExists(categoryName: string): Promise<string | null> {
   try {
     // Use our new security definer function to bypass RLS
-    const { data, error } = await supabase
-      .rpc('check_category_exists', {
-        category_name: categoryName
-      });
-      
+    const { data, error } = await supabase.rpc('check_category_exists', {
+      category_name: categoryName,
+    });
+
     if (error) {
       console.error('Error checking if category exists:', error);
       return null;
     }
-    
+
     return data;
   } catch (err) {
     console.error('Unexpected error in categoryExists:', err);
@@ -28,40 +26,38 @@ export async function categoryExists(categoryName: string): Promise<string | nul
 /**
  * Migrates categories to the database using a security definer function
  */
-export async function migrateCategories(categoriesToMigrate: Category[]): Promise<Map<string, string>> {
-  console.log(`Starting migration of ${categoriesToMigrate.length} categories...`);
-  
+export async function migrateCategories(
+  categoriesToMigrate: Category[]
+): Promise<Map<string, string>> {
   // Create a map to store category name -> id mapping
   const categoryMap = new Map<string, string>();
   let added = 0;
   let skipped = 0;
-  
+
   for (const category of categoriesToMigrate) {
     try {
       // Check if category already exists using security definer function
       const existingId = await categoryExists(category.name);
-      
+
       if (existingId) {
-        console.log(`Category '${category.name}' already exists with ID ${existingId}`);
         categoryMap.set(category.name, existingId);
         skipped++;
         continue;
       }
-      
+
       // Insert the new category using the security definer function
-      const { data, error } = await supabase
-        .rpc('admin_insert_category', {
-          category_name: category.name,
-          category_description: category.description || `Category for ${category.name} questions`
-        });
-        
+      const { data, error } = await supabase.rpc('admin_insert_category', {
+        category_name: category.name,
+        category_description:
+          category.description || `Category for ${category.name} questions`,
+      });
+
       if (error) {
         console.error(`Error inserting category '${category.name}':`, error);
         continue;
       }
-      
+
       if (data) {
-        console.log(`Added category '${category.name}' with ID ${data}`);
         categoryMap.set(category.name, data);
         added++;
       }
@@ -69,7 +65,6 @@ export async function migrateCategories(categoriesToMigrate: Category[]): Promis
       console.error(`Unexpected error processing category '${category.name}':`, err);
     }
   }
-  
-  console.log(`Categories migration complete. Added: ${added}, Skipped: ${skipped}`);
+
   return categoryMap;
 }

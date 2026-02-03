@@ -1,7 +1,10 @@
-
 import React, { useState } from 'react';
-import { Button } from "@/components/ui/button";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Button } from '@/components/ui/button';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import { Question } from '@/hooks/test/types';
 import { Check, X, ChevronDown, ChevronUp, HelpCircle } from 'lucide-react';
 
@@ -18,7 +21,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   onAnswer,
   isAnswered = false,
   selectedAnswer = null,
-  showFeedback = false
+  showFeedback = false,
 }) => {
   const [explanationOpen, setExplanationOpen] = useState(false);
 
@@ -30,29 +33,35 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
 
   const renderFeedback = () => {
     if (!showFeedback || selectedAnswer === null) return null;
-    
+
     return (
       <div className="mt-6 p-4 rounded-lg bg-blue-50 text-blue-800 border border-blue-100">
         <p className="font-medium flex items-center">
           <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-blue-100 mr-2">
             {selectedAnswer ? <Check className="h-4 w-4" /> : <X className="h-4 w-4" />}
           </span>
-          You selected: {selectedAnswer ? 'Yes, I have done this' : 'No, I haven\'t done this yet'}
+          You selected:{' '}
+          {selectedAnswer ? 'Yes, I have done this' : "No, I haven't done this yet"}
         </p>
       </div>
     );
   };
 
-  // Get the category display name 
+  // Get the category display name
   const getCategoryDisplayName = () => {
     if (!question.difficulty) return 'Unknown';
-    
-    switch(String(question.difficulty)) {
-      case 'novice': return 'Novice';
-      case 'advanced-beginner': return 'Advanced Beginner';
-      case 'competent': return 'Competent';
-      case 'proficient': return 'Proficient';
-      case 'expert': return 'Expert';
+
+    switch (String(question.difficulty)) {
+      case 'novice':
+        return 'Novice';
+      case 'advanced-beginner':
+        return 'Advanced Beginner';
+      case 'competent':
+        return 'Competent';
+      case 'proficient':
+        return 'Proficient';
+      case 'expert':
+        return 'Expert';
       default: {
         // Handle the case when difficulty is an unexpected string
         const difficultyStr = String(question.difficulty);
@@ -63,22 +72,23 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
 
   // Generate color based on difficulty
   const getDifficultyColor = () => {
-    switch(String(question.difficulty)) {
-      case 'novice': return 'bg-green-100 text-green-800';
-      case 'advanced-beginner': return 'bg-blue-100 text-blue-800';
-      case 'competent': return 'bg-purple-100 text-purple-800';
-      case 'proficient': return 'bg-indigo-100 text-indigo-800';
-      case 'expert': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+    switch (String(question.difficulty)) {
+      case 'novice':
+        return 'bg-green-100 text-green-800';
+      case 'advanced-beginner':
+        return 'bg-blue-100 text-blue-800';
+      case 'competent':
+        return 'bg-purple-100 text-purple-800';
+      case 'proficient':
+        return 'bg-indigo-100 text-indigo-800';
+      case 'expert':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
-  // Enhanced debugging for explanation tracking
   const explanation = question.explanation?.trim() || '';
-  console.log(`QuestionCard - Question: "${question.text?.substring(0, 50)}..."`);
-  console.log(`QuestionCard - Explanation length: ${explanation.length}`);
-  console.log(`QuestionCard - Explanation preview: "${explanation.substring(0, 100)}..."`);
-  console.log(`QuestionCard - DB ID: ${question.dbId || 'N/A'}`);
 
   // Check if question has a valid explanation
   const hasExplanation = explanation.length > 0;
@@ -87,7 +97,9 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
     <div className="bg-white p-8 rounded-xl shadow-lg animate-scale-in border border-gray-100">
       <div className="mb-8">
         <div className="flex flex-wrap gap-2 mb-3">
-          <span className={`text-xs font-semibold px-3 py-1 rounded-full ${getDifficultyColor()}`}>
+          <span
+            className={`text-xs font-semibold px-3 py-1 rounded-full ${getDifficultyColor()}`}
+          >
             {getCategoryDisplayName()}
           </span>
           <span className="text-xs font-medium bg-gray-100 text-gray-600 px-3 py-1 rounded-full">
@@ -96,37 +108,43 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
         </div>
         <h3 className="text-2xl font-medium text-gray-800">{question.text}</h3>
       </div>
-      
+
       <div className="flex flex-col sm:flex-row gap-4">
         <Button
           onClick={() => handleAnswer(true)}
-          variant={selectedAnswer === true ? "default" : "outline"}
+          variant={selectedAnswer === true ? 'default' : 'outline'}
           className={`flex-1 h-16 text-lg transition-all ${
-            selectedAnswer === true ? 'bg-ai-purple hover:bg-ai-purple-dark' : 
-            'hover:bg-ai-purple-light hover:text-ai-purple hover:border-ai-purple'
+            selectedAnswer === true
+              ? 'bg-ai-purple hover:bg-ai-purple-dark'
+              : 'hover:bg-ai-purple-light hover:text-ai-purple hover:border-ai-purple'
           }`}
           disabled={isAnswered}
         >
-          <Check className={`h-5 w-5 mr-2 ${selectedAnswer === true ? '' : 'text-green-600'}`} />
+          <Check
+            className={`h-5 w-5 mr-2 ${selectedAnswer === true ? '' : 'text-green-600'}`}
+          />
           Yes, I have done this
         </Button>
-        
+
         <Button
           onClick={() => handleAnswer(false)}
-          variant={selectedAnswer === false ? "default" : "outline"}
+          variant={selectedAnswer === false ? 'default' : 'outline'}
           className={`flex-1 h-16 text-lg transition-all ${
-            selectedAnswer === false ? 'bg-ai-purple hover:bg-ai-purple-dark' : 
-            'hover:bg-ai-purple-light hover:text-ai-purple hover:border-ai-purple'
+            selectedAnswer === false
+              ? 'bg-ai-purple hover:bg-ai-purple-dark'
+              : 'hover:bg-ai-purple-light hover:text-ai-purple hover:border-ai-purple'
           }`}
           disabled={isAnswered}
         >
-          <X className={`h-5 w-5 mr-2 ${selectedAnswer === false ? '' : 'text-red-600'}`} />
+          <X
+            className={`h-5 w-5 mr-2 ${selectedAnswer === false ? '' : 'text-red-600'}`}
+          />
           No, not yet
         </Button>
       </div>
-      
+
       {renderFeedback()}
-      
+
       {/* Educational Explanation Section - Show if explanation exists */}
       {hasExplanation && (
         <div className="mt-6">
@@ -150,12 +168,13 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
           </Collapsible>
         </div>
       )}
-      
+
       {/* Debug info for development */}
       {!hasExplanation && (
         <div className="mt-6 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
           <p className="text-sm text-yellow-800">
-            ⚠️ No explanation available for this question. Run migration to populate explanations.
+            ⚠️ No explanation available for this question. Run migration to populate
+            explanations.
           </p>
         </div>
       )}

@@ -6,8 +6,6 @@ import questionsData from '@/data/questions.json';
  * @returns Array containing [quickAssessmentCount, comprehensiveAssessmentCount]
  */
 export async function migrateJsonTestTypes(): Promise<number[]> {
-  console.log('Starting migration of test types from JSON data...');
-
   try {
     const testCounts: { [key: string]: number } = {};
 
@@ -53,12 +51,8 @@ export async function migrateJsonTestTypes(): Promise<number[]> {
           }
 
           testTypeId = newTestType.id;
-          console.log(`Created test type '${testType.name}' with ID ${testTypeId}`);
         } else {
           testTypeId = existingTestTypes[0].id;
-          console.log(
-            `Test type '${testType.name}' already exists with ID ${testTypeId}`
-          );
         }
 
         // Call the database function to populate the test with questions
@@ -74,10 +68,6 @@ export async function migrateJsonTestTypes(): Promise<number[]> {
 
         const questionCount = data || 0;
         testCounts[testType.name] = questionCount;
-
-        console.log(
-          `Populated test type '${testType.name}' with ${questionCount} questions`
-        );
       } catch (err) {
         console.error(`Unexpected error processing test type:`, err);
       }

@@ -33,10 +33,6 @@ export const setupDevUtils = () => {
                 'Failed to populate Quick Assessment test. See console for details.',
               variant: 'destructive',
             });
-          } else {
-            console.log(
-              `✅ Populated Quick Assessment with ${quickData} questions using balanced distribution`
-            );
           }
 
           const { data: compData, error: compError } = await supabase.rpc(
@@ -53,9 +49,6 @@ export const setupDevUtils = () => {
               variant: 'destructive',
             });
           } else {
-            console.log(
-              `✅ Populated Comprehensive Assessment with ${compData} questions using balanced distribution`
-            );
             toast({
               title: 'Success',
               description: `Test types populated with balanced distribution: ${quickData} and ${compData} questions respectively.`,
@@ -74,8 +67,6 @@ export const setupDevUtils = () => {
       // Enhanced function to test and analyze question distribution
       analyzeQuestionDistribution: async () => {
         try {
-          console.log('🔍 Analyzing current question distribution...');
-
           // Fetch questions for both test types to analyze distribution
           const { data: quickQuestions } = await supabase
             .from('test_questions_map')
@@ -107,17 +98,6 @@ export const setupDevUtils = () => {
             )
             .eq('test_types.name', 'Comprehensive Assessment');
 
-          console.log(
-            '📊 Quick Assessment Distribution:',
-            quickQuestions?.length || 0,
-            'questions'
-          );
-          console.log(
-            '📊 Comprehensive Assessment Distribution:',
-            compQuestions?.length || 0,
-            'questions'
-          );
-
           toast({
             title: 'Distribution Analysis',
             description: 'Check console for detailed question distribution analysis.',
@@ -143,21 +123,6 @@ export const setupDevUtils = () => {
       migrateJsonData,
       migrateJsonDataWithNotifications,
     };
-
-    console.log(
-      '🛠️ Dev utilities available in console:\n' +
-        '- window.devUtils.migrateData() - Migrate test data to the database\n' +
-        '- window.devUtils.systemCheck() - Verify system setup\n' +
-        '- window.devUtils.populateTestTypes() - Populate test types with BALANCED distribution\n' +
-        '- window.devUtils.analyzeQuestionDistribution() - Analyze current question distribution\n' +
-        '- window.devUtils.migrateQuestionsToDatabase() - Migrate and populate test questions\n' +
-        '- window.devUtils.runMigrationWithNotifications() - Run migration with toast notifications\n' +
-        '- window.devUtils.initializeApplication() - Complete initialization of the app (migration + system check)\n' +
-        '- window.devUtils.verifyDatabasePopulated() - Check if database has been populated\n' +
-        '- window.devUtils.autoInitializeIfNeeded() - Auto-initialize if database is empty\n' +
-        '- window.devUtils.migrateJsonData() - Run JSON-based migration\n' +
-        '- window.devUtils.migrateJsonDataWithNotifications() - Run JSON migration with toast notifications'
-    );
   }
 };
 

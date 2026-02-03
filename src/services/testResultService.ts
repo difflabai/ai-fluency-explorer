@@ -75,22 +75,11 @@ export const fetchLeaderboard = async (
   useWeightedRanking = false
 ): Promise<SavedTestResult[]> => {
   try {
-    console.log('🔍 fetchLeaderboard called with:', {
-      limit,
-      includeTestData,
-      useWeightedRanking,
-    });
-
     let query = supabase.from('test_results').select('*').eq('public', true);
-
-    console.log('🔍 Base query created for public results');
 
     // Filter out test data if requested
     if (!includeTestData) {
-      console.log('🔍 Filtering out test data');
       query = query.eq('is_test_data', false);
-    } else {
-      console.log('🔍 Including test data in results');
     }
 
     const result = await query;
@@ -98,22 +87,14 @@ export const fetchLeaderboard = async (
     const error = result.error;
 
     if (error) {
-      console.error('❌ Error fetching leaderboard:', error);
+      console.error('Error fetching leaderboard:', error);
       return [];
     }
-
-    console.log(
-      '✅ Leaderboard query successful, returned:',
-      data?.length || 0,
-      'records'
-    );
 
     if (!data) return [];
 
     // Apply weighted ranking if requested
     if (useWeightedRanking) {
-      console.log('🔍 Applying weighted ranking');
-
       // Calculate weighted score: percentage_score * max_possible_score
       data = data.map((entry) => ({
         ...entry,
@@ -132,42 +113,9 @@ export const fetchLeaderboard = async (
     // Apply limit
     const limitedData = data.slice(0, limit);
 
-    console.log(
-      '🔍 Final data after sorting and limiting:',
-      limitedData.length,
-      'records'
-    );
-
-    // Additional debugging for test data
-    if (limitedData.length > 0) {
-      const testDataRecords = limitedData.filter((item) => item.is_test_data);
-      console.log('🔍 Test data records in response:', testDataRecords.length);
-
-      const todayRecords = limitedData.filter((item) => {
-        const today = new Date().toISOString().split('T')[0];
-        return item.created_at.startsWith(today);
-      });
-      console.log("🔍 Today's records in response:", todayRecords.length);
-
-      // Show the top 3 records for debugging
-      const top3 = limitedData.slice(0, 3);
-      console.log(
-        '🔍 Top 3 records:',
-        top3.map((item) => ({
-          username: item.username,
-          overall_score: item.overall_score,
-          max_possible_score: item.max_possible_score,
-          percentage_score: item.percentage_score,
-          weighted_score: useWeightedRanking ? (item as any).weighted_score : 'N/A',
-          created_at: item.created_at,
-          is_test_data: item.is_test_data,
-        }))
-      );
-    }
-
     return limitedData;
   } catch (error) {
-    console.error('❌ Error fetching leaderboard:', error);
+    console.error('Error fetching leaderboard:', error);
     return [];
   }
 };
@@ -180,13 +128,6 @@ export const fetchPaginatedLeaderboard = async (
   sortOptions: SortOptions = { field: 'rank', direction: 'asc' }
 ): Promise<PaginatedLeaderboardResponse> => {
   try {
-    console.log('🔍 fetchPaginatedLeaderboard called with:', {
-      page,
-      pageSize,
-      includeTestData,
-      sortOptions,
-    });
-
     let baseQuery = supabase
       .from('test_results')
       .select('*', { count: 'exact' })
@@ -237,7 +178,7 @@ export const fetchPaginatedLeaderboard = async (
     const { data, error, count } = await baseQuery.range(offset, offset + pageSize - 1);
 
     if (error) {
-      console.error('❌ Error fetching paginated leaderboard:', error);
+      console.error('Error fetching paginated leaderboard:', error);
       return {
         data: [],
         totalCount: 0,
@@ -250,15 +191,6 @@ export const fetchPaginatedLeaderboard = async (
     const totalCount = count || 0;
     const totalPages = Math.ceil(totalCount / pageSize);
 
-    console.log('✅ Paginated leaderboard query successful:', {
-      records: data?.length || 0,
-      totalCount,
-      totalPages,
-      currentPage: page,
-      sortField: sortOptions.field,
-      sortDirection: sortOptions.direction,
-    });
-
     return {
       data: data || [],
       totalCount,
@@ -267,7 +199,7 @@ export const fetchPaginatedLeaderboard = async (
       pageSize,
     };
   } catch (error) {
-    console.error('❌ Error fetching paginated leaderboard:', error);
+    console.error('Error fetching paginated leaderboard:', error);
     return {
       data: [],
       totalCount: 0,

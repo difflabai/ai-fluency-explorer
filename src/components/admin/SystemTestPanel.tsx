@@ -1,25 +1,39 @@
-
 import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { 
-  TestTube, 
-  Play, 
-  CheckCircle, 
-  XCircle, 
-  AlertTriangle, 
-  ChevronDown, 
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
+import {
+  TestTube,
+  Play,
+  CheckCircle,
+  XCircle,
+  AlertTriangle,
+  ChevronDown,
   ChevronRight,
   Clock,
   Database,
-  Loader2
+  Loader2,
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { runSystemTests, generateTestReport, SystemTestSuite, SystemTestResult } from '@/utils/systemTest';
+import {
+  runSystemTests,
+  generateTestReport,
+  SystemTestSuite,
+  SystemTestResult,
+} from '@/utils/systemTest';
 
 const SystemTestPanel: React.FC = () => {
   const [isRunning, setIsRunning] = useState(false);
@@ -30,42 +44,43 @@ const SystemTestPanel: React.FC = () => {
   const handleRunTests = async () => {
     setIsRunning(true);
     setTestSuites([]);
-    
+
     try {
-      console.log('🧪 Starting comprehensive system tests...');
-      
       const results = await runSystemTests();
       setTestSuites(results);
       setLastRunTime(new Date());
-      
-      const report = generateTestReport(results);
-      console.log(report);
-      
+
+      generateTestReport(results);
+
       const totalTests = results.reduce((sum, suite) => sum + suite.results.length, 0);
-      const passedTests = results.reduce((sum, suite) => 
-        sum + suite.results.filter(r => r.status === 'PASS').length, 0);
-      const failedTests = results.reduce((sum, suite) => 
-        sum + suite.results.filter(r => r.status === 'FAIL').length, 0);
-      
+      const passedTests = results.reduce(
+        (sum, suite) => sum + suite.results.filter((r) => r.status === 'PASS').length,
+        0
+      );
+      const failedTests = results.reduce(
+        (sum, suite) => sum + suite.results.filter((r) => r.status === 'FAIL').length,
+        0
+      );
+
       if (failedTests === 0) {
         toast({
-          title: "System Tests Completed",
+          title: 'System Tests Completed',
           description: `All ${totalTests} tests passed successfully! 🎉`,
         });
       } else {
         toast({
-          title: "System Tests Completed with Issues",
+          title: 'System Tests Completed with Issues',
           description: `${passedTests}/${totalTests} tests passed. Check results for details.`,
-          variant: "destructive"
+          variant: 'destructive',
         });
       }
-      
     } catch (error) {
       console.error('System tests failed:', error);
       toast({
-        title: "System Tests Failed",
-        description: error instanceof Error ? error.message : "An unknown error occurred",
-        variant: "destructive"
+        title: 'System Tests Failed',
+        description:
+          error instanceof Error ? error.message : 'An unknown error occurred',
+        variant: 'destructive',
       });
     } finally {
       setIsRunning(false);
@@ -84,25 +99,35 @@ const SystemTestPanel: React.FC = () => {
 
   const getStatusIcon = (status: 'PASS' | 'FAIL' | 'WARNING') => {
     switch (status) {
-      case 'PASS': return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case 'FAIL': return <XCircle className="h-4 w-4 text-red-500" />;
-      case 'WARNING': return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
+      case 'PASS':
+        return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case 'FAIL':
+        return <XCircle className="h-4 w-4 text-red-500" />;
+      case 'WARNING':
+        return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
     }
   };
 
   const getStatusBadge = (status: 'PASS' | 'FAIL' | 'WARNING') => {
-    const variant = status === 'PASS' ? 'default' : status === 'FAIL' ? 'destructive' : 'secondary';
+    const variant =
+      status === 'PASS' ? 'default' : status === 'FAIL' ? 'destructive' : 'secondary';
     return <Badge variant={variant}>{status}</Badge>;
   };
 
-  const overallStatus = testSuites.length > 0 ? (
-    testSuites.some(s => s.overallStatus === 'FAIL') ? 'FAIL' :
-    testSuites.some(s => s.overallStatus === 'WARNING') ? 'WARNING' : 'PASS'
-  ) : null;
+  const overallStatus =
+    testSuites.length > 0
+      ? testSuites.some((s) => s.overallStatus === 'FAIL')
+        ? 'FAIL'
+        : testSuites.some((s) => s.overallStatus === 'WARNING')
+          ? 'WARNING'
+          : 'PASS'
+      : null;
 
   const totalTests = testSuites.reduce((sum, suite) => sum + suite.results.length, 0);
-  const passedTests = testSuites.reduce((sum, suite) => 
-    sum + suite.results.filter(r => r.status === 'PASS').length, 0);
+  const passedTests = testSuites.reduce(
+    (sum, suite) => sum + suite.results.filter((r) => r.status === 'PASS').length,
+    0
+  );
 
   return (
     <Card className="w-full">
@@ -112,10 +137,10 @@ const SystemTestPanel: React.FC = () => {
           System Test Suite
         </CardTitle>
         <CardDescription>
-          Comprehensive testing of all system components including database integrity, 
+          Comprehensive testing of all system components including database integrity,
           scoring accuracy, and synthetic data generation.
         </CardDescription>
-        
+
         {lastRunTime && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Clock className="h-4 w-4" />
@@ -148,8 +173,8 @@ const SystemTestPanel: React.FC = () => {
 
         {/* Run Tests Button */}
         <div className="flex justify-center">
-          <Button 
-            onClick={handleRunTests} 
+          <Button
+            onClick={handleRunTests}
             disabled={isRunning}
             size="lg"
             className="flex items-center gap-2"
@@ -197,7 +222,9 @@ const SystemTestPanel: React.FC = () => {
                               )}
                               <div>
                                 <div className="font-semibold">{suite.suiteName}</div>
-                                <div className="text-sm text-muted-foreground">{suite.summary}</div>
+                                <div className="text-sm text-muted-foreground">
+                                  {suite.summary}
+                                </div>
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
@@ -212,11 +239,16 @@ const SystemTestPanel: React.FC = () => {
                     <CollapsibleContent className="mt-2 ml-4">
                       <div className="space-y-2">
                         {suite.results.map((result, index) => (
-                          <div key={index} className="flex items-start gap-3 p-3 bg-muted/30 rounded-md">
+                          <div
+                            key={index}
+                            className="flex items-start gap-3 p-3 bg-muted/30 rounded-md"
+                          >
                             {getStatusIcon(result.status)}
                             <div className="flex-1">
                               <div className="font-medium">{result.testName}</div>
-                              <div className="text-sm text-muted-foreground">{result.message}</div>
+                              <div className="text-sm text-muted-foreground">
+                                {result.message}
+                              </div>
                               {result.details && (
                                 <details className="mt-2">
                                   <summary className="text-xs cursor-pointer text-blue-600 hover:text-blue-800">

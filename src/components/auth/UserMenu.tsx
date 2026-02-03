@@ -1,23 +1,19 @@
-
 import React from 'react';
-import { Button } from "@/components/ui/button";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuLabel, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
-} from "@/components/ui/dropdown-menu";
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/contexts/auth';
 import { User, LogOut, Settings, UserPlus, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const UserMenu: React.FC = () => {
   const { user, signOut, isAdmin } = useAuth();
-  
-  console.log("UserMenu - user:", user?.email);
-  console.log("UserMenu - isAdmin:", isAdmin);
 
   if (!user) {
     return (
@@ -50,7 +46,7 @@ const UserMenu: React.FC = () => {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        
+
         {isAdmin && (
           <DropdownMenuItem asChild>
             <Link to="/admin" className="flex items-center gap-2 cursor-pointer">
@@ -59,8 +55,11 @@ const UserMenu: React.FC = () => {
             </Link>
           </DropdownMenuItem>
         )}
-        
-        <DropdownMenuItem onClick={signOut} className="flex items-center gap-2 cursor-pointer">
+
+        <DropdownMenuItem
+          onClick={signOut}
+          className="flex items-center gap-2 cursor-pointer"
+        >
           <LogOut className="h-4 w-4" />
           <span>Sign Out</span>
         </DropdownMenuItem>
