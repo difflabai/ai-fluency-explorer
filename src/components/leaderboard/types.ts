@@ -1,4 +1,3 @@
-
 import { SavedTestResult } from '@/services/testResultService';
 
 export type SortField = 'rank' | 'username' | 'score' | 'tier' | 'date';
@@ -9,4 +8,4 @@ export interface SortConfig {
   direction: SortDirection;
 }
 
-export interface LeaderboardEntry extends SavedTestResult {}
+export type LeaderboardEntry = SavedTestResult;
