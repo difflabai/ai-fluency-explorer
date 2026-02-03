@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from '@/contexts/auth';
 import { Toaster } from '@/components/ui/toaster';
 import Header from '@/components/layout/Header';
+import ErrorBoundary from '@/components/error/ErrorBoundary';
 import { Loader2 } from 'lucide-react';
 
 // Lazy-loaded pages
@@ -36,31 +37,33 @@ function App() {
           <div className="min-h-screen bg-gray-50">
             <Header />
             <main>
-              <Suspense fallback={<PageLoader />}>
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/auth" element={<Auth />} />
-                  <Route path="/leaderboard" element={<LeaderboardPage />} />
-                  <Route path="/shared/:shareId" element={<SharedResultView />} />
-                  <Route
-                    path="/admin"
-                    element={
-                      <AdminRoute>
-                        <Admin />
-                      </AdminRoute>
-                    }
-                  />
-                  <Route
-                    path="/admin/system-test"
-                    element={
-                      <AdminRoute>
-                        <SystemTest />
-                      </AdminRoute>
-                    }
-                  />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Suspense>
+              <ErrorBoundary>
+                <Suspense fallback={<PageLoader />}>
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/auth" element={<Auth />} />
+                    <Route path="/leaderboard" element={<LeaderboardPage />} />
+                    <Route path="/shared/:shareId" element={<SharedResultView />} />
+                    <Route
+                      path="/admin"
+                      element={
+                        <AdminRoute>
+                          <Admin />
+                        </AdminRoute>
+                      }
+                    />
+                    <Route
+                      path="/admin/system-test"
+                      element={
+                        <AdminRoute>
+                          <SystemTest />
+                        </AdminRoute>
+                      }
+                    />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Suspense>
+              </ErrorBoundary>
             </main>
             <Toaster />
           </div>

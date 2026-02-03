@@ -1,28 +1,45 @@
 import { describe, it, expect } from 'vitest';
-import { determineUserTier } from '../tierUtils';
+import { fluencyTiers } from '../fluencyTiers';
 
-describe('determineUserTier', () => {
-  it('returns Novice for score 0', () => {
-    expect(determineUserTier(0).name).toBe('Novice');
+describe('fluencyTiers', () => {
+  it('should have 5 fluency tiers', () => {
+    expect(fluencyTiers).toHaveLength(5);
   });
 
-  it('returns Advanced Beginner for score 50', () => {
-    expect(determineUserTier(50).name).toBe('Advanced Beginner');
+  it('should have correct tier names in order', () => {
+    const tierNames = fluencyTiers.map((t) => t.name);
+    expect(tierNames).toEqual([
+      'Novice',
+      'Advanced Beginner',
+      'Competent',
+      'Proficient',
+      'Expert',
+    ]);
   });
 
-  it('returns Competent for score 100', () => {
-    expect(determineUserTier(100).name).toBe('Competent');
+  it('should have non-overlapping ranges', () => {
+    for (let i = 0; i < fluencyTiers.length - 1; i++) {
+      const currentTier = fluencyTiers[i];
+      const nextTier = fluencyTiers[i + 1];
+      expect(currentTier.range[1]).toBeLessThan(nextTier.range[0]);
+    }
   });
 
-  it('returns Proficient for score 150', () => {
-    expect(determineUserTier(150).name).toBe('Proficient');
+  it('should start at 0 and end at 240', () => {
+    expect(fluencyTiers[0].range[0]).toBe(0);
+    expect(fluencyTiers[fluencyTiers.length - 1].range[1]).toBe(240);
   });
 
-  it('returns Expert for score 200', () => {
-    expect(determineUserTier(200).name).toBe('Expert');
+  it('should have valid color classes', () => {
+    fluencyTiers.forEach((tier) => {
+      expect(tier.color).toMatch(/^bg-/);
+    });
   });
 
-  it('defaults to Novice for out-of-range score', () => {
-    expect(determineUserTier(999).name).toBe('Novice');
+  it('should have descriptions for all tiers', () => {
+    fluencyTiers.forEach((tier) => {
+      expect(tier.description).toBeTruthy();
+      expect(typeof tier.description).toBe('string');
+    });
   });
 });
