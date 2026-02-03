@@ -1,76 +1,148 @@
-
 # AI Fluency Assessment Platform
 
-## Project Overview
-
-This AI Fluency Assessment Platform allows users to test and evaluate their understanding of AI concepts through interactive assessments. The platform offers two types of tests:
-
-1. **Quick Assessment** - A shorter test with selected questions
-2. **Comprehensive Assessment** - A complete evaluation covering all categories
-
-Users can view their results with detailed breakdowns by category, save their scores to a leaderboard, and share their results with others.
+An interactive platform to test and evaluate understanding of AI concepts through adaptive assessments.
 
 ## Features
 
-- Multiple test types with different question sets
-- Detailed score analysis with category breakdowns
-- Public leaderboard to compare results
-- Result sharing via unique links
-- Admin panel for data management and system diagnostics
+- **Two Assessment Types**: Quick (15 questions) and Comprehensive (all questions)
+- **5 Difficulty Levels**: Novice → Advanced Beginner → Competent → Proficient → Expert
+- **4 Knowledge Categories**: Prompt Engineering, AI Ethics, Technical Concepts, Practical Applications
+- **Detailed Results**: Category breakdowns, score analysis, fluency tier placement
+- **Public Leaderboard**: Compare results with other users
+- **Shareable Results**: Unique links for sharing assessment outcomes
+- **Admin Panel**: Data management, system diagnostics, user role management
 
-## Project Information
+## Tech Stack
 
-**URL**: https://lovable.dev/projects/a739b7bc-156f-46b7-8e77-b9ab6c9a7a1f
+| Layer     | Technology                  |
+| --------- | --------------------------- |
+| Framework | React 18 + TypeScript       |
+| Build     | Vite 5 (SWC)                |
+| Styling   | TailwindCSS + shadcn-ui     |
+| State     | React Query + React Context |
+| Backend   | Supabase (Postgres, Auth)   |
+| Charts    | Recharts                    |
+| Testing   | Vitest                      |
 
 ## Getting Started
 
-To run this project locally:
+### Prerequisites
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+- Node.js 18+
+- npm or bun
+- Docker Desktop (for local Supabase)
+- Supabase CLI: `brew install supabase/tap/supabase`
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### Quick Start (Hosted Supabase)
 
-# Step 3: Install the necessary dependencies.
-npm i
+```bash
+# Clone the repo
+git clone https://github.com/Catalyst-AI-Services/ai-fluency-explorer.git
+cd ai-fluency-explorer
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Install dependencies
+npm install
+
+# Set up environment
+cp .env.example .env
+# Edit .env with your Supabase credentials
+
+# Start development server
 npm run dev
 ```
 
-## Technology Stack
+App runs at http://localhost:8080
 
-- **Frontend**: React, TypeScript, TailwindCSS
-- **UI Components**: shadcn-ui
-- **State Management**: React Query
-- **Backend**: Supabase
-- **Build Tool**: Vite
+### Local Supabase Development
+
+For offline development or to run your own instance:
+
+```bash
+# 1. Start local Supabase (requires Docker)
+npm run supabase:start
+
+# 2. Update .env to use local Supabase
+# VITE_SUPABASE_URL=http://localhost:54321
+# VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
+
+# 3. Start the app
+npm run dev
+
+# 4. Seed questions (in browser console)
+window.devUtils.migrateJsonData()
+
+# 5. Make yourself admin (in Supabase Studio SQL editor at localhost:54323)
+SELECT public.add_user_role('your@email.com', 'admin');
+```
+
+#### Supabase Commands
+
+```bash
+npm run supabase:start    # Start local Supabase
+npm run supabase:stop     # Stop local Supabase
+npm run supabase:status   # Check status
+npm run supabase:reset    # Reset database (runs migrations + seed)
+npm run supabase:migrate  # Run pending migrations
+```
 
 ## Project Structure
 
-- `src/components/` - React components
-- `src/pages/` - Page components and routes
-- `src/utils/` - Utility functions and helpers
-- `src/services/` - API service calls
-- `src/data/` - JSON data for questions
-- `src/integrations/` - External service integrations
+```
+src/
+├── pages/           # Route-level components
+├── components/      # Feature-organized components
+│   ├── ui/          # shadcn-ui primitives
+│   ├── auth/        # Auth forms, protected routes
+│   ├── admin/       # Admin panel controls
+│   └── leaderboard/ # Leaderboard components
+├── contexts/        # React Context providers
+├── hooks/           # Custom React hooks
+├── services/        # Supabase data access
+├── utils/           # Business logic, scoring
+├── integrations/    # External service configs
+└── data/            # Question seed data (JSON)
 
-## Database Initialization
+supabase/
+├── config.toml      # Local Supabase config
+├── migrations/      # Database schema migrations
+└── seed.sql         # Initial seed data
+```
 
-The application automatically initializes the database with test questions on first start in development mode. You can also manually trigger data migration and system checks using the Admin panel at `/admin`.
+## Available Scripts
 
-## More Information
+```bash
+npm run dev          # Development server
+npm run build        # Production build
+npm run preview      # Preview production build
+npm run lint         # ESLint
+npm run test         # Run tests
+npm run test:watch   # Tests in watch mode
+```
 
-For more detailed system design and architecture information, see [SPEC.md](SPEC.md).
+## Database Schema
 
-## Deployment
+- **categories** — Question categories (Prompt Engineering, AI Ethics, etc.)
+- **questions** — Assessment questions with difficulty and versioning
+- **test_types** — Quick vs Comprehensive assessment configs
+- **test_questions_map** — Maps questions to test types
+- **test_results** — Completed assessment results
+- **user_answers** — Individual question responses
+- **user_roles** — Admin role assignments
 
-Simply open [Lovable](https://lovable.dev/projects/a739b7bc-156f-46b7-8e77-b9ab6c9a7a1f) and click on Share -> Publish.
+## Documentation
 
-## Custom Domains
+- [SPEC.md](SPEC.md) — System design and architecture
+- [CLAUDE.md](CLAUDE.md) — AI assistant context for this project
+- [AGENTS.md](AGENTS.md) — Multi-agent workflow instructions
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## Contributing
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+1. Create a feature branch: `git checkout -b feat/your-feature`
+2. Make changes and test
+3. Run `npm run lint && npm run test`
+4. Commit with conventional commits: `git commit -m "feat: add feature"`
+5. Push and create PR
+
+## License
+
+Private — Catalyst AI Services
