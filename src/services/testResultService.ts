@@ -93,7 +93,9 @@ export const fetchLeaderboard = async (
       console.log('🔍 Including test data in results');
     }
 
-    const { data, error } = await query;
+    const result = await query;
+    let data = result.data;
+    const error = result.error;
 
     if (error) {
       console.error('❌ Error fetching leaderboard:', error);
