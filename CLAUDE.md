@@ -11,8 +11,8 @@ _Location: /CLAUDE.md (project root)_
 
 An interactive AI fluency assessment platform built with React + TypeScript + Supabase. Users take timed assessments (Quick: 20 questions, Comprehensive: 50+) across 4 AI knowledge categories and 5 difficulty levels, then view scored results with visualizations.
 
-**Org:** Catalyst-AI-Services
-**Repo:** `Catalyst-AI-Services/ai-fluency-explorer`
+**Org:** difflabai
+**Repo:** `difflabai/ai-fluency-explorer`
 
 ---
 
@@ -98,17 +98,13 @@ src/
 - **Pre-commit:** lint-staged runs ESLint + Prettier on staged files
 - **Formatting:** Prettier (88 char, single quotes, trailing commas)
 - **Linting:** ESLint with TypeScript + React Hooks rules
-- **TypeScript:** Strict mode is OFF — `noImplicitAny: false`, `strictNullChecks: false`
-- **No test framework** yet — adding Vitest is planned
+- **TypeScript:** Strict mode enabled
+- **Testing:** Vitest + React Testing Library
 
 ---
 
 ## 6 · Known Issues & Tech Debt
 
-- Supabase credentials hardcoded (should move to `.env`)
-- TypeScript strict mode disabled
-- No test coverage
-- `lovable-tagger` dev dependency (artifact from Lovable platform generation)
 - Some components have tight coupling (see TODO.md)
 - Visual layout inconsistencies in shared results view
 
