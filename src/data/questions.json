@@ -1,4 +1,3 @@
-
 {
   "categories": [
     {
@@ -20,6 +19,23 @@
       "id": "practical-applications",
       "name": "Practical Applications",
       "description": "Real-world use cases and applications of AI"
+    }
+  ],
+  "testTypes": [
+    {
+      "name": "Quick Assessment",
+      "description": "A 50-question quick assessment",
+      "questionLimit": 50
+    },
+    {
+      "name": "Comprehensive Assessment",
+      "description": "Full 240-question comprehensive test",
+      "questionLimit": 240
+    },
+    {
+      "name": "Demo Assessment",
+      "description": "A quick 10-question demo to try the platform",
+      "questionLimit": 10
     }
   ],
   "questions": [

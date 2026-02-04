@@ -2,7 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { DBQuestion } from './types/questionTypes';
 
 export const fetchQuestions = async (
-  testType?: 'quick' | 'comprehensive'
+  testType?: 'quick' | 'comprehensive' | 'demo'
 ): Promise<DBQuestion[]> => {
   try {
     if (!testType) {
@@ -21,8 +21,12 @@ export const fetchQuestions = async (
     }
 
     // Map the frontend test type to database test type name
-    const testTypeName =
-      testType === 'quick' ? 'Quick Assessment' : 'Comprehensive Assessment';
+    const testTypeMap: Record<string, string> = {
+      quick: 'Quick Assessment',
+      comprehensive: 'Comprehensive Assessment',
+      demo: 'Demo Assessment',
+    };
+    const testTypeName = testTypeMap[testType] || 'Quick Assessment';
 
     // Get test type ID
     const { data: testTypeData, error: testTypeError } = await supabase
@@ -40,7 +44,7 @@ export const fetchQuestions = async (
         .from('questions')
         .select('*')
         .eq('is_active', true)
-        .limit(testType === 'quick' ? 20 : 50); // Reasonable limits
+        .limit(testType === 'demo' ? 10 : testType === 'quick' ? 20 : 50); // Reasonable limits
 
       if (fallbackError) {
         console.error('Error in fallback query:', fallbackError);
@@ -63,7 +67,10 @@ export const fetchQuestions = async (
         .from('questions')
         .select('*')
         .eq('is_active', true)
-        .limit(testTypeData.question_limit || (testType === 'quick' ? 20 : 50));
+        .limit(
+          testTypeData.question_limit ||
+            (testType === 'demo' ? 10 : testType === 'quick' ? 20 : 50)
+        );
 
       if (directError) {
         console.error('Error in direct fetch fallback:', directError);
@@ -117,7 +124,10 @@ export const fetchQuestions = async (
         .from('questions')
         .select('*')
         .eq('is_active', true)
-        .limit(testTypeData.question_limit || (testType === 'quick' ? 20 : 50));
+        .limit(
+          testTypeData.question_limit ||
+            (testType === 'demo' ? 10 : testType === 'quick' ? 20 : 50)
+        );
 
       if (finalFallbackError) {
         console.error('Error in final fallback:', finalFallbackError);
