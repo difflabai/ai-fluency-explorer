@@ -1,13 +1,7 @@
--- Add Demo Assessment test type
+-- Add Quick Start test type (curated 10-question intro assessment)
+-- Note: Quick Start uses hard-coded question IDs in the frontend (questionFetchService.ts)
+-- and doesn't rely on test_questions_map for question selection
 INSERT INTO public.test_types (name, description, question_limit, is_active)
 VALUES
-  ('Demo Assessment', 'A quick 10-question demo to try the platform', 10, true)
+  ('Quick Start', 'A curated 10-question intro to gauge your AI fluency', 10, true)
 ON CONFLICT (name) DO NOTHING;
-
--- Populate demo questions (if the function exists)
-DO $$
-BEGIN
-  IF EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'populate_test_questions') THEN
-    PERFORM populate_test_questions('Demo Assessment', 10);
-  END IF;
-END $$;

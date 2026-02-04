@@ -20,7 +20,7 @@ import SampleResultsCarousel from './SampleResultsCarousel';
 interface LandingPageProps {
   onStartQuickTest: () => void;
   onStartComprehensiveTest: () => void;
-  onStartDemoTest: () => void;
+  onStartQuickStart: () => void;
   onGetYourTier: () => void;
   onChartYourPath: () => void;
 }
@@ -28,7 +28,7 @@ interface LandingPageProps {
 const LandingPage: React.FC<LandingPageProps> = ({
   onStartQuickTest,
   onStartComprehensiveTest,
-  onStartDemoTest,
+  onStartQuickStart,
   onGetYourTier,
   onChartYourPath,
 }) => {
@@ -58,37 +58,37 @@ const LandingPage: React.FC<LandingPageProps> = ({
 
       {/* Main content grid with test options */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        {/* Demo Assessment - First card for easy testing */}
+        {/* Quick Start - Curated 10-question intro assessment */}
         <Card className="card-hover-effect rounded-xl overflow-hidden shadow-sm border-2 border-green-200 bg-green-50">
           <CardContent className="p-6">
             <div className="mb-4 flex items-center gap-3">
               <div className="p-2 rounded-lg bg-green-100">
                 <ListCheck className="h-6 w-6 text-green-600" />
               </div>
-              <h2 className="text-xl font-bold">Demo Assessment</h2>
+              <h2 className="text-xl font-bold">Quick Start</h2>
               <span className="text-xs bg-green-200 text-green-700 px-2 py-1 rounded-full">
                 ~2 min
               </span>
             </div>
             <p className="text-gray-600 mb-4 text-sm">
-              Try out the platform with just 10 questions. Perfect for a quick preview.
+              Get a quick snapshot of your AI fluency with 10 curated questions.
             </p>
             <ul className="space-y-2 mb-6 text-sm">
               <li className="flex items-center gap-2">
                 <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
-                <span className="text-gray-700">10 true/false questions</span>
+                <span className="text-gray-700">10 curated questions</span>
               </li>
               <li className="flex items-center gap-2">
                 <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
-                <span className="text-gray-700">Takes ~2 minutes</span>
+                <span className="text-gray-700">All 4 skill categories</span>
               </li>
             </ul>
             <Button
-              onClick={onStartDemoTest}
+              onClick={onStartQuickStart}
               className="w-full bg-green-500 hover:bg-green-600 text-white"
               size="sm"
             >
-              Start Demo <ArrowRight className="ml-2 h-4 w-4" />
+              Quick Start <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </CardContent>
         </Card>

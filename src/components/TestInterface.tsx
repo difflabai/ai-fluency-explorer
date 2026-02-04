@@ -3,13 +3,13 @@ import ProgressBar from './ProgressBar';
 import QuestionCard from './QuestionCard';
 import ResultsDashboard from './ResultsDashboard';
 import { Home } from 'lucide-react';
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 import TestHeader from './test/TestHeader';
 import TestNavigation from './test/TestNavigation';
 import { useTestState } from '@/hooks/useTestState';
 
 interface TestInterfaceProps {
-  testType: 'quick' | 'comprehensive';
+  testType: 'quick' | 'comprehensive' | 'quickstart';
   onReturnHome: () => void;
 }
 
@@ -32,20 +32,20 @@ const TestInterface: React.FC<TestInterfaceProps> = ({ testType, onReturnHome })
     currentAnswer,
     isAnswered,
     isLastQuestion,
-    unansweredCount
+    unansweredCount,
   } = useTestState({ testType });
-  
+
   if (testComplete && result) {
     return (
-      <ResultsDashboard 
-        result={result} 
+      <ResultsDashboard
+        result={result}
         onReturnHome={onReturnHome}
         questions={questions}
         userAnswers={userAnswers}
       />
     );
   }
-  
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -57,12 +57,14 @@ const TestInterface: React.FC<TestInterfaceProps> = ({ testType, onReturnHome })
       </div>
     );
   }
-  
+
   if (questions.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
         <div className="text-center mb-6">
-          <h2 className="text-xl font-semibold text-red-600">Error Loading Questions</h2>
+          <h2 className="text-xl font-semibold text-red-600">
+            Error Loading Questions
+          </h2>
           <p className="text-gray-600 mt-2">Unable to load questions for the test.</p>
         </div>
         <Button onClick={onReturnHome} className="flex items-center gap-2">
@@ -71,11 +73,14 @@ const TestInterface: React.FC<TestInterfaceProps> = ({ testType, onReturnHome })
       </div>
     );
   }
-  
-  const testTitle = testType === 'quick' 
-    ? 'Quick Self-Assessment' 
-    : 'Comprehensive Self-Assessment';
-    
+
+  const testTitle =
+    testType === 'quickstart'
+      ? 'Quick Start Assessment'
+      : testType === 'quick'
+        ? 'Quick Self-Assessment'
+        : 'Comprehensive Self-Assessment';
+
   return (
     <div className="container max-w-4xl mx-auto px-4 py-8">
       <div className="flex flex-col gap-6">
@@ -89,14 +94,14 @@ const TestInterface: React.FC<TestInterfaceProps> = ({ testType, onReturnHome })
           onSaveProgress={handleSaveProgress}
           onReturnHome={onReturnHome}
         />
-        
+
         {/* Progress bar */}
         <ProgressBar
           progress={Math.round(progress)}
           label={`${Math.round(progress)}% Complete`}
-          color={progress === 100 ? "bg-green-500" : "bg-ai-purple"}
+          color={progress === 100 ? 'bg-green-500' : 'bg-ai-purple'}
         />
-        
+
         {/* Question */}
         {currentQuestion && (
           <QuestionCard
@@ -107,7 +112,7 @@ const TestInterface: React.FC<TestInterfaceProps> = ({ testType, onReturnHome })
             showFeedback={isAnswered}
           />
         )}
-        
+
         {/* Navigation */}
         <TestNavigation
           isLastQuestion={isLastQuestion}

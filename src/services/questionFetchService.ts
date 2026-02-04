@@ -1,8 +1,27 @@
 import { supabase } from '@/integrations/supabase/client';
 import { DBQuestion } from './types/questionTypes';
 
+// Curated question texts for Quick Start assessment (order matters!)
+// These are hand-picked to provide a balanced intro experience:
+// - 4 Practical Applications (novice)
+// - 2 Prompt Engineering (novice + advanced-beginner)
+// - 3 Technical Concepts (novice)
+// - 1 AI Ethics (competent - most accessible ethics question)
+const QUICK_START_QUESTIONS = [
+  "I've used at least three different AI chat tools and can compare their relative strengths",
+  'I regularly edit and personalize AI-generated text rather than using it verbatim',
+  "I've experimented with different phrasings of the same question to improve AI responses",
+  "I've caught an AI confidently stating something false and know how to reduce these hallucinations",
+  "I've identified at least three tasks in my regular routine that AI tools help me complete faster",
+  "I deliberately use AI as a brainstorming partner to generate ideas I wouldn't have thought of alone",
+  'I understand that tokens are the basic units processed by AI models and impact pricing',
+  'I understand that AI works by predicting text patterns rather than truly reasoning or understanding',
+  "I've developed a personal set of preferences for how I like AI to format its responses to me",
+  "I've asked AI to help me understand opposing viewpoints on a topic I'm exploring",
+];
+
 export const fetchQuestions = async (
-  testType?: 'quick' | 'comprehensive' | 'demo'
+  testType?: 'quick' | 'comprehensive' | 'quickstart'
 ): Promise<DBQuestion[]> => {
   try {
     if (!testType) {
@@ -13,18 +32,41 @@ export const fetchQuestions = async (
         .eq('is_active', true);
 
       if (error) {
-        console.error('Error fetching questions:', error);
         return [];
       }
 
       return data || [];
     }
 
+    // Quick Start uses curated questions - fetch them by matching text
+    if (testType === 'quickstart') {
+      const { data, error } = await supabase
+        .from('questions')
+        .select('*')
+        .in('text', QUICK_START_QUESTIONS)
+        .eq('is_active', true);
+
+      if (error || !data || data.length === 0) {
+        // Fallback: if questions not found in DB, just get first 10 active questions
+        const { data: fallbackData } = await supabase
+          .from('questions')
+          .select('*')
+          .eq('is_active', true)
+          .limit(10);
+        return fallbackData || [];
+      }
+
+      // Return in the curated order
+      const questionMap = new Map(data.map((q) => [q.text, q]));
+      return QUICK_START_QUESTIONS.map((text) => questionMap.get(text)).filter(
+        (q): q is DBQuestion => q !== undefined
+      );
+    }
+
     // Map the frontend test type to database test type name
     const testTypeMap: Record<string, string> = {
       quick: 'Quick Assessment',
       comprehensive: 'Comprehensive Assessment',
-      demo: 'Demo Assessment',
     };
     const testTypeName = testTypeMap[testType] || 'Quick Assessment';
 
@@ -37,17 +79,14 @@ export const fetchQuestions = async (
       .single();
 
     if (testTypeError || !testTypeData) {
-      console.error('Error fetching test type:', testTypeError);
-
       // Fallback to all active questions if test type not found
       const { data: fallbackData, error: fallbackError } = await supabase
         .from('questions')
         .select('*')
         .eq('is_active', true)
-        .limit(testType === 'demo' ? 10 : testType === 'quick' ? 20 : 50); // Reasonable limits
+        .limit(testType === 'quick' ? 50 : 240);
 
       if (fallbackError) {
-        console.error('Error in fallback query:', fallbackError);
         return [];
       }
 
@@ -61,19 +100,14 @@ export const fetchQuestions = async (
       .eq('test_type_id', testTypeData.id);
 
     if (mappingError) {
-      console.error('Error fetching question mappings:', mappingError);
       // Fallback to direct question fetch with limit
       const { data: directData, error: directError } = await supabase
         .from('questions')
         .select('*')
         .eq('is_active', true)
-        .limit(
-          testTypeData.question_limit ||
-            (testType === 'demo' ? 10 : testType === 'quick' ? 20 : 50)
-        );
+        .limit(testTypeData.question_limit || (testType === 'quick' ? 50 : 240));
 
       if (directError) {
-        console.error('Error in direct fetch fallback:', directError);
         return [];
       }
 
@@ -83,17 +117,12 @@ export const fetchQuestions = async (
     if (!mappingData || mappingData.length === 0) {
       // Try to populate the test questions if mapping is empty
       try {
-        const { data: populateResult, error: populateError } = await supabase.rpc(
-          'populate_test_questions',
-          {
-            test_type_name: testTypeName,
-            question_limit: testTypeData.question_limit,
-          }
-        );
+        const { error: populateError } = await supabase.rpc('populate_test_questions', {
+          test_type_name: testTypeName,
+          question_limit: testTypeData.question_limit,
+        });
 
-        if (populateError) {
-          console.error('Error populating test questions:', populateError);
-        } else {
+        if (!populateError) {
           // Retry fetching mappings
           const { data: retryMappingData, error: retryMappingError } = await supabase
             .from('test_questions_map')
@@ -101,7 +130,6 @@ export const fetchQuestions = async (
             .eq('test_type_id', testTypeData.id);
 
           if (!retryMappingError && retryMappingData && retryMappingData.length > 0) {
-            // Use the newly populated mappings
             const questionIds = retryMappingData.map((mapping) => mapping.question_id);
 
             const { data: questions, error: questionError } = await supabase
@@ -115,8 +143,8 @@ export const fetchQuestions = async (
             }
           }
         }
-      } catch (populateErr) {
-        console.error('Exception during test population:', populateErr);
+      } catch {
+        // Silent fallback
       }
 
       // Final fallback - get questions directly with appropriate limit
@@ -124,13 +152,9 @@ export const fetchQuestions = async (
         .from('questions')
         .select('*')
         .eq('is_active', true)
-        .limit(
-          testTypeData.question_limit ||
-            (testType === 'demo' ? 10 : testType === 'quick' ? 20 : 50)
-        );
+        .limit(testTypeData.question_limit || (testType === 'quick' ? 50 : 240));
 
       if (finalFallbackError) {
-        console.error('Error in final fallback:', finalFallbackError);
         return [];
       }
 
@@ -147,13 +171,11 @@ export const fetchQuestions = async (
       .eq('is_active', true);
 
     if (questionError || !questions) {
-      console.error('Error fetching questions by IDs:', questionError);
       return [];
     }
 
     return questions;
-  } catch (error) {
-    console.error('Exception in fetchQuestions:', error);
+  } catch {
     return [];
   }
 };

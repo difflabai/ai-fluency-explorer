@@ -1,4 +1,3 @@
-
 import { TestResult } from '@/utils/scoring';
 
 export interface Question {
@@ -17,7 +16,7 @@ export interface UserAnswer {
 }
 
 export interface UseTestStateProps {
-  testType: 'quick' | 'comprehensive';
+  testType: 'quick' | 'comprehensive' | 'quickstart';
 }
 
 export interface UseTestStateReturn {

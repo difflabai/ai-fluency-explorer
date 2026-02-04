@@ -8,7 +8,7 @@ type ViewMode =
   | 'landing'
   | 'quick'
   | 'comprehensive'
-  | 'demo'
+  | 'quickstart'
   | 'tier-info'
   | 'learning-path';
 
@@ -25,8 +25,8 @@ const Index = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const startDemoTest = () => {
-    setViewMode('demo');
+  const startQuickStart = () => {
+    setViewMode('quickstart');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -62,7 +62,7 @@ const Index = () => {
           <LandingPage
             onStartQuickTest={startQuickTest}
             onStartComprehensiveTest={startComprehensiveTest}
-            onStartDemoTest={startDemoTest}
+            onStartQuickStart={startQuickStart}
             onGetYourTier={showGetYourTier}
             onChartYourPath={showChartYourPath}
           />
@@ -71,8 +71,8 @@ const Index = () => {
         return <TestInterface testType="quick" onReturnHome={returnToHome} />;
       case 'comprehensive':
         return <TestInterface testType="comprehensive" onReturnHome={returnToHome} />;
-      case 'demo':
-        return <TestInterface testType="demo" onReturnHome={returnToHome} />;
+      case 'quickstart':
+        return <TestInterface testType="quickstart" onReturnHome={returnToHome} />;
       case 'tier-info':
         return <TierInfoView tiers={fluencyTiers} onReturn={returnToHome} />;
       case 'learning-path':
@@ -82,7 +82,7 @@ const Index = () => {
           <LandingPage
             onStartQuickTest={startQuickTest}
             onStartComprehensiveTest={startComprehensiveTest}
-            onStartDemoTest={startDemoTest}
+            onStartQuickStart={startQuickStart}
             onGetYourTier={showGetYourTier}
             onChartYourPath={showChartYourPath}
           />

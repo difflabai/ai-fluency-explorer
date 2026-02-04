@@ -33,8 +33,8 @@
       "questionLimit": 240
     },
     {
-      "name": "Demo Assessment",
-      "description": "A quick 10-question demo to try the platform",
+      "name": "Quick Start",
+      "description": "A curated 10-question intro to gauge your AI fluency",
       "questionLimit": 10
     }
   ],
