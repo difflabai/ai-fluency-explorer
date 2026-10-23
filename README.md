@@ -17,7 +17,7 @@ An interactive platform to test and evaluate understanding of AI concepts throug
 | Layer     | Technology                  |
 | --------- | --------------------------- |
 | Framework | React 18 + TypeScript       |
-| Build     | Vite 5 (SWC)                |
+| Build     | Vite 6 (SWC)                |
 | Styling   | TailwindCSS + shadcn-ui     |
 | State     | React Query + React Context |
 | Backend   | Supabase (Postgres, Auth)   |
@@ -28,8 +28,8 @@ An interactive platform to test and evaluate understanding of AI concepts throug
 
 ### Prerequisites
 
-- Node.js 18+
-- npm or bun
+- Node.js 22.23.4+, 24.22.1+, or 26.12.1+ (use `nvm use` for the pinned default)
+- npm 11 (use the committed `package-lock.json`; the old Bun lockfile has been retired)
 - Docker Desktop (for local Supabase)
 - Supabase CLI: `brew install supabase/tap/supabase`
 
@@ -41,7 +41,7 @@ git clone https://github.com/difflabai/ai-fluency-explorer.git
 cd ai-fluency-explorer
 
 # Install dependencies
-npm install
+npm ci
 
 # Set up environment
 cp .env.example .env
